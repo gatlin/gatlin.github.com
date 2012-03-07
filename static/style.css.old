@@ -1,0 +1,105 @@
+            body {
+                margin: 0;
+                padding: 0;
+                text-align:center;
+                background-color: #fff;
+            }
+            #main div.caption, #main blockquote p { width: 375px; }
+
+            h1 {
+                text-align:center;
+                margin-left: auto;
+                margin-right: auto;
+                font-size: 32pt;
+                font-family: 'Bangers';
+                color:#222;
+                letter-spacing: 0.1em;
+                padding-top: 20px;
+            }
+
+            h3, h4 {
+                text-align: left;
+            }
+
+            a.headerlink {text-decoration: none; }
+
+            #main h2 {
+   font-family: 'Brawler', serif;
+  font-size: 36px;
+  font-style: normal;
+  font-weight: 400;
+  text-shadow: none;
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: 0em;
+  word-spacing: 0em;
+  line-height: 1.2;
+                color: #222;
+                text-align:center;
+            }
+            
+            #main h3 {
+                font-family: 'Brawler', serif;
+                font-size: 18pt;
+                font-style: normal;
+                font-weight: 400;
+                line-height: 1.2;
+            }
+
+            #main h2 a, #main h2 a:hover, #main h3 {
+                color:#222;
+            }
+
+            #main {
+                margin-left: auto;
+                margin-right: auto;
+                width:500px;
+            }
+
+            #main p, ol#posts li, ul li {
+                color:#222;
+                text-align: justify;
+                font-size: 11pt;
+                line-height: 1.3em;
+                /*font-size: 1em;*/
+                margin: 20px auto 10px auto;
+                width: 500px;
+                font-family: 'Helvetica Nueue',Arial, sans-serif;
+                letter-spacing: 0.1em;
+            }
+            
+            #main pre {
+                text-align: left;
+                width: 300px;
+            }
+
+            #nav ul {
+                list-style-type: none;
+                text-align: center;
+                margin: 0;
+                padding:0;
+            }
+ 
+            #nav ul li {
+                display: inline;
+                font-family: Helvetica, Droid Sans, Arial, sans-serif;
+                margin: 5px 5px 0 0;
+                padding:0;
+            }
+ 
+            #nav ul li a {
+                color: #222;
+            }
+ 
+            #nav ul li a:hover {
+                text-decoration:none;
+            }
+            ol#posts { list-style-type: none; margin:0;padding:0; }
+            .quote { border-left: 2px #222; }
+            p#description { padding: 10px; border: 1px dashed #222; }
+            .photo { padding: 15px 15px 15px 15px; background-color: #c9c9b6;}
+            .post { padding: 15px;  }
+            #main ul.chat li, #main label { width: 250px; margin: 0; padding: 0;}
+            #main span.tags { text-align: left; }
+            p.date{ border-bottom: 1px dashed #222; padding-bottom: 15px; padding-top:0}
+            #main #disqus_thread { width: 500px; margin: 0 auto 0 auto; text-align: center;}

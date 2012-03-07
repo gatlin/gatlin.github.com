@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>projects!</title>
+        <link href='http://fonts.googleapis.com/css?family=Vollkorn'
+        rel='stylesheet' type='text/css' />
+        <link href='http://fonts.googleapis.com/css?family=Bangers'
+        rel='stylesheet' type='text/css' />
+        
+        <link href='/static/style.css' media='all' rel='stylesheet' type='text/css' />
+        
+    </head>
+    <body>
+        <header><h1>i'm gatlin</h1></header>
+        <div id='nav'>
+            <ul>
+                <li><a href='http://gatlin.tumblr.com'>blog</a></li>
+                <li><a href='projects.html'>projects</a></li>
+                <li><a href='index.html'>who am i</a></li>
+                <li><a href='hireme.html'>hire me</a></li>
+                <li><a href='http://gatlin.tumblr.com/ask'>ask me
+                    something</a></li>
+            </ul>
+        </div><!-- id:nav -->
+        <div id='main'>
+            <h2>projects</h2>
+
+<p>I used to not have many of these because I wasn't much of what you'd call a
+"hard worker." This has changed recently, mainly because I got my shit together
+and realized that I need to contribute something to humanity.</p>
+
+<p>So, here are some projects I've worked on recently.</p>
+
+<h3>sat.hs</h3>
+
+<p>I hesitate to put this here only because it is not a full project. However,
+it is the first step in a much larger effort I'll be showcasing in the near future.</p>
+
+<p><a href="https://gist.github.com/1755736">Anyway, here goes</a>.</p>
+
+<p>It's a simple implementation of the DPLL SAT solving algorithm, in Haskell. It is
+also my first foray into
+<a href="http://en.wikipedia.org/wiki/Monad_(functional_programming)">monads</a>. It was a trip.</p>
+
+<h3>grass</h3>
+
+<p><a href="https://github.com/gatlin/grass">grass</a> is my feeble attempt at creating an
+an <a href="http://http://en.wikipedia.org/wiki/Answer_set_programming">answer set solver</a>.
+Answer set solving takes problem specifications encoded in propositional logic
+and finds solutions.</p>
+
+<p>Ultimately, the goal is to create a module for the Racket programming language that
+would let one to embed answer set semantics into other applications so that people
+can build Really Cool Stuff. My choice of Racket is because I want this to also be
+useful pedagogically, and Racket is a great language in which to study CS.</p>
+
+<p>Grass itself is not meant to be high performance or complete. It is, however,
+intended to be something people can learn from. Currently only the SAT solving
+portion is complete.</p>
+
+<h3>FlyerMe!</h3>
+
+<p><a href="http://flyerme.info">FlyerMe</a> is a simple tool to create fliers, with a unique
+URL and a QR Code. Just type in the contents of the flyer and give people the
+public link. It's that simple.</p>
+
+<p>Missing features:</p>
+
+<ul>
+<li>Rich text controls (though keyboard shortcuts work);</li>
+<li>PDF generation;</li>
+<li>The ads that I will pay for this with. Sorry :(</li>
+</ul>
+
+<p>It's on a crappy server right now; hopefully it'll become popular enough to
+warrant a better one!</p>
+
+<p>Update: the code has been opened up. <a href="https://github.com/gatlin/FlyerMe.info">View it here</a>.
+Be gentle!</p>
+
+<h3>Oyster</h3>
+
+<p><a href="https://github.com/gatlin/oyster">Oyster</a> is a web-based environment where you
+can program in Perl. The code you type in the editor is sent up to a special
+oyster server which allows you to interact with your program asynchronously in
+real time.</p>
+
+<p>I will have a live demo up when it's a bit more stable. This is definitely 
+something that could be used in a controlled environment, though.</p>
+
+<p>The goal of Oyster is to lower the barrier required to get started writing
+Perl. Learning the command line and other assorted bullshit is a distraction
+that seems to turn a lot of people off.</p>
+
+<p>The GitHub page linked above has more technical information. It is my hope that
+Oyster becomes a fantastic educational tool to teach basic programming and
+computer science without a lot of crap (at first).</p>
+
+<h3>Posh</h3>
+
+<p><a href="https://github.com/gatlin/posh">Posh</a> is a proof-of-concept shell, like bash,
+written in Perl. It means <em>P</em>erl <em>o</em>riented <em>sh</em>ell.</p>
+
+<p>Posh is intended to be used by a programming teacher during that painful
+transition to the command line by demonstrating how to create a shell. It runs
+well in Oyster, if that gives you any hint of its usage.</p>
+
+<p>So, even though it has no intrinsic value, it's still neat. I'd love to hear
+feedback!</p>
+
+<h3>Weasel</h3>
+
+<p>Weasel is an implementation of Richard Dawkins' refutation of Intelligent
+Design's claim that sophisticated structures cannot arise via "evil-ution"
+alone.</p>
+
+<p>Weasel is a Common Lisp program designed to work with clisp. You can download
+<a href="/static/weasel.lsp">weasel here</a>.</p>
+
+<p>To use it, in your favorite terminal emulator type</p>
+
+<pre><code>$&gt; clisp
+$&gt; (load 'weasel.lsp')
+$&gt; (evolve "SOME STRING IN UPPER CASE, NO PUNCTUATION")
+</code></pre>
+
+<p>Instead of supplying your own string, you can simply type <code>(evolve weasel)</code> and
+it will choose the string after which it was named ("Me thinks it is like a
+weasel," from <em>Hamlet</em>).</p>
+
+<p>The principle on display here is that successive selective mutations on an
+existing random structure can quickly lead to more complexity while not
+becoming more chaotic. The string you specify is a fitness requirement.</p>
+
+<h3>foutre</h3>
+
+<p>My first iteration of this site was going to have a Really Cool static blog
+generator, written in Python.</p>
+
+<p>It kind of blows, mainly because I found
+<a href="http://blog.notmyidea.org/pelican-a-simple-static-blog-generator-in-python.html">pelican</a>
+shortly after creating it. Also, I'm a lazy bastard.</p>
+
+<p>If you are interested in the code, though, you can download a <a href="/static/foutre-1.0.0beta1.tar.gz">tarball of the
+most recent version</a>. Suggested use is given
+with <code>python foutre.py --help</code>. Warning: reading something this boring may
+reduce sperm count in males.</p>
+
+        </div><!-- id:main -->
+    </body>
+</html>
