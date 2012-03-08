@@ -11,7 +11,7 @@ use FindBin qw($Bin);
 
 sub handle_request {
     my ($self, $cgi) = @_;
-    return $self->serve_static( $cgi, "$Bin/output" );
+    return $self->serve_static( $cgi, "$Bin/gatlin.github.com" );
 }
 
 package main;
@@ -22,8 +22,7 @@ use YAML qw(LoadFile);
 use Template::Toolkit::Simple;
 use FindBin qw($Bin);
 
-my $option = shift @ARGV;
-$option = 'default' if not defined $option;
+my $option = shift @ARGV // 'default';
 
 my $config = LoadFile 'config.yml'
   or die "You must specify a config.yml file: $!";
@@ -47,7 +46,7 @@ sub process_page {
     );
 
     my $outname = $doc->{slug} // $_;
-    open my $out, '>', "$Bin/output/$outname.html";
+    open my $out, '>', "$Bin/gatlin.github.com/$outname.html";
     print $out $final;
     close $out;
 }
@@ -56,16 +55,20 @@ my %action;
 %action = (
     before => sub {
         find( \&process_page, "src/" );
-        `cp -r static output`;
+        `cp -r static gatlin.github.com`;
+    },
+    default => sub {
+        $action{before}->();
+        say "Pages created. Do what you need."
     },
     debug => sub {
         $action{before}->();
         my $server = new DebugServer;
         $server->run();
     },
-    default => sub {
+    rysnc => sub {
         $action{before}->();
-        `rsync -r -t -v output/ $config->{dest}`;
+        `rsync -r -t -u -v gatlin.github.com/ $config->{dest}`;
     },
     markdown => sub {
         my $page = shift @ARGV;
