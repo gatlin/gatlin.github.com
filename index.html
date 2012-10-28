@@ -2,16 +2,49 @@
 <html>
     <head>
         <title>Gatlin Johnson</title>
+            <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+            <!--[if lt IE 9]>
+              <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+            <![endif]-->
         <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/docs.css" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
     </head>
-    <body>
+    <body data-spy="scroll" data-targe=".subnav">
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <div class="nav-collapse">
+                        <ul class="nav">
+                            <li><a
+                                href="mailto:rokenrol@gmail.com">rokenrol@gmail.com</a></li>
+                            <li><a
+                                href="https://github.com/gatlin">GitHub</a></li>
+                            <li><a
+                                href="http://gatlin.tumblr.com">tumblr</a></li>
+                            <li><a
+                                href="www.linkedin.com/in/gatlinjohnson">LinkedIn</a></li>
+                            <li><a
+                                href="https://plus.google.com/109219461170636823247">+Gatlin
+                                Johnson</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="container">
             <header class="jumbotron subhead" id="overview">
                 <div class="row">
-                    <h1>Gatlin Johnson</h1>
-                    <p class="lead">software developer, pug fanatic</p>
+                    <div class="span6">
+                        <h1>Gatlin Johnson</h1>
+                        <p class="lead">software developer, pug fanatic</p>
+                    </div>
                 </div>
                 <div class="subnav">
                     <ul class="nav nav-pills">
@@ -28,7 +61,10 @@
                 </div>
 
                 <div class="row">
-                    <div class="span4">
+                    <div class="span3">
+                        <img src="img/gatlin.jpg" class="">
+                    </div>
+                    <div class="span9">
                         <h3>There's not much to it.</h3>
                         <p>
                             I'm a software developer in sunny Austin, TX.
@@ -42,33 +78,11 @@
                             I live in and support cooperatives, play classical
                             guitar, and watch a lot of bad movies.
                         </p>
+                        <h3>Hire me!</h3>
+                        <p>I enjoy designing and making software. If you want
+                        me to make some software, or want to work with me on
+                        something, drop me a line.</p>
                     </div>
-
-                    <div class="span4">
-                        <img src="img/gatlin.jpg" class="well">
-                    </div>
-
-                    <div class="span4">
-                        <address>
-                            <h4>Email</h4>
-                            <a
-                                href="mailto:rokenrol@gmail.com">rokenrol@gmail.com</a>
-                        </address>
-                        <address>
-                            <h4>GitHub</h4>
-                            <a href="https://github.com/gatlin">gatlin</a>
-                        </address>
-                        <address>
-                            <h4>g+</h4>
-                            <a
-                                href="https://plus.google.com/109219461170636823247/">+Gatlin
-                                Johnson</a>
-                        </address>
-                        <address>
-                            <h4>tumblr</h4>
-                            <a
-                                href="http://gatlin.tumblr.com">gatlin.tumblr.com</a>
-                        </address>
                 </div>
             </section>
 
@@ -155,5 +169,31 @@
                 <p class="pull-right"><a href="#">Back to top</a></p>
             </footer>
         </div>
+        <script
+            src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script type='text/javascript'>
+            // fix sub nav on scroll
+            var $win = $(window)
+              , $nav = $('.subnav')
+              , navHeight = $('.navbar').first().height()
+              , navTop = $('.subnav').length && $('.subnav').offset().top - navHeight
+              , isFixed = 0
+
+            processScroll()
+
+            $win.on('scroll', processScroll)
+
+            function processScroll() {
+              var i, scrollTop = $win.scrollTop()
+              if (scrollTop >= navTop && !isFixed) {
+                isFixed = 1
+                $nav.addClass('subnav-fixed')
+              } else if (scrollTop <= navTop && isFixed) {
+                isFixed = 0
+                $nav.removeClass('subnav-fixed')
+              }
+          }
+        </script>
     </body>
 </html>
