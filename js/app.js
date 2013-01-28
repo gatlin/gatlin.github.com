@@ -2,7 +2,7 @@
 
 var App;
 
-App = angular.module('app', ['ngCookies', 'ngResource', 'app.controllers', 'app.directives', 'app.filters', 'app.services']);
+App = angular.module('app', ['ngCookies', 'ngResource', 'app.controllers', 'app.directives', 'app.filters', 'app.services', 'app.worldmap']);
 
 App.config([
   '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider, config) {
@@ -23,7 +23,7 @@ angular.element(document).ready(function() {
 /* Controllers
 */
 
-angular.module('app.controllers', ['app.services']).controller('AppCtrl', [
+angular.module('app.controllers', ['app.services', 'app.worldmap']).controller('AppCtrl', [
   '$scope', '$location', '$resource', '$rootScope', function($scope, $location, $resource, $rootScope) {
     $scope.$location = $location;
     $scope.$watch('$location.path()', function(path) {
@@ -49,27 +49,7 @@ angular.module('app.controllers', ['app.services']).controller('AppCtrl', [
       };
     };
   }
-]).directive('worldmap', function() {
-  return function(scope, element, attrs) {
-    var id, paper, world;
-    id = attrs.id;
-    paper = Raphael(document.getElementById(id), 1000, 400);
-    paper.rect(0, 0, 1000, 400, 10).attr({
-      stroke: "none",
-      fill: "0-#9bb7cb-#adc8da"
-    });
-    paper.setStart();
-    angular.forEach(worldmap.shapes, function(v, k) {
-      return paper.path(v).attr({
-        "stroke": "#ccc6ae",
-        "fill": "#f0efeb",
-        "stroke-opacity": 0.25
-      });
-    });
-    world = paper.setFinish();
-    return world.hover(scope.over, scope.out);
-  };
-}).controller('MapCtrl', [
+]).controller('MapCtrl', [
   '$scope', '$http', function($scope, $http) {
     $scope.over = function() {
       this.c = this.c || this.attr("fill");

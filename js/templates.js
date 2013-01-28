@@ -13,7 +13,7 @@ var buf = [];
 with (locals || {}) {
 var interp;
 var __indent = [];
-buf.push('\n<div ng-app="ng-app">\n  <h2>The World, in vector format</h2>\n  <div ng-controller="MapCtrl">\n    <div class="row">\n      <div id="earth" worldmap="worldmap" class="span12"></div>\n    </div>\n  </div>\n</div>');
+buf.push('\n<div ng-app="ng-app">\n  <h2>The World, in vector format</h2>\n  <div ng-controller="MapCtrl">\n    <div class="row">\n      <div id="rsr" worldmap="worldmap" class="span12"></div>\n    </div>\n  </div>\n</div>');
 }
 return buf.join("");
 };module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
