@@ -6860,3 +6860,10 @@ bootstrap, so the may override it's behavior.
   text-decoration: line-through;
   color: grey;
 }
+#earth {
+  width: 100%;
+  height: 100%;
+}
+#pop-holder {
+  position: absolute;
+}
