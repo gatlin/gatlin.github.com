@@ -12492,3 +12492,6 @@ bootstrap, so the may override it's behavior.
 #pop-holder {
   position: absolute;
 }
+.popover-title {
+  color: black;
+}

@@ -31704,7 +31704,7 @@ var ph = $('#pop-holder');
 ph.popover({
     trigger: "focus",
     title: "Data Title",
-    content: "Quinoa freegan cred, fanny pack organic pop-up occupy williamsburg leggings four loko. Mcsweeney's raw denim try-hard leggings blue bottle organic cred.",
+    content: "Country information",
     delay:500,
 });
 
