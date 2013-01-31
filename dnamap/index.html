@@ -337,6 +337,11 @@ legend: ["Africa","Americas","Europe","Australasia"],
         var bar = Raphael("bar");
         bar.barchart(50,30,450,400,vals,{
 colors: ["#1BE050","#E04C1B","#D61BE0","#E67A1C"],
+}).hover(function() {
+    this.flag = bar.popup(this.bar.x, this.bar.y,
+        Math.floor(this.bar.value.value) || "0").insertBefore(this);
+    },function() {
+    this.flag.animate({opacity: 0}, 300, function () {this.remove();});
 });
         a.addEventListener("load",function(){
             var svgDoc = a.contentDocument; //get the inner DOM of alpha.svg
