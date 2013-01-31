@@ -66,7 +66,9 @@ p {
     <div class="container-fluid">
 
         <div class="row-fluid" style="margin-top: 5px;">
-            <h1>Your genetic breakdown by region.</h1>
+            <h1>
+                Your genetic breakdown by region.
+            </h1>
         </div>
         <div class="row-fluid">
             <a name="map" id="map"></a>
@@ -310,10 +312,28 @@ p {
         //it's important to add an load event listener to the object, as it will load the svg doc asynchronously
 
         var pie = Raphael("pie");
-        pie.piechart(320,240,175,vals,{
+        var pc = pie.piechart(320,240,175,vals,{
 colors: ["#1BE050","#E04C1B","#D61BE0","#E67A1C"],
 legend: ["Africa","Americas","Europe","Australasia"],
         });
+        pc.hover(function () {
+            this.sector.stop();
+            this.sector.scale(1.1,1.1,this.cx,this.cy);
+
+            if (this.label) {
+                this.label[0].stop();
+                this.label[0].attr({r:7.5});
+                this.label[1].attr({"font-weight":800});
+            }
+        },function() {
+            this.sector.animate({transform: 's1 1 ' + this.cx + ' ' + this.cy
+                },500, "bounce");
+            if (this.label) {
+                this.label[0].animate({r:5},500,"bounce");
+                this.label[1].attr({"font-weight":400});
+            }
+        });
+
         var bar = Raphael("bar");
         bar.barchart(50,30,450,400,vals,{
 colors: ["#1BE050","#E04C1B","#D61BE0","#E67A1C"],
