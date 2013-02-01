@@ -343,46 +343,88 @@ p {
                    ,europeOpacity*100
                    ,australasiaOpacity*100];
 
+        var africaColor = "#1BE050";
+        var americaColor = "#E04C1B";
+        var europeColor = "#D61BE0";
+        var australasiaColor = "#E67A1C";
+
         //it's important to add an load event listener to the object, as it will load the svg doc asynchronously
 
         var pie = Raphael(document.getElementById("pie"));
+        //north african
         var pc1 = pie.piechart(590,250,10,[150,20,774,56],{
-            colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
+            colors: [europeColor,africaColor,australasiaColor,americaColor],
         });
+        //puerto rican
         var pc2 = pie.piechart(330,266,10,[326,88,550,36],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //north euro
         var pc3 = pie.piechart(560,150,10,[10,4,970,19],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //irish
         var pc4 = pie.piechart(505,150,10,[7,17,964,12],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //icelandic
         var pc5 = pie.piechart(490,110,10,[12,43,938,8],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //greek
         var pc6 = pie.piechart(590,200,10,[48,47,904,17],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //iberians
         var pc7 = pie.piechart(498,203,10,[66,107,788,40],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //basque
         var pc8 = pie.piechart(528,205,10,[23,39,930,8],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //italian
         var pc9 = pie.piechart(570,205,10,[23,73,868,27],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //turkish
         var pc10 = pie.piechart(620,210,10,[32,51,853,73],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //ashkenazi
         var pc11 = pie.piechart(560,180,10,[47,66,868,20],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //mid east
         var pc12 = pie.piechart(640,240,10,[108,26,820,45],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
+        //south asian indian
         var pc13 = pie.piechart(730,280,10,[51,91,589,269],{
+            colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
+        });
+        //chinese
+        var pc14 = pie.piechart(800,230,10,[0,13,7,980],{
+            colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
+        });
+        //japanese
+        var pc15 = pie.piechart(890,220,10,[4,32,11,953],{
+            colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
+            });
+        //atayal
+        var pc16 = pie.piechart(840,260,10,[0,19,5,976],{
+            colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
+        });
+        //south east asian
+        var pc16 = pie.piechart(800,280,10,[36,63,80,822],{
+            colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
+        });
+        //american indian
+        var pc17 = pie.piechart(270,210,10,[37,476,419,67],{
+            colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
+        });
+        //mexican
+        var pc18 = pie.piechart(270,260,10,[56,468,432,44],{
             colors: ["#D61BE0","#E67A1C","#1BE050","#E04C1B"],
         });
 
