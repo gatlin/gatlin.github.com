@@ -336,12 +336,15 @@ p {
                    ,americaOpacity*100
                    ,europeOpacity*100
                    ,australasiaOpacity*100];
-
+        var africaColor = "#1BE050";
+        var americaColor = "#E04C1B";
+        var europeColor = "#D61BE0";
+        var australasiaColor = "#E67A1C";
         //it's important to add an load event listener to the object, as it will load the svg doc asynchronously
 
         var bar = Raphael("bar");
-        bar.barchart(100,250,100,200,vals,{
-colors: ["#1BE050","#E04C1B","#D61BE0","#E67A1C"],
+        bar.barchart(50,280,200,200,vals,{
+colors: [africaColor,americaColor,europeColor,australasiaColor],
 }).hover(function() {
     this.flag = bar.popup(this.bar.x, this.bar.y,
         Math.floor(this.bar.value.value) || "0").insertBefore(this);
