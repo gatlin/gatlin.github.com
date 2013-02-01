@@ -30,6 +30,7 @@ p {
     text-align: left;
     margin: .5em 2em;
 }
+#bar { position:absolute; width: 100%; height: 100% }
 </style>
     <link href="css/bootstrap-responsive.css" rel="stylesheet">
 
@@ -47,6 +48,7 @@ p {
   </head>
 
   <body>
+            <div id="bar"></div>
             <div class="span11 chart">
                 <object data="img/worldMap.svg" type="image/svg+xml"
                     style="width: 100%; height: 100%;"
@@ -337,32 +339,8 @@ p {
 
         //it's important to add an load event listener to the object, as it will load the svg doc asynchronously
 
-                   /*
-        var pie = Raphael("pie");
-        var pc = pie.piechart(320,240,175,vals,{
-colors: ["#1BE050","#E04C1B","#D61BE0","#E67A1C"],
-legend: ["Africa","Americas","Europe","Australasia"],
-        });
-        pc.hover(function () {
-            this.sector.stop();
-            this.sector.scale(1.1,1.1,this.cx,this.cy);
-
-            if (this.label) {
-                this.label[0].stop();
-                this.label[0].attr({r:7.5});
-                this.label[1].attr({"font-weight":800});
-            }
-        },function() {
-            this.sector.animate({transform: 's1 1 ' + this.cx + ' ' + this.cy
-                },500, "bounce");
-            if (this.label) {
-                this.label[0].animate({r:5},500,"bounce");
-                this.label[1].attr({"font-weight":400});
-            }
-        });
-
         var bar = Raphael("bar");
-        bar.barchart(50,30,450,400,vals,{
+        bar.barchart(100,250,100,200,vals,{
 colors: ["#1BE050","#E04C1B","#D61BE0","#E67A1C"],
 }).hover(function() {
     this.flag = bar.popup(this.bar.x, this.bar.y,
@@ -370,7 +348,6 @@ colors: ["#1BE050","#E04C1B","#D61BE0","#E67A1C"],
     },function() {
     this.flag.animate({opacity: 0}, 300, function () {this.remove();});
     });
-    */
         a.addEventListener("load",function(){
             var svgDoc = a.contentDocument; //get the inner DOM of alpha.svg
             for (var i = 0; i < africa.length; i++) {
