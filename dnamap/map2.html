@@ -11,15 +11,20 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <style>
       body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-top: 10px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
       .chart {
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     -webkit-box-shadow: 0 1px 3px #666;
     background: #ddd url(img/bg.png);
-    margin: 0 auto;
+    margin: 0 6auto;
+    padding: 0;
     height: 500px;
+}
+.chart object {
+    margin: 0;
+    padding: 0;
 }
 p {
     text-align: left;
@@ -64,7 +69,6 @@ p {
         var africa = [
             "ZA",
             "NG",
-            "EG",
             "algeria",
             "AO",
             "MA",
@@ -248,59 +252,61 @@ p {
             "iceland",
             "andorra",
             "liech",
-            "RU",
             "GB",
             "lat.",
             "slov.",
             "ser.",
             "KV",
+            // middle east
+            "EG",
+            "yemen",
+            "OM",
+            "SA",
+            "united_arab_emirates",
+            "QA",
+            "IR",
+            "IQ",
+            "KW",
+            "SY",
+            "jordan",
+            "IL",
+            "TR",
+            "lebanon",
+            "azerbaijan",
+            "turkmenistan",
+            "georgia",
+            "armenia",
         ];
         var asia = [
-            "armenia",
-            "azerbaijan",
+            "RU",
             "brunei",
             "burma",
-            "georgia",
             "IN",
             "ID",
-            "IR",
             "AF",
             "BD",
             "BT",
             "KH",
             "CN",
             "TL",
-            "IQ",
-            "IL",
             "JP",
-            "jordan",
             "kazakhstan",
             "KP",
             "KR",
-            "KW",
             "laos",
-            "lebanon",
             "MY",
             "MN",
             "NP",
-            "OM",
             "PK",
 //            "papa_new_guinea",
             "papua_new_guinea",
             "PH",
-            "QA",
             "rus.",
-            "SA",
             "SG",
             "sri_lanka",
-            "SY",
             "TH",
-            "TR",
-            "turkmenistan",
-            "united_arab_emirates",
             "uzbekistan",
             "VN",
-            "yemen",
             "tajikstan",
             "kyrgyzstan",
             "indian_claim",
