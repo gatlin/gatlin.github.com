@@ -30,7 +30,7 @@ p {
     text-align: left;
     margin: .5em 2em;
 }
-#bar { position:absolute; width: 100%; height: 100% }
+#pie { position:absolute; width: 100%; height: 100% }
 </style>
     <link href="css/bootstrap-responsive.css" rel="stylesheet">
 
@@ -48,7 +48,7 @@ p {
   </head>
 
   <body>
-            <div id="bar"></div>
+            <div id="pie"></div>
             <div class="span11 chart">
                 <object data="img/worldMap.svg" type="image/svg+xml"
                     style="width: 100%; height: 100%;"
@@ -342,15 +342,45 @@ p {
         var australasiaColor = "#E67A1C";
         //it's important to add an load event listener to the object, as it will load the svg doc asynchronously
 
-        var bar = Raphael("bar");
-        bar.barchart(50,280,200,200,vals,{
-colors: [africaColor,americaColor,europeColor,australasiaColor],
-}).hover(function() {
-    this.flag = bar.popup(this.bar.x, this.bar.y,
-        Math.floor(this.bar.value.value) || "0").insertBefore(this);
-    },function() {
-    this.flag.animate({opacity: 0}, 300, function () {this.remove();});
-    });
+        var pie = Raphael(document.getElementById("pie"));
+        var pc = pie.piechart(130,360,75,vals,{
+            colors: [
+                africaColor
+               ,americaColor
+               ,europeColor
+               ,australasiaColor
+            ],
+            legend: [
+                "Africa"
+               ,"Americas"
+               ,"Europe"
+               ,"Australasia"
+            ],
+            matchColors: true,
+        });
+        pc.each(function() {
+            console.log(this.value.value);
+            pie.label(this.x, this.y, ''+this.value.value+"%").attr({
+                font: '13px Arial',
+            }).show();
+        });
+        pc.hover(function () {
+            this.sector.stop();
+            this.sector.scale(1.1,1.1,this.cx,this.cy);
+
+            if (this.label) {
+                this.label[0].stop();
+                this.label[0].attr({r:7.5});
+                this.label[1].attr({"font-weight":800});
+            }
+        },function() {
+            this.sector.animate({transform: 's1 1 ' + this.cx + ' ' + this.cy
+                },500, "bounce");
+            if (this.label) {
+                this.label[0].animate({r:5},500,"bounce");
+                this.label[1].attr({"font-weight":400});
+            }
+        });
         a.addEventListener("load",function(){
             var svgDoc = a.contentDocument; //get the inner DOM of alpha.svg
             for (var i = 0; i < africa.length; i++) {
@@ -360,7 +390,7 @@ colors: [africaColor,americaColor,europeColor,australasiaColor],
                 var els = country.getElementsByTagName('path');
                 for (var e = 0; e < els.length; e++) {
                     els[e].style.fill = "#1BE050";
-                    els[e].style.opacity = africaOpacity;
+                    els[e].style.opacity = africaOpacity/2+0.25;
                 }
             }
             for (var i = 0; i < americas.length; i++) {
@@ -370,7 +400,7 @@ colors: [africaColor,americaColor,europeColor,australasiaColor],
                 var els = country.getElementsByTagName('path');
                 for (var e = 0; e < els.length; e++) {
                     els[e].style.fill = "#E04C1B";
-                    els[e].style.opacity = americaOpacity;
+                    els[e].style.opacity = americaOpacity/2+0.25;
                 }
             }
             for (var i = 0; i < europe.length; i++) {
@@ -380,7 +410,7 @@ colors: [africaColor,americaColor,europeColor,australasiaColor],
                 var els = country.getElementsByTagName('path');
                 for (var e = 0; e < els.length; e++) {
                     els[e].style.fill = "#D61BE0";
-                    els[e].style.opacity = europeOpacity;
+                    els[e].style.opacity = europeOpacity/2+0.25;
                 }
             }
             for (var i = 0; i < asia.length; i++) {
@@ -390,7 +420,7 @@ colors: [africaColor,americaColor,europeColor,australasiaColor],
                 var els = country.getElementsByTagName('path');
                 for (var e = 0; e < els.length; e++) {
                     els[e].style.fill = "#E67A1C";
-                    els[e].style.opacity = australasiaOpacity;
+                    els[e].style.opacity = australasiaOpacity/2+0.25;
                 }
             }
             //var delta = svgDoc.getElementById("iceland"); //get the inner element by id
