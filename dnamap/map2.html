@@ -59,8 +59,8 @@ p {
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <!--
     <script src="js/jquery.js"></script>
+    <!--
     <script src="js/bootstrap.js"></script>
     -->
     <script src="js/raphael.js"></script>
@@ -385,6 +385,10 @@ p {
         });
         a.addEventListener("load",function(){
             var svgDoc = a.contentDocument; //get the inner DOM of alpha.svg
+            var svgRoot = svgDoc.documentElement;
+            $('path',svgRoot).hover(function() {
+                console.log("funky");
+            });
             for (var i = 0; i < africa.length; i++) {
                 var c = africa[i];
                 var country = svgDoc.getElementById(c);
