@@ -47,12 +47,16 @@
                 </div>
             </div>
         </div>
-        <div class="container">
+        <div class="container"
+            itemscope
+            itemtype="http://data-vocabulary.org/Person"
+        >
             <header class="jumbotron subhead" id="overview">
                 <div class="row">
                     <div class="span6">
-                        <h1>Gatlin Johnson</h1>
-                        <p class="lead">software developer, pug fanatic</p>
+                        <h1 itemprop="fn">Gatlin Johnson</h1>
+                        <p class="lead"
+                        itemprop="role">software developer, pug fanatic</p>
                     </div>
                 </div>
 
@@ -71,27 +75,35 @@
                 </div>
 
                 <div class="row">
-                    <div class="media span12">
-                        <div class="pull-left">
-                            <img src="img/gatlin.jpg"
-                                 class="hidden-phone">
-                        </div>
-                        <div class="media-body">
-                            <h3 class="media-heading">There's not much to it.</h3>
-                            <p>
-                                I'm a software developer in sunny Austin, TX.
-                                Graduated from UT with my BS in Computer Science. I
-                                do freelance development and aspire to hide in
-                                academia some day. My interests include programming
-                                languages, formal logic, vodka.
-                            </p>
+                    <div class="span12">
+                        <div
+                            class="media well">
+                            <div class="pull-left">
+                                <img src="img/gatlin.jpg"
+                                     itemprop="photo"
+                                     class="hidden-phone">
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading"
+                                    itemprop="summary"
+                                    >There's not much to it.</h3>
+                                <span itemprop="description">
+                                <p>
+                                    I'm a software developer in sunny Austin, TX.
+                                    Graduated from UT with my BS in Computer Science. I
+                                    do freelance development and aspire to hide in
+                                    academia some day. My interests include programming
+                                    languages, formal logic, vodka.
+                                </p>
 
-                            <p>
-                                I live in and support <a
-                                    href="http://lareunioncoop.org" target="_blank"
-                                    >cooperatives</a>, daydream excessively,
-                                and watch a lot of bad movies.
-                            </p>
+                                <p>
+                                    I live in and support <a
+                                        href="http://lareunioncoop.org" target="_blank"
+                                        >cooperatives</a>, daydream excessively,
+                                    and watch a lot of bad movies.
+                                </p>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -154,7 +166,7 @@
             <section id="links">
                 <div class="page-header">
                     <h2>Other things I care about</h2>
-                    <p>I'm not completely dead inside.</p>
+                    <p class="lead">I'm not completely dead inside.</p>
                 </div>
 
                 <div class="row">
