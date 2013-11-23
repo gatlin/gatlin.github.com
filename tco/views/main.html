@@ -1,0 +1,324 @@
+<div class="row">
+    <div class="col-md-10">
+        <div class="page-header">
+            <h1>Tablet TCO Calculator</h1>
+        </div>
+    </div>
+</div>
+
+<!-- end very top -->
+
+<div class="row">
+
+    <!-- Begin right column -->
+    <div class="col-md-12">
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Rugged Tablets</div>
+                    <div class="panel-body">
+                        <div class="col-md-6">
+                            <h3>Hard Costs</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Inputs</th>
+                                            <th>Total Five Year Cost</th>
+                                            <th>Industry Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="v in rhcVars">
+                                            <td>{{ v.label }}</td>
+                                            <td>
+                                                <input type="text" class="form-control" ng-model="v.value">
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,rARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ v.industry | currency }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <form class="form-inline">
+                                <div class="form-group">
+                                    <label for="rARC">
+                                        Average Replacement Cycle
+                                    </label>
+                                    <input type="text" ng-model="rARC" id="nARC" class="form-control">
+                                </div>
+                            </form>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Total Initial Deployment and
+                                                Maintenance</th>
+                                            <th>Total ID&amp;M 5 Years</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                {{ totalIDM(rhcVars) | currency }}
+                                            </td>
+                                            <td><strong>
+                                                {{ fiveYearAll(rhcVars,rARC) | currency }}
+                                            </strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div><!-- hard costs -->
+                        <div class="col-md-6 col-sm-12">
+                            <h3>Soft Costs</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Inputs</th>
+                                            <th>Total Five Year Cost</th>
+                                            <th>Industry Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="v in rscVars">
+                                            <td>{{ v.label }}</td>
+                                            <td><input type="text" class="form-control" ng-model="v.value"></td>
+                                            <td></td>
+                                            <td>{{ v.industry }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Productivity loss from hardware
+                                                failure</td>
+                                            <td>
+                                                {{ prodLossHWFail(rscVars) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ prodLossHWFail(rscVars)*5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>IT Support for HW Downtime</td>
+                                            <td>
+                                                {{ itSupportHWDown(rscVars) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ itSupportHWDown(rscVars)*5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Average Replacement Costs</td>
+                                            <td>
+                                                {{ avgReplCost(rscVars,rhcVars,rARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ avgReplCost(rscVars,rhcVars,rARC)*5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Operational Costs</td>
+                                            <td>
+                                                {{ totalOpCosts(rscVars,rhcVars,rARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ totalOpCosts(rscVars,rhcVars,rARC) * 5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div><!-- soft costs -->
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Total Cost of Ownership (Five Year)</th>
+                                <th>Annual TCO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {{ tco5(rscVars,rhcVars,rARC) | currency }}
+                                </td>
+                                <td>
+                                    {{ tco5(rscVars,rhcVars,rARC) / 5.0 | currency }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div><!-- panel -->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Non-Rugged Tablets</div>
+                    <div class="panel-body">
+                        <div class="col-md-6">
+                            <h3>Hard Costs</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Inputs</th>
+                                            <th>Total Five Year Cost</th>
+                                            <th>Industry Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="v in nhcVars">
+                                            <td>{{ v.label }}</td>
+                                            <td>
+                                                <input type="text" class="form-control" ng-model="v.value">
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,nARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ v.industry | currency }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <form class="form-inline">
+                                <div class="form-group">
+                                    <label for="nARC">
+                                        Average Replacement Cycle
+                                    </label>
+                                    <input type="text" ng-model="nARC" id="nARC" class="form-control">
+                                </div>
+                            </form>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Total Initial Deployment and
+                                                Maintenance</th>
+                                            <th>Total ID&amp;M 5 Years</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                {{ totalIDM(nhcVars) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ fiveYearAll(nhcVars,nARC) | currency }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div><!-- hard costs -->
+                        <div class="col-md-6 col-sm-12">
+                            <h3>Soft Costs</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Inputs</th>
+                                            <th>Total Five Year Cost</th>
+                                            <th>Industry Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="v in nscVars">
+                                            <td>{{ v.label }}</td>
+                                            <td><input type="text" class="form-control" ng-model="v.value"></td>
+                                            <td></td>
+                                            <td>{{ v.industry }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Productivity loss from hardware
+                                                failure</td>
+                                            <td>
+                                                {{ prodLossHWFail(nscVars) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ prodLossHWFail(nscVars)*5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>IT Support for HW Downtime</td>
+                                            <td>
+                                                {{ itSupportHWDown(nscVars) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ itSupportHWDown(nscVars)*5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Average Replacement Costs</td>
+                                            <td>
+                                                {{ avgReplCost(nscVars,nhcVars,nARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ avgReplCost(nscVars,nhcVars,nARC)*5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Operational Costs</td>
+                                            <td>
+                                                {{ totalOpCosts(nscVars,nhcVars,nARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ totalOpCosts(nscVars,nhcVars,nARC) * 5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div><!-- soft costs -->
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Total Cost of Ownership (Five Year)</th>
+                                <th>Annual TCO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {{ tco5(nscVars,nhcVars,nARC) + fiveYearAll(nhcVars,nARC) | currency }}
+                                </td>
+                                <td>
+                                    {{ (tco5(nscVars,nhcVars,nARC) + fiveYearAll(nhcVars,nARC))/5.0 | currency }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div><!-- panel -->
+            </div><!-- column -->
+        </div><!-- .row -->
+    </div><!-- right column -->
+</div><!-- outer row -->
+
+<nav class="navbar navbar-default navbar-fixed-bottom">
+    <div class="container">
+        <p class="huge"><strong>Annual Savings: {{ savings() }} %</strong></p>
+    </div>
+</nav>
