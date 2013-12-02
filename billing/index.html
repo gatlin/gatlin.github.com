@@ -1,0 +1,110 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>web</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+        <link rel="stylesheet" href="styles/2bdeec7b.main.css"/>
+        <script src="scripts/vendor/d7100892.modernizr.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 10]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+
+        <div class="container">
+            <div class="header">
+                <ul class="nav nav-pills pull-right">
+                    <li class="active"><a href="http://niltag.net">Home</a></li>
+                </ul>
+                <h3 class="text-muted">veni, veni, veni</h3>
+            </div>
+
+            <div class="jumbotron">
+                <h1>Gatlin's Billing Page!</h1>
+            </div>
+
+            <div class="row marketing">
+                <div class="col-sm-12 col-md-12">
+                    <form action="http://localhost:9001" class="form-horizontal" method="POST" id="payment-form">
+                        <span class="payment-errors"></span>
+                        <div class="form-group">
+                            <label for="amount" class="control-label col-sm-4">Amount</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="amount" id="amount" placeholder="150">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cardNumber" class="control-label col-sm-4">Card Number</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" data-stripe="number" id="cardNumber" placeholder="1234567891234567">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cvc" class="control-label col-sm-4">CVC</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" data-stripe="cvc" id="cvc" placeholder="123">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="exp_month" class="control-label col-sm-4">Expiration Month</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" data-stripe="exp-month" id="exp_month" placeholder="12">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="exp_year" class="control-label col-sm-4">Expiration Year</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" data-stripe="exp-year" id="exp_year" placeholder="14">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-4 col-sm-8">
+                                <button type="submit" class="btn btn-block btn-success">Checkout</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>Have a question? Bad day? Beer me: <a href="mailto:gatlin@niltag.net">
+                    gatlin@niltag.net</a></p>
+            </div>
+
+        </div>
+
+
+        <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+        <script src="scripts/dbd26eaf.vendor.js"></script>
+
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <script>
+            (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+            function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+            e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+            e.src='//www.google-analytics.com/analytics.js';
+            r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+            ga('create','UA-XXXXX-X');ga('send','pageview');
+        </script>
+
+        <script src="scripts/5538e7d8.main.js"></script>
+
+        <script src="scripts/20bdd8fe.plugins.js"></script>
+
+
+        <script type="text/javascript">
+          // This identifies your website in the createToken call below
+          Stripe.setPublishableKey('pk_test_nq9BnoSDdPcJwvDmtgUO6FSH');
+          // ...
+        </script>
+
+</body>
+</html>
