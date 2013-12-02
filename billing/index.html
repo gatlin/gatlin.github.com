@@ -33,12 +33,13 @@
 
             <div class="row marketing">
                 <div class="col-sm-12 col-md-12">
-                    <form action="http://salty-savannah-4804.herokuapp.com" class="form-horizontal" method="POST" id="payment-form">
+                    <form action="http://salty-savannah-4804.herokuapp.com/charge" class="form-horizontal" method="POST" id="payment-form">
                         <span class="payment-errors"></span>
                         <div class="form-group">
                             <label for="amount" class="control-label col-sm-4">Amount</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" name="amount" id="amount" placeholder="150">
+                            <div class="col-sm-8 input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="form-control" name="amount_" id="amount" placeholder="1.50">
                             </div>
                         </div>
                         <div class="form-group">
@@ -95,7 +96,7 @@
             ga('create','UA-XXXXX-X');ga('send','pageview');
         </script>
 
-        <script src="scripts/5538e7d8.main.js"></script>
+        <script src="scripts/526bfe70.main.js"></script>
 
         <script src="scripts/20bdd8fe.plugins.js"></script>
 
