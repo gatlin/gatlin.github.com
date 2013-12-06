@@ -30,6 +30,9 @@
                                         <input type="text" ng-model="rARC" id="rARC" class="form-control">
                                         <span class="input-group-addon">years</span>
                                     </div>
+                                    <span class="help-block">
+                                        Industry Average: 4.2 years
+                                    </span>
                                 </div>
                             </form>
                             <div class="table-responsive">
@@ -99,6 +102,9 @@
                                         <input type="text" ng-model="nARC" id="nARC" class="form-control">
                                         <span class="input-group-addon">years</span>
                                     </div>
+                                    <span class="help-block">
+                                        Industry Average: 2.1 years
+                                    </span>
                                 </div>
                             </form>
                             <div class="table-responsive">
@@ -180,52 +186,89 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="v in rscVars">
-                                            <td>{{ v.label }}</td>
+                                        <tr ng-repeat="i in softRange1">
+                                            <td>{{ rscVars[i].label }}</td>
                                             <td>
                                                 <div class="input-group">
-                                                    <span ng-show="v.unit == '$'" class="input-group-addon">
-                                                        {{v.unit }}</span>
-                                                    <input type="text" class="form-control" ng-model="v.value">
-                                                    <span ng-hide="v.unit == '$'" class="input-group-addon">
-                                                        {{v.unit }}</span>
+                                                    <span ng-show="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="rscVars[i].value">
+                                                    <span ng-hide="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{rscVars[i].unit }}</span>
                                                 </div>
                                             </td>
                                             <td>
                                                 {{ fiveYearTCO(v.value,rARC) | currency }}
                                             </td>
-                                            <td>{{ v.industry }}</td>
+                                            <td>{{ rscVars[i].industry }}</td>
                                         </tr>
                                         <tr>
-                                            <td>
+                                            <td><strong>
                                                 Productivity loss from hardware
-                                                failure</td>
-                                            <td>
+                                                failure</strong></td>
+                                            <td><strong>
+
                                                 {{ prodLossHWFail(rscVars) | currency }}
-                                            </td>
-                                            <td>
+                                            </strong></td>
+                                            <td><strong>
+
                                                 {{ prodLossHWFail(rscVars)*5 | currency }}
-                                            </td>
+                                            </strong></td>
                                             <td></td>
                                         </tr>
-                                        <tr>
-                                            <td>IT Support for HW Downtime</td>
+                                        <tr ng-repeat="i in softRange2">
+                                            <td>{{ rscVars[i].label }}</td>
                                             <td>
+                                                <div class="input-group">
+                                                    <span ng-show="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="rscVars[i].value">
+                                                    <span ng-hide="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{rscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,rARC) | currency }}
+                                            </td>
+                                            <td>{{ rscVars[i].industry }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>IT Support for HW
+                                                    Downtime</strong></td>
+                                            <td><strong>
+
                                                 {{ itSupportHWDown(rscVars) | currency }}
-                                            </td>
-                                            <td>
+                                            </strong></td>
+                                            <td><strong>
+
                                                 {{ itSupportHWDown(rscVars)*5 | currency }}
-                                            </td>
+                                            </strong></td>
                                             <td></td>
                                         </tr>
+                                        <tr ng-repeat="i in softRange3">
+                                            <td>{{ rscVars[i].label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="rscVars[i].value">
+                                                    <span ng-hide="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{rscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,rARC) | currency }}
+                                            </td>
+                                            <td>{{ rscVars[i].industry }}</td>
+                                        </tr>
                                         <tr>
-                                            <td>Average Replacement Costs</td>
-                                            <td>
+                                            <td><strong>Average Replacement Costs</strong></td>
+                                            <td><strong>
                                                 {{ avgReplCost(rscVars,rhcVars,rARC) | currency }}
-                                            </td>
-                                            <td>
+                                            </strong></td>
+                                            <td><strong>
                                                 {{ avgReplCost(rscVars,rhcVars,rARC)*5 | currency }}
-                                            </td>
+                                            </strong></td>
                                             <td></td>
                                         </tr>
                                         <tr>
@@ -273,52 +316,84 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="v in nscVars">
-                                            <td>{{ v.label }}</td>
+                                        <tr ng-repeat="i in softRange1">
+                                            <td>{{ nscVars[i].label }}</td>
                                             <td>
                                                 <div class="input-group">
-                                                    <span ng-show="v.unit == '$'" class="input-group-addon">
-                                                        {{ v.unit }}</span>
-                                                    <input type="text" class="form-control" ng-model="v.value">
-                                                    <span ng-hide="v.unit == '$'" class="input-group-addon">
-                                                        {{v.unit }}</span>
+                                                    <span ng-show="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="nscVars[i].value">
+                                                    <span ng-hide="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{nscVars[i].unit }}</span>
                                                 </div>
                                             </td>
                                             <td>
                                                 {{ fiveYearTCO(v.value,nARC) | currency }}
                                             </td>
-                                            <td>{{ v.industry }}</td>
+                                            <td>{{ nscVars[i].industry }}</td>
                                         </tr>
                                         <tr>
-                                            <td>
+                                            <td><strong>
                                                 Productivity loss from hardware
-                                                failure</td>
-                                            <td>
+                                                failure</strong></td>
+                                            <td><strong>
                                                 {{ prodLossHWFail(nscVars) | currency }}
-                                            </td>
-                                            <td>
+                                            </strong></td>
+                                            <td><strong>
                                                 {{ prodLossHWFail(nscVars)*5 | currency }}
-                                            </td>
+                                            </strong></td>
                                             <td></td>
                                         </tr>
-                                        <tr>
-                                            <td>IT Support for HW Downtime</td>
+                                        <tr ng-repeat="i in softRange2">
+                                            <td>{{ nscVars[i].label }}</td>
                                             <td>
+                                                <div class="input-group">
+                                                    <span ng-show="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="nscVars[i].value">
+                                                    <span ng-hide="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{nscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,nARC) | currency }}
+                                            </td>
+                                            <td>{{ nscVars[i].industry }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>IT Support for HW Downtime</strong></td>
+                                            <td><strong>
                                                 {{ itSupportHWDown(nscVars) | currency }}
-                                            </td>
-                                            <td>
+                                            </strong></td>
+                                            <td><strong>
                                                 {{ itSupportHWDown(nscVars)*5 | currency }}
-                                            </td>
+                                            </strong></td>
                                             <td></td>
                                         </tr>
+                                        <tr ng-repeat="i in softRange3">
+                                            <td>{{ nscVars[i].label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="nscVars[i].value">
+                                                    <span ng-hide="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{nscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,nARC) | currency }}
+                                            </td>
+                                            <td>{{ nscVars[i].industry }}</td>
+                                        </tr>
                                         <tr>
-                                            <td>Average Replacement Costs</td>
-                                            <td>
+                                            <td><strong>Average Replacement Costs</strong></td>
+                                            <td><strong>
                                                 {{ avgReplCost(nscVars,nhcVars,nARC) | currency }}
-                                            </td>
-                                            <td>
+                                            </strong></td>
+                                            <td><strong>
                                                 {{ avgReplCost(nscVars,nhcVars,nARC)*5 | currency }}
-                                            </td>
+                                            </strong></td>
                                             <td></td>
                                         </tr>
                                         <tr>
