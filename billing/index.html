@@ -10,7 +10,9 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-        <link rel="stylesheet" href="styles/2bdeec7b.main.css"/>
+        <!--<link rel="stylesheet" href="styles/2bdeec7b.main.css"/>-->
+        <link rel="stylesheet" href="styles/bootstrap.min.css">
+        <link rel="stylesheet" href="styles/jumbotron-narrow.css">
         <script src="scripts/vendor/d7100892.modernizr.js"></script>
     </head>
     <body>
@@ -19,12 +21,12 @@
         <![endif]-->
 
 
-        <div class="container">
+        <div class="container-narrow">
             <div class="header">
                 <ul class="nav nav-pills pull-right">
                     <li class="active"><a href="http://niltag.net">Home</a></li>
                 </ul>
-                <h3 class="text-muted">veni, veni, veni</h3>
+                <h3 class="text-muted"><em>veni veni veni</em></h3>
             </div>
 
             <div class="jumbotron">
@@ -32,7 +34,7 @@
             </div>
 
             <div class="row marketing">
-                <div class="col-sm-12 col-md-12">
+                <div class="col-sm-12 col-md-12 col-lg-10 col-lg-offset-1">
                     <form action="http://salty-savannah-4804.herokuapp.com/charge" class="form-horizontal" method="POST" id="payment-form">
                         <span class="payment-errors"></span>
                         <div class="form-group">
