@@ -1,0 +1,499 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <!--
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    -->
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <link rel="stylesheet" href="styles/bootstrap.min.css">
+
+        <link rel="stylesheet" href="styles/main.css">
+<!-- Foxboro v1.10 - Dynamic CSS -->
+</head>
+  <body ng-app="webApp" id="Body">
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <!--[if lt IE 9]>
+      <script src="bower_components/es5-shim/es5-shim.js"></script>
+      <script src="bower_components/json3/lib/json3.min.js"></script>
+    <![endif]-->
+
+    <!-- Add your site or application content here -->
+    <div class="container" ng-controller="MainCtrl">
+
+<div id="foxboro_body" class="one-column">
+<div class="row">
+    <div class="col-md-12">
+        <div class="page-header">
+            <h1>Tablet TCO Calculator</h1>
+        </div>
+    </div>
+</div>
+
+<!-- end very top -->
+
+<div class="row">
+
+    <!-- Begin right column -->
+    <div class="col-md-12">
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Hard Costs</div>
+                    <div class="panel-body">
+                        <div class="col-md-6">
+                            <h3>Rugged Tablets</h3>
+                            <form class="form-inline well">
+                                <div class="form-group">
+                                    <label for="rARC">
+                                        Average Device Replacement Cycle
+                                        (Years)
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" ng-model="rARC" id="rARC" class="form-control">
+                                        <span class="input-group-addon">years</span>
+                                    </div>
+                                    <span class="help-block">
+                                        Industry Average: 4.2 years
+                                    </span>
+                                </div>
+                            </form>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>&nbsp;</th>
+                                            <th>Inputs</th>
+                                            <th>Total Five Year Cost</th>
+                                            <th>Industry Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="v in rhcVars">
+                                            <td>{{ v.label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="v.unit == '$'" class="input-group-addon">
+                                                        {{v.unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="v.value">
+                                                    <span ng-hide="v.unit == '$'" class="input-group-addon">
+                                                        {{v.unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,rARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ v.industry | currency }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Total Initial Deployment and
+                                                Maintenance</th>
+                                            <th>Total ID&amp;M 5 Years</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                {{ totalIDM(rhcVars) | currency }}
+                                            </td>
+                                            <td><strong>
+                                                {{ fiveYearAll(rhcVars,rARC) | currency }}
+                                            </strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div><!-- rugged tablets -->
+
+                        <div class="col-md-6">
+                            <h3>Non-Rugged Tablets</h3>
+                            <form class="form-inline well">
+                                <div class="form-group">
+                                    <label for="nARC">
+                                        Average Device Replacement Cycle
+                                        (Years)
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" ng-model="nARC" id="nARC" class="form-control">
+                                        <span class="input-group-addon">years</span>
+                                    </div>
+                                    <span class="help-block">
+                                        Industry Average: 2.1 years
+                                    </span>
+                                </div>
+                            </form>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>&nbsp;</th>
+                                            <th>Inputs</th>
+                                            <th>Total Five Year Cost</th>
+                                            <th>Industry Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="v in nhcVars">
+                                            <td>{{ v.label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="v.unit == '$'" class="input-group-addon">
+                                                        {{v.unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="v.value">
+                                                    <span ng-hide="v.unit == '$'" class="input-group-addon">
+                                                        {{v.unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,nARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ v.industry | currency }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Total Initial Deployment and
+                                                Maintenance</th>
+                                            <th>Total ID&amp;M 5 Years</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                {{ totalIDM(nhcVars) | currency }}
+                                            </td>
+                                            <td><strong>
+                                                {{ fiveYearAll(nhcVars,nARC) | currency }}
+                                            </strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div><!-- non-rugged tablets -->
+
+                    </div>
+                </div><!-- panel -->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Soft Costs</div>
+                    <div class="panel-body">
+
+                        <div class="col-md-6 col-sm-12">
+                            <h3>Rugged tablets</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>&nbsp;</th>
+                                            <th>Inputs</th>
+                                            <th>Total Five Year Cost</th>
+                                            <th>Industry Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="i in softRange1">
+                                            <td>{{ rscVars[i].label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="rscVars[i].value">
+                                                    <span ng-hide="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{rscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,rARC) | currency }}
+                                            </td>
+                                            <td>{{ rscVars[i].industry }}</td>
+                                        </tr>
+                                        <tr class="bolder">
+                                            <td><strong>
+                                                Productivity loss from hardware
+                                                failure</strong></td>
+                                            <td><strong>
+
+                                                {{ prodLossHWFail(rscVars) | currency }}
+                                            </strong></td>
+                                            <td><strong>
+
+                                                {{ prodLossHWFail(rscVars)*5 | currency }}
+                                            </strong></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr ng-repeat="i in softRange2">
+                                            <td>{{ rscVars[i].label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="rscVars[i].value">
+                                                    <span ng-hide="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{rscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,rARC) | currency }}
+                                            </td>
+                                            <td>{{ rscVars[i].industry }}</td>
+                                        </tr>
+                                        <tr class="bolder">
+                                            <td><strong>IT Support for HW
+                                                    Downtime</strong></td>
+                                            <td><strong>
+
+                                                {{ itSupportHWDown(rscVars) | currency }}
+                                            </strong></td>
+                                            <td><strong>
+
+                                                {{ itSupportHWDown(rscVars)*5 | currency }}
+                                            </strong></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr ng-repeat="i in softRange3">
+                                            <td>{{ rscVars[i].label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="rscVars[i].value">
+                                                    <span ng-hide="rscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{rscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,rARC) | currency }}
+                                            </td>
+                                            <td>{{ rscVars[i].industry }}</td>
+                                        </tr>
+                                        <tr class="bolder">
+                                            <td><strong>Average Replacement Costs</strong></td>
+                                            <td><strong>
+                                                {{ avgReplCost(rscVars,rhcVars,rARC) | currency }}
+                                            </strong></td>
+                                            <td><strong>
+                                                {{ avgReplCost(rscVars,rhcVars,rARC)*5 | currency }}
+                                            </strong></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Operational Costs</td>
+                                            <td>
+                                                {{ totalOpCosts(rscVars,rhcVars,rARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ totalOpCosts(rscVars,rhcVars,rARC) * 5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <table class="table table-striped bolder">
+                                <thead>
+                                    <tr>
+                                        <th>Total Cost of Ownership (Five Year)</th>
+                                        <th>Annual TCO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {{ tco5(rscVars,rhcVars,rARC) | currency }}
+                                        </td>
+                                        <td><strong>
+                                            {{ tco5(rscVars,rhcVars,rARC) / 5.0 | currency }}
+                                        </strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div><!-- non-rugged tablets -->
+                        <div class="col-md-6 col-sm-12">
+                            <h3>Non-rugged tablets</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>&nbsp;</th>
+                                            <th>Inputs</th>
+                                            <th>Total Five Year Cost</th>
+                                            <th>Industry Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="i in softRange1">
+                                            <td>{{ nscVars[i].label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="nscVars[i].value">
+                                                    <span ng-hide="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{nscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,nARC) | currency }}
+                                            </td>
+                                            <td>{{ nscVars[i].industry }}</td>
+                                        </tr>
+                                        <tr class="bolder">
+                                            <td><strong>
+                                                Productivity loss from hardware
+                                                failure</strong></td>
+                                            <td><strong>
+                                                {{ prodLossHWFail(nscVars) | currency }}
+                                            </strong></td>
+                                            <td><strong>
+                                                {{ prodLossHWFail(nscVars)*5 | currency }}
+                                            </strong></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr ng-repeat="i in softRange2">
+                                            <td>{{ nscVars[i].label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="nscVars[i].value">
+                                                    <span ng-hide="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{nscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,nARC) | currency }}
+                                            </td>
+                                            <td>{{ nscVars[i].industry }}</td>
+                                        </tr>
+                                        <tr class="bolder">
+                                            <td><strong>IT Support for HW Downtime</strong></td>
+                                            <td><strong>
+                                                {{ itSupportHWDown(nscVars) | currency }}
+                                            </strong></td>
+                                            <td><strong>
+                                                {{ itSupportHWDown(nscVars)*5 | currency }}
+                                            </strong></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr ng-repeat="i in softRange3">
+                                            <td>{{ nscVars[i].label }}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span ng-show="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{ nscVars[i].unit }}</span>
+                                                    <input type="text" class="form-control" ng-model="nscVars[i].value">
+                                                    <span ng-hide="nscVars[i].unit == '$'" class="input-group-addon">
+                                                        {{nscVars[i].unit }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ fiveYearTCO(v.value,nARC) | currency }}
+                                            </td>
+                                            <td>{{ nscVars[i].industry }}</td>
+                                        </tr>
+                                        <tr class="bolder">
+                                            <td><strong>Average Replacement Costs</strong></td>
+                                            <td><strong>
+                                                {{ avgReplCost(nscVars,nhcVars,nARC) | currency }}
+                                            </strong></td>
+                                            <td><strong>
+                                                {{ avgReplCost(nscVars,nhcVars,nARC)*5 | currency }}
+                                            </strong></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Operational Costs</td>
+                                            <td>
+                                                {{ totalOpCosts(nscVars,nhcVars,nARC) | currency }}
+                                            </td>
+                                            <td>
+                                                {{ totalOpCosts(nscVars,nhcVars,nARC) * 5 | currency }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <table class="table table-striped bolder">
+                                <thead>
+                                    <tr>
+                                        <th>Total Cost of Ownership (Five Year)</th>
+                                        <th>Annual TCO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {{ tco5(nscVars,nhcVars,nARC) | currency }}
+                                        </td>
+                                        <td><strong>
+                                            {{ (tco5(nscVars,nhcVars,nARC))/5.0 | currency }}
+                                        </strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div><!-- non-rugged tablets -->
+                    </div>
+                </div><!-- panel -->
+            </div><!-- column -->
+        </div><!-- .row -->
+    </div><!-- right column -->
+</div><!-- outer row -->
+</div>
+<nav class="navbar navbar-default navbar-fixed-bottom" id="savings-bar">
+    <div class="container">
+        <p class="huge"><strong>Annual Savings: {{ savings() }} %</strong></p>
+    </div>
+</nav>
+    </div>
+    <!--
+        <div class="container" ng-view=""></div>
+        -->
+
+    <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
+     <script>
+       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+       ga('create', 'UA-XXXXX-X');
+       ga('send', 'pageview');
+    </script>
+
+
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+
+        <script src="scripts/modules.js"></script>
+
+        <script src="scripts/scripts.js"></script>
+</body>
+</html>

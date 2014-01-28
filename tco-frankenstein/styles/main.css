@@ -1,0 +1,374 @@
+/***
+ * The "Foxboro" theme from the existing website
+ */
+
+html,
+body#Body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 1em;
+  line-height: 145%;
+}
+
+#foxboro_container {
+  width: 942px;
+}
+
+#foxboro_header {
+  background: #000000;
+}
+
+#foxboro_courtesy_links {
+  background: transparent;
+  color: #FFFFFF;
+}
+
+#foxboro_courtesy_links a {
+  color: #0573D3;
+  font-size: 0.9em;
+  text-decoration: none;
+}
+
+#foxboro_menu {
+  background-color: transparent;
+}
+
+#foxboro_menu .link {
+  background-color: #000000;
+  color: #000000;
+}
+
+#foxboro_menu .rootGroup .selectedtab {
+  background-color: #FFFFFF;
+  color: #000000 !important;
+}
+
+#foxboro_menu .rootGroup .selectedtab .text {
+  color: #000000;
+}
+
+#foxboro_menu .rootGroup .item .text {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+#foxboro_menu .group .item .text {
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+#foxboro_menu .link .text {
+  color: #000000;
+}
+
+#foxboro_menu .link:hover,
+#foxboro_menu .focused,
+#foxboro_menu .expanded {
+  background-color: #00BBF1;
+  color: #FFFFFF !important;
+}
+
+#foxboro_menu .link:hover .text,
+#foxboro_menu .focused .text,
+#foxboro_menu .expanded .text {
+  color: #FFFFFF;
+}
+
+#foxboro_menu .group {
+  background-color: transparent;
+  color: #000000;
+}
+
+#foxboro_side-menu {
+  background-color: transparent;
+}
+
+#foxboro_side-menu ul li {
+  background-color: #2B2B2B;
+}
+
+#foxboro_side-menu ul li a {
+  color: #FFFFFF;
+}
+
+#foxboro_side-menu ul li a:hover {
+  background-color: transparent;
+  color: #;
+}
+
+#foxboro_side-menu ul li a span {
+  border-bottom: 1px solid transparent;
+}
+
+#foxboro_side-menu ul li.selectedtab {
+  background-color: #2B2B2B;
+}
+
+#foxboro_side-menu ul li.selectedtab a {
+  color: #FFFFFF;
+}
+
+#foxboro_side-menu ul li.first a span {
+  border-top: 1px solid transparent;
+}
+
+#foxboro_side-menu ul li.childitem1 {
+  background-color: #2B2B2B;
+}
+
+#foxboro_side-menu ul li.childitem1.last {
+  border-bottom: 1px solid transparent;
+}
+
+#foxboro_top {
+  background-color: #222222;
+  color: #FFFFFF;
+}
+
+#foxboro_top a {
+  color: #0573D3;
+}
+
+#foxboro_bottom {
+  background-color: #202120;
+  color: #FFFFFF;
+}
+
+#foxboro_bottom a {
+  color: #0573D3;
+}
+
+#foxboro_col1 {
+  color: #FFFFFF;
+}
+
+#foxboro_col1 a {
+  color: #0573D3;
+}
+
+#foxboro_col1 div.block div.pad {
+  background-color: transparent;
+}
+
+#foxboro_col3 {
+  color: #000000;
+}
+
+#foxboro_col3 a {
+  color: #0573D3;
+}
+
+#foxboro_col3 div.block div.pad {
+  background-color: #F2F7F8;
+}
+
+#foxboro_col2 h1 {
+  color: #000000;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+#foxboro_col2 h2 {
+  color: #000000;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+#foxboro_col2 h3 {
+  color: #000000;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+#foxboro_col2 h4 {
+  color: #000000;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+#foxboro_col2 {
+  color: #000000;
+}
+
+#foxboro_col2 a {
+  color: #0573D3;
+}
+
+#foxboro_content div.block h3 {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+#foxboro_content {
+  background: #ffffff;
+}
+
+#foxboro_content div.block h3 {
+  color: #000000;
+}
+
+a.foxboro_button {
+  background: #000000;
+}
+
+a.foxboro_button:hover {
+  background-color: #7F7F7F;
+}
+
+a.foxboro_button:active {
+  background-color: #000000;
+}
+
+#bb-container div.post h3.title {
+  font-size: 1.4em;
+}
+
+#listing .post.blogjapanese h3 {
+  font-size: 1.4em;
+}
+
+#bb-container div.post h3.title {
+  color: #000000;
+}
+
+#bb-container div.post h3.title a {
+  color: #000000;
+}
+
+#bb-container div.post h3 {
+  color: ##000000;
+}
+
+#bb-container div.post div.submissions a {
+  color: ##000000;
+}
+
+#bb-container div.post div.comments a {
+  color: ##000000;
+}
+
+/* put in fix for JIRA #CMS-851 */
+
+#bb-container div.comments div.comment-body {
+  border-bottom: 1px solid #000000;
+}
+
+#bb-container div.comment-form {
+  border: 1px solid #000000;
+  background: #ffffff;
+}
+
+#foxboro_footer {
+  width: 942px;
+  background: #202120;
+  color: #FFFFFF;
+  text-align: center;
+  margin: 0px auto;
+  vertical-align: middle;
+  display: block;
+  position: relative;
+}
+
+#foxboro_footer div.clear {
+  margin: auto;
+}
+
+#foxboro_footer p.copyright span.SkinObject {
+  color: #FFFFFF;
+}
+
+#foxboro_footer span a,
+#foxboro_footer a,
+#foxboro_footer ul li a,
+#foxboro_footer p span,
+#foxboro_footer span.SkinObject {
+  color: #00ADEE;
+  font-size: 0.9em;
+  text-decoration: none;
+}
+
+span#footerContainer {
+  font-size: 1.0em;
+  color: #00ADEE;
+}
+
+#foxboro_body .radmenu.NavHidden a.link,
+#foxboro_body .radmenu.NavHidden li a span {
+  cursor: default !important;
+}
+
+#foxboro_menu .radmenu.NavHidden .rootGroup .selectedtab,
+#foxboro_menu .radmenu.NavHidden .link:hover,
+#foxboro_menu .radmenu.NavHidden .focused,
+#foxboro_menu .radmenu.NavHidden .expanded {
+  background-color: transparent !important;
+}
+
+/***
+ * Customizations
+ */
+
+
+.hero-unit {
+  margin: 50px auto 0 auto;
+  width: 300px;
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 30px;
+  background-color: #eee;
+  border-radius: 6px;
+  padding: 60px;
+}
+
+.hero-unit h1 {
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.huge {
+  font-size: 36px;
+}
+
+#savings-bar {
+  border-top: 2px solid black;
+  padding-top: 25px;
+  padding-bottom: 10px;
+  margin-top: 10px;
+  /*
+    box-shadow:
+       inset 0px 11px 8px -10px #CCC,
+       inset 0px -11px 8px -10px #CCC;
+    */
+}
+
+#foxboro_body {
+    margin-bottom: 35px;
+}
+
+.bolder {
+  border-top: 3px solid #ccc;
+}
+
+.logo {
+  display: inline-block;
+  padding: 15px 0px 0px;
+  line-height: 145%;
+}
+
+h1 {
+  font: bold 2.05em/120% "Helvetica",sans-serif !important;
+  color: #ffffff;
+  margin: 10px 0px 10px;
+}
+
+.well {
+  border: 0px;
+}
+
+.help-block {
+  color: rgb(51,51,51);
+}
+
+.panel-heading {
+  font: bold 1.75em "Helvetica",sans-serif !important;
+}
+
+.page-header {
+  margin-top: 25px;
+  padding: 5px 0;
+}
