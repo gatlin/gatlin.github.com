@@ -18,6 +18,20 @@
     <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
 
     <link href="style.css" rel="stylesheet">
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+  </style>
   </head>
 
   <body>
@@ -53,6 +67,7 @@
       </div>
       <div class="row">
         <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+
 <p>Many people bemoan languages such as Haskell for not supporting imperative programming; they decry the need for math in their computer science.</p>
 <div class="figure">
 <img src="http://i.imgur.com/YDIaEPB.jpg" alt="Math? In my computer? Yeah right." /><p class="caption">Math? In my computer? Yeah right.</p>
@@ -104,7 +119,7 @@ main <span class="fu">=</span> <span class="kw">let</span> v <span class="fu">=<
 <p>Obviously, the mere existence of such notation indicates the folks who make Haskell are keenly aware of what I'm saying; the whole reason we're talking about monads right now is because Philip Wadler thought of this first.</p>
 <p>But I hope I showed you how <em>easy</em> this is. Monads are programmable semicolons. (NB: Python has semicolons, too, but you probably never use them.) The <code>Free</code> monad makes it ridiculously easy to create monads. I've defined arguably the most trivial monad one can define, in like 15 lines of real code, and already this code is as easy to write as something like Python but with static type safety.</p>
 <p>Not that I don't like Python - I feed myself writing it these days - but complexity does not have to be daunting or impossible. Often, a good amount of upfront complexity enables extreme simplicity later.</p>
-</div>
+        </div>
 </div><!-- row -->
 <hr>
 

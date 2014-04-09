@@ -18,6 +18,20 @@
     <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
 
     <link href="style.css" rel="stylesheet">
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+  </style>
   </head>
 
   <body>
@@ -51,7 +65,8 @@
       </div>
       <div class="row">
         <div class="col-md-12 col-lg-10 col-lg-offset-1">
-      <p>It's said that all Haskell programmers eventually write a blog post explaining Monads. Today I fulfill my destiny. The basic format is ripped from &quot;Learn You A Haskell For Great Good,&quot; but these are my own crappy examples.</p>
+
+<p>It's said that all Haskell programmers eventually write a blog post explaining Monads. Today I fulfill my destiny. The basic format is ripped from &quot;Learn You A Haskell For Great Good,&quot; but these are my own crappy examples.</p>
 <p>This blog post is literate Haskell; you can get it <a href="https://gist.github.com/4145341">here</a>. You can import it into ghci and type the functions to see their output (<code>ghci monads.lhs</code>). For this to work, we'll need to import one module for use later:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import</span> <span class="dt">Control.Applicative</span></code></pre>
 <p>A <em>functor</em> generalizes the notion of types to a type with context. For example, the Maybe type is literally this:</p>

@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>How to create your own Boolean data types and if-statements | Gatlin Johnson</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- glyphicons -->
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+
+    <link href="style.css" rel="stylesheet">
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+  </style>
+</head>
+<body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right clearfix hidden-xs">
+          <li>
+          <a href="mailto:gatlin@niltag.net">
+              <span class="glyphicon glyphicon-envelope"></span>
+              Send me an email!</a></li>
+          <li>
+            <a href="gatlin.gpg">PGP</a>
+          </li>
+          <li>
+              <a href="/">Home</a>
+          </li>
+        </ul>
+        <h3 class="text-muted">
+            <em>Veni veni veni</em>
+        </h3>
+      </div>
+      <hr>
+      <ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+          <li><a href="/essays/">Essays</a></li>
+      </ol>
+      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
+        <h1>
+            How to create your own Boolean data types and if-statements ... in Racket!
+        </h1>
+        <p class="lead">Or: On the appreciation of conditional love</p>
+      </div>
+      <div class="row">
+        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+<p>Let's say you had a programming language that didn't support Boolean values, Boolean operators, or <code>if</code> syntax natively. What would you do?</p>
+<p>Most people would go find another language. Some folks (including yours truly) would maybe adopt a different programming style for that language. But there is a third option:</p>
+<p>write your own.</p>
+<div class="figure">
+<img src="http://wac.bc6c.edgecastcdn.net/80BC6C/virginmobilefeed.com/wp-content/uploads/2012/10/tumblr_lqriwxsOkO1qh4y4vo1_250.gif" alt="HEAD EXPLODE" /><p class="caption">HEAD EXPLODE</p>
+</div>
+<p>I'm going to demonstrate how to do this in perfectly valid R6RS Scheme (Racket, specifically). Hopefully it will be illuminating.</p>
+<h2 id="creating-the-data-type">Creating the data type</h2>
+<p>Racket doesn't have static typing or algebraic data types but we can make pretend like so:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> True </span>(λ () (λ (a b) (a))))
+(<span class="kw">define</span><span class="fu"> False </span>(λ () (λ (a b) (b))))</code></pre>
+<p>Essentially, <code>True</code> is a function which evaluates the first of its two arguments, and <code>False</code> is a function which evaluates the second of its two arguments.</p>
+<p>So that we can display these values properly, I also define some helper procedures.</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(define-syntax-rule (displayln str)
+  (<span class="kw">display</span> (format
+    (<span class="kw">string-append</span> str <span class="st">&quot;~n&quot;</span>))))
+
+(<span class="kw">define</span><span class="fu"> </span>(show-bool b)
+  (b (λ () (displayln <span class="st">&quot;True&quot;</span>))
+     (λ () (displayln <span class="st">&quot;False&quot;</span>))))
+
+(show-bool (True))
+<span class="co">; &quot;True&quot;</span>
+
+(show-bool (False))
+<span class="co">; &quot;False&quot;</span></code></pre>
+<h2 id="boolean-operators">Boolean operators</h2>
+<p>So far, so good. But what can we <em>do</em> with these values? Why, we can perform Boolean logic! Below I define <code>and</code>, <code>or</code>, and <code>not</code>.</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> </span>(and/s p q)
+  (p (λ() q) (λ() p)))
+
+(<span class="kw">define</span><span class="fu"> </span>(or/s p q)
+  (p (λ () p) (λ () q)))
+
+(<span class="kw">define</span><span class="fu"> </span>(not/s b)
+  (b False True))
+
+(show-bool (and/s (True) (False)))
+(show-bool (and/s (False) (True)))
+(show-bool (and/s (True) (True)))
+(show-bool (or/s (False) (True)))
+(show-bool (or/s (True) (False)))
+(show-bool (or/s (False) (False)))
+(show-bool (not/s (and/s (False) (True))))</code></pre>
+<h2 id="if-expressions"><code>if</code> expressions</h2>
+<p>Ah, the part you've all been waiting for. First the code, then the explanation:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(define-syntax-rule (if/g condition then <span class="kw">else</span>)
+  (<span class="kw">let</span> ((then-f (λ () then))
+        (else-f (λ () <span class="kw">else</span>)))
+    (condition then-f else-f)))
+
+(if/g (True)
+  (displayln <span class="st">&quot;Condition was true&quot;</span>)
+  (displayln <span class="st">&quot;Condition was false&quot;</span>))
+
+<span class="co">; &quot;Condition was true&quot;</span>
+
+(if/g (False)
+  (displayln <span class="st">&quot;Condition was true&quot;</span>)
+  (displayln <span class="st">&quot;Condition was false&quot;</span>))
+
+<span class="co">; &quot;Condition was false</span></code></pre>
+<p><code>if/g</code> is defined as a macro because of how Scheme evaluates expressions. In normal functions, all arguments are evaluated before the function's value is computed.</p>
+<p>In the case of an <code>if</code> conditional, though, the entire reason you want to use it is so that you can <em>not</em> evaluate certain expressions under certain conditions.</p>
+<p>The solution to this is to write a <em>macro</em>. A macro is a procedure run during code compilation which does <strong>not</strong> evaluate its arguments by default. Instead, it returns a form which is literally pasted in place of the macro call, and the arguments are the unevaluated expressions it received, not their values.</p>
+<p>So <code>functions</code> run at runtime, and <code>macros</code> run at compile time. Scheme provides an elegant mechanism for creating simple macros called <code>define-syntax-rule</code>. There are more complex but powerful ways to do this, with their own tradeoffs.</p>
+<p>See if you can figure out why this macro is correct given what I have just told you.</p>
+<h2 id="epilogue">Epilogue</h2>
+<p>So you don't really need conditionals baked into your language. A question, though, is how expensive are these operations?</p>
+<p>In a language like C, you can just use 1 or 0, which is stored compactly and efficiently, and you can simulate Boolean algebra with arithmetic algebra. Eg, <code>True AND False</code> &lt;=&gt; <code>1 * 0</code>.</p>
+<p>With our method, a naive compiler would generate rather horrible code. However, if you think about it, a Boolean expression is a series of function applications which can theoretically be optimized extensively, and the data types themselves aren't so much actual data but control flow mechanisms themselves.</p>
+<p>So, no concrete answer but this doesn't have to be a death sentence to efficiency.</p>
+</div>
+</div><!-- row -->
+<hr>
+
+
+      <div class="footer">
+        <p>&copy; 2013-2014. Theme lovingly stolen from other people.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
