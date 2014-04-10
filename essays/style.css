@@ -39,6 +39,10 @@ div#content img {
     padding-left: 15px;
 }
 
+.link-block h3 {
+    font-size: 18pt;
+}
+
 .jumbotron {
     border: 1px solid #E5E5E5;
 }
@@ -49,4 +53,8 @@ div#content img {
 
 .jumbotron p.lead {
     font-size: 30pt;
+}
+
+.section-header {
+    font-size: 24pt;
 }
