@@ -1,0 +1,66 @@
+set imap_user = fibonacho
+set imap_pass = "enjoying weirdest anna slam"
+set folder = imaps://imap.riseup.net/
+set spoolfile = +INBOX
+unset imap_passive
+set imap_keepalive = 300
+set mail_check = 120
+set imap_check_subscribed
+set postponed = +INBOX/Drafts
+set header_cache = ~/.cache/mutt
+set message_cachedir = "~/.cache/mutt"
+set send_charset="us-ascii:utf-8"
+set mbox_type = Maildir
+set folder = $HOME/mail
+set record = +Sent
+set smtp_url = smtps://$imap_user:$imap_pass@smtp.riseup.net
+set ssl_force_tls = yes
+set ssl_starttls = yes
+set from = fibonacho@riseup.net
+set hostname = "riseup.net"
+set signature = "fortes fortuna juvat"
+set sidebar_visible = yes
+macro index b '<enter-command>toggle sidebar_visible<enter><refresh>'
+macro pager b '<enter-command>toggle sidebar_visible<enter><redraw-screen>'
+bind index,pager \CP sidebar-prev
+bind index,pager \CN sidebar-next
+bind index,pager \CO sidebar-open
+set sidebar_sort = yes
+
+# pgp settings
+set pgp_decode_command="gpg %?p?--passphrase-fd 0? --no-verbose --batch --output - %f"
+set pgp_verify_command="gpg --no-verbose --batch --output - --verify %s %f"
+set pgp_decrypt_command="gpg --passphrase-fd 0 --no-verbose --batch --output -%f"
+set pgp_sign_command="gpg --no-verbose --batch --output - --passphrase-fd 0 --armor --detach-sign --textmode %?a?-u %a? %f"
+set pgp_clearsign_command="gpg --no-verbose --batch --output - --passphrase-fd 0 --armor --textmode --clearsign %?a?-u %a? %f"
+set pgp_encrypt_only_command="pgpewrap gpg --batch --quiet --no-verbose --output - --encrypt --textmode --armor --always-trust --encrypt-to 0xEC104561 -- -r %r -- %f"
+set pgp_encrypt_sign_command="pgpewrap gpg --passphrase-fd 0 --batch --quiet --no-verbose --textmode --output - --encrypt --sign %?a?-u %a? --armor --always-trust --encrypt-to 0xEC10456 -- -r %r -- %f"
+set pgp_import_command="gpg --no-verbose --import -v %f"
+set pgp_export_command="gpg --no-verbose --export --armor %r"
+set pgp_verify_key_command="gpg --no-verbose --batch --fingerprint --check-sigs %r"
+set pgp_list_pubring_command="gpg --no-verbose --batch --with-colons --list-keys %r"
+set pgp_list_secring_command="gpg --no-verbose --batch --with-colons --list-secret-keys %r"
+
+set pgp_sign_as=0xEC104561
+
+# this set the number of seconds to keep in memory the passpharse used to
+# encrypt/sign
+# the more the less secure it will be
+set pgp_timeout=60
+
+# regex against GPG output to determine if it went well
+set pgp_good_sign="^gpg: Good signature from"
+
+# automatically sign all outgoing messages
+#set crypt_autosign
+
+# automatically encrypt outgoing messages
+set crypt_autoencrypt=no
+
+# encrypt and sign replies to encrypted messages
+set crypt_replysignencrypted = yes
+
+# automatically verify the sign of a message when opened
+set crypt_verify_sig = yes
+
+set pgp_auto_decode = yes
