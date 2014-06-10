@@ -1,15 +1,14 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-  <meta name="generator" content="pandoc" />
+<!DOCTYPE html>
+<html lang="en">
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>How to write a billing system in Haskell using Stripe and Heroku | Gatlin Johnson</title>
+    <title>
+Writing a billing system in Haskell, using Stripe and Heroku
+| Gatlin Johnson</title>
 
     <!-- Bootstrap core CSS -->
     <link href="../css/bootstrap.min.css" rel="stylesheet">
@@ -21,15 +20,10 @@
     <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
 
     <link href="style.css" rel="stylesheet">
-
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-  <meta name="generator" content="pandoc" />
-  <style type="text/css">code{white-space: pre;}</style>
   <style type="text/css">
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
+table.sourceCode { width: 100%; }
 td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
 td.sourceCode { padding-left: 5px; }
 code > span.kw { color: #0000ff; }
@@ -39,9 +33,14 @@ code > span.co { color: #008000; }
 code > span.ot { color: #ff4000; }
 code > span.al { color: #ff0000; }
 code > span.er { font-weight: bold; }
+
+        div#toc-wrapper ul, div#toc-wrapper ol {
+            list-style: none;
+        }
   </style>
-</head>
-<body>
+  </head>
+
+  <body>
 
     <div class="container">
       <div class="header">
@@ -68,10 +67,26 @@ code > span.er { font-weight: bold; }
       </ol>
       <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
         <h1>
-            Writing a billing system in Haskell using Stripe and Heroku
+Writing a billing system in Haskell, using Stripe and Heroku
         </h1>
-        <p class="lead">Or: necessity is unrelated to invention</p>
-      </div>
+        <p class="lead">
+Proof that necessity is not the mother of invention.
+        </p>
+<div id="toc-wrapper">
+<h2>Contents</h2>
+<ul>
+<li><a href="#the-code"><span class="toc-section-number">0.1</span> The code</a></li>
+<li><a href="#top-level-application-setup"><span class="toc-section-number">0.2</span> Top level application setup</a></li>
+<li><a href="#stripe-configuration"><span class="toc-section-number">0.3</span> Stripe configuration</a></li>
+<li><a href="#handlers"><span class="toc-section-number">0.4</span> Handlers</a><ul>
+<li><a href="#monads-and-monad-transformers"><span class="toc-section-number">0.4.1</span> Monads and Monad Transformers</a></li>
+<li><a href="#moving-on"><span class="toc-section-number">0.4.2</span> Moving on</a></li>
+</ul></li>
+<li><a href="#lets-get-the-hell-out-of-here"><span class="toc-section-number">0.5</span> Let's get the hell out of here</a></li>
+<li><a href="#the-end-is-nigh"><span class="toc-section-number">0.6</span> The end is nigh</a></li>
+</ul>
+</div><!-- toc wrapper -->
+        </div>
       <div class="row">
         <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
 <p>*This post is written in literate Haskell, meaning the source can be turned into a blogpost or a working program. You can view the <a href="https://gist.github.com/gatlin/7754289">source</a>.</p>
@@ -79,15 +94,15 @@ code > span.er { font-weight: bold; }
 <p>Fair enough. I want to accommodate them. So, this weekend I did the only logical thing: I wrote my own payment system. What, did you think I was going to use PayPal?</p>
 <p>(Don't worry, Mom, I thought about PCI compliance and all that. Read more!)</p>
 <p>For both ease and security I opted to use <a href="http://stripe.com">Stripe</a>, a straightforward service which handles all the legal and regulatory concerns and provides developers with a nice API to build on top of. Here's how it works:</p>
-<ol style="list-style-type: decimal">
+<ol type="1">
 <li><p>On the actual billing page, I securely send Stripe the credit card details and a special, public token issued to me. I get back a transaction token <strong>instead of sensitive credit card information.</strong></p></li>
 <li><p>Then, I send the amount and the transaction token up to my payment backend. The payment backend does whatever administrative work and validation it needs to before sending Stripe the transaction token, the amount, and a <strong>secret</strong> token only I know.</p></li>
 </ol>
-<div class="figure">
-<img src="http://i.imgur.com/4oNzWuPl.jpg" alt="This is some James Bond shit." /><p class="caption">This is some James Bond shit.</p>
-</div>
+<figure>
+<img src="http://i.imgur.com/4oNzWuPl.jpg" alt="This is some James Bond shit." /><figcaption>This is some James Bond shit.</figcaption>
+</figure>
 <p>To counteract all this ease and security, I decided to write the payment backend in Haskell. I learned a lot about how Haskell web applications work and figure I'd detail some of that. Now, onward to the code!</p>
-<h2 id="the-code">The code</h2>
+<h2 id="the-code"><span class="header-section-number">0.1</span> The code</h2>
 <p>First, with any Haskell program complex enough to be useful, the first 30 lines or so are imports, viz:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}</span>
 <span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
@@ -119,7 +134,7 @@ code > span.er { font-weight: bold; }
 <p>That's quite a bit! I included the <a href="https://github.com/michaelschade/hs-stripe">hs-stripe</a> package; <code>System.Environment</code> in order to read the correct port number from the, uh, system environment; a lot of <code>Network.*</code> libraries to get access to raw connection details; and of course 30 kinds of ByteString for reasons I'm sure the creators can defend elegantly.</p>
 <p>I also used two GHC Haskell language extensions: <code>OverloadedStrings</code> to accommodate the trainwreck that is mixing <code>String</code>, <code>ByteString</code>, and <code>Text</code> all in the same application; and <code>ScopedTypeVariables</code> for reasons that will make more sense in context.</p>
 <p>Because I was short on time, I figured I'd rather not use a fancy shmancy framework to abstract my application but instead to use the Web Application Interface (WAI) directly. Boy did I waste a lot more time.</p>
-<h2 id="top-level-application-setup">Top level application setup</h2>
+<h2 id="top-level-application-setup"><span class="header-section-number">0.2</span> Top level application setup</h2>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">withApp ::</span> (<span class="dt">Application</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 withApp handler <span class="fu">=</span> handler application
 
@@ -137,16 +152,16 @@ notFound <span class="fu">=</span> responseLBS
 <p>As you might be able to tell, we have bound one handler in this version of the application: a <code>POST</code> submission to the <code>/charge</code> path will charge the credit card. It's heating up in here!</p>
 <p><code>withApp</code> is a convenience function to make gluing everything together pretty later. You'll see below.</p>
 <p>Go ahead and guess what the <code>notFound</code> handler is responsible for.</p>
-<h2 id="stripe-configuration">Stripe configuration</h2>
+<h2 id="stripe-configuration"><span class="header-section-number">0.3</span> Stripe configuration</h2>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">conf ::</span> <span class="dt">StripeConfig</span>
 conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span class="dt">APIKey</span> <span class="st">&quot;YOUR_STRIPE_SECRET_TOKEN&quot;</span></code></pre>
 <p><code>conf</code> creates a StripeConfig value based on your secret token. I omitted mine here for obvious reasons.</p>
-<h2 id="handlers">Handlers</h2>
+<h2 id="handlers"><span class="header-section-number">0.4</span> Handlers</h2>
 <p>Okay, now we get our hands dirty.</p>
 <p>Let me be the first to say that this is not my finest work. I would call myself and intermediate Haskeller and I was also on a bit of a time constraint. However, I learned enough to know what I'll improve upon in due time.</p>
-<div class="figure">
-<img src="http://i.imgur.com/02IjGIJ.gif" alt="Shall we begin?" /><p class="caption">Shall we begin?</p>
-</div>
+<figure>
+<img src="http://i.imgur.com/02IjGIJ.gif" alt="Shall we begin?" /><figcaption>Shall we begin?</figcaption>
+</figure>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell">handlePostToken req <span class="fu">=</span> <span class="kw">do</span>
     bodyLst <span class="ot">&lt;-</span> requestBody req <span class="fu">$$</span> consume</code></pre>
 <p>The first thing to know is that WAI uses the infamous <code>conduit</code> library. <code>conduit</code> is a Haskell library for efficiently handling large streams of data in constant memory. You see, Haskell is aggressively <em>lazy</em>: it defers actual computation until the last possible moment in order to avoid unnecessary calculations. While slick, this means it accumulates a lot of memory and makes IO kind of painful and slow. <code>conduit</code> presents a different model.</p>
@@ -162,7 +177,7 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 <p>The <code>Maybe</code> wrapper is there to ensure our program doesn't fail if someone leaves out the amount (sneaky buggers).</p>
 <p>However, I want to ... query ... the query string for values easily. I could roll my own code to search through this list and find the right values, or I could not be an idiot and use <code>Data.Map.fromlist</code> to turn it into a map structure for me.</p>
 <p>Which is, for the record, exactly what I do in creating <code>bodyMap</code>.</p>
-<h3 id="monads-and-monad-transformers">Monads and Monad Transformers</h3>
+<h3 id="monads-and-monad-transformers"><span class="header-section-number">0.4.1</span> Monads and Monad Transformers</h3>
 <p>Yeah, you knew this was coming. I'm not going to explain what monads are in this post. However, to actually understand this code it's important to know which monad we are in and why.</p>
 <p>The monad in question here is <code>ResourceT m a</code>. According to the <a href="http://hackage.haskell.org/package/conduit-1.0.9.3/docs/Data-Conduit.html#g:10">documentation</a> it &quot;keeps track of all registered actions, and calls them upon exit&quot;. Specifically, while you're busy fusing <code>Source</code>s and <code>Sink</code>s and <code>Conduit</code>s and transforming shit all over the place, you're also allocating resources that must be deallocated or else your program will crash and you won't get paid.</p>
 <p><code>ResourceT m a</code> along with other <code>conduit</code> related operations and types appears to handle all of this internally. By writing code in the <code>ResourceT m a</code> monad and declaratively setting up your pipeline, you're getting all the bookkeeping done for free.</p>
@@ -170,7 +185,7 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 <p>Make your inception jokes here.</p>
 <p>The &quot;m&quot; in its type signature represents an inner monad. For example, later on in the code we are going to dive into a special Stripe monad for handling interactions with their server. <code>ResourceT m a</code> allows us to be in the magical resource management monad but still call into other monads that are useful during our computation.</p>
 <p>It's some sick shit.</p>
-<h3 id="moving-on">Moving on</h3>
+<h3 id="moving-on"><span class="header-section-number">0.4.2</span> Moving on</h3>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell">    <span class="kw">case</span> M.lookup <span class="st">&quot;amount&quot;</span> bodyMap <span class="kw">of</span>
         <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="fu">$</span> doRespond <span class="st">&quot;bad amount&quot;</span></code></pre>
 <p>First, we see if an amount was specified. <code>Data.Map.lookup</code> takes a key and a map and returns a <code>Maybe</code> value. If the <code>Maybe</code> value is <code>Nothing</code> then I initiate the sophisticated error handling code you see above.</p>
@@ -205,7 +220,7 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
             [(<span class="st">&quot;Content-Type&quot;</span>,<span class="st">&quot;text/plain&quot;</span>)]
             v</code></pre>
 <p><code>doRespond</code> is a simple inner function to factor out repetitive code.</p>
-<h2 id="lets-get-the-hell-out-of-here">Let's get the hell out of here</h2>
+<h2 id="lets-get-the-hell-out-of-here"><span class="header-section-number">0.5</span> Let's get the hell out of here</h2>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell">main <span class="fu">=</span> <span class="kw">do</span>
   portStr <span class="ot">&lt;-</span> getEnv <span class="st">&quot;PORT&quot;</span>
   <span class="kw">let</span> port <span class="fu">=</span> read<span class="ot"> portStr ::</span> <span class="dt">Port</span>
@@ -214,13 +229,13 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 middleware <span class="fu">=</span> logStdout</code></pre>
 <p>Finally, our <code>main</code> function, where the program actually starts. It's pretty boring: grab the port value from the system environment, convert it to an Int, and then ... what?</p>
 <p>Oh yeah, there's <code>withApp</code> again. Did you think I'd forget? <code>withApp</code> here receives a lambda function which will take its argument, and do two things:</p>
-<ol style="list-style-type: decimal">
+<ol type="1">
 <li>Construct a web server using <code>run</code> and the port number; and</li>
 <li>Compose some server middleware with our actual application and feed it to the server.</li>
 </ol>
 <p>Above, remember that we defined <code>withApp</code> as accepting a handler function as its sole argument and applying to <code>application</code>. Our lambda here is that handler function. If you're going cross eyed, that's perfectly normal.</p>
 <p>The middleware is a standard middleware to log requests to the console, which I found useful during debugging.</p>
-<h2 id="the-end-is-nigh">The end is nigh</h2>
+<h2 id="the-end-is-nigh"><span class="header-section-number">0.6</span> The end is nigh</h2>
 <p>So, that's more or less the first version of my little payment gateway. I successfully charged myself a dollar, which after Stripe's 2.9% + $0.30 commission, will leave me with $0.67 in about 7 days.</p>
 <p>The reason the port number is read from the system environment is so that I can interface with Heroku. They decide dynamically what port to assign your application and it's easier for everyone if you just read it from the environment. Don't ask questions.</p>
 <p>I'm pretty happy with this. I learned quite a bit about the fundamentals of Haskell web applications, monad transformers, and the nightmare that was <code>ByteString</code> (which I didn't have the energy to write about, frankly).</p>
@@ -230,7 +245,7 @@ h='&#110;&#x69;&#108;&#116;&#x61;&#x67;&#46;&#110;&#x65;&#116;';a='&#64;';n='&#x
 document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'">'+e+'<\/'+'a'+'>');
 // -->
 </script><noscript>&#x67;&#x61;&#116;&#108;&#x69;&#110;&#32;&#x61;&#116;&#32;&#110;&#x69;&#108;&#116;&#x61;&#x67;&#32;&#100;&#x6f;&#116;&#32;&#110;&#x65;&#116;</noscript>.</p>
-</div>
+        </div>
 </div><!-- row -->
 <hr>
 
@@ -243,3 +258,4 @@ document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'">'+e+'<\/'+'a'+'>');
 
   </body>
 </html>
+
