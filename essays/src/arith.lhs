@@ -38,9 +38,7 @@ This being Haskell, useful programs have like a billion imports and what-nots.
 >                       , iterate
 >                       )
 > import FreeStream
-> import System.IO (isEOF)
 > import Control.Monad.Trans.Free
-> import Data.Maybe (fromJust)
 
 You can get [FreeStream here][freestream].
 
