@@ -16,7 +16,7 @@ discussing:
 - Wine
 
 We will be building this in Haskell, and this post is literate haskell which
-you can run in ghci by grabbing the source.
+you can run in ghci by grabbing the [source][source].
 
 Prelude
 ===
@@ -351,3 +351,4 @@ But for now, we can play with our calculator in ghci:
 [freestream]: https://github.com/gatlin/FreeStream
 [pipes]: https://hackage.haskell.org/package/pipes
 [orc]: http://orc.csres.utexas.edu/
+[source]: http://niltag.net/essays/src/arith.lhs
