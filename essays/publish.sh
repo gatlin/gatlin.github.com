@@ -25,10 +25,13 @@ if hash pandoc 2>/dev/null; then
         ###
         # If the extension is plain markdown, process plain markdown
         elif [ $extension = "md" ]; then
-            pandoc -s -t html5 -f markdown+yaml_metadata_block \
+            pandoc -s -t html5 -f \
+            markdown+yaml_metadata_block+fenced_code_blocks+fenced_code_attributes \
             --template templates/template.md.html \
             --number-sections \
             --toc \
+            --highlight-style kate \
+            --smart \
             -o ./$out.html src/$f
         else
             echo "File $f: not a supported format."

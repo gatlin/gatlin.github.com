@@ -9,7 +9,7 @@ Most people would go find another language. Some folks (including yours truly) w
 
 write your own.
 
-![HEAD EXPLODE](http://wac.bc6c.edgecastcdn.net/80BC6C/virginmobilefeed.com/wp-content/uploads/2012/10/tumblr_lqriwxsOkO1qh4y4vo1_250.gif)
+![HEAD EXPLODE](/img/headexplode.gif)
 
 I'm going to demonstrate how to do this in perfectly valid R6RS Scheme (Racket, specifically). Hopefully it will be illuminating.
 

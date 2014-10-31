@@ -21,6 +21,18 @@ Lambda calculus and Church numerals
 
     <link href="style.css" rel="stylesheet">
     <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
 
         div#toc-wrapper ul, div#toc-wrapper ol {
             list-style: none;
@@ -64,7 +76,7 @@ Or, DIY arithmetic
 <h2>Contents</h2>
 <ul>
 <li><a href="#abstraction-and-application"><span class="toc-section-number">0.1</span> Abstraction and application</a></li>
-<li><a href="#babys-first-arithmetic-isomorphism"><span class="toc-section-number">0.2</span> Baby's first arithmetic isomorphism</a></li>
+<li><a href="#babys-first-arithmetic-isomorphism"><span class="toc-section-number">0.2</span> Baby’s first arithmetic isomorphism</a></li>
 <li><a href="#addition-and-multiplication"><span class="toc-section-number">0.3</span> Addition and multiplication</a></li>
 <li><a href="#what-was-the-point-again"><span class="toc-section-number">0.4</span> What was the point again?</a></li>
 </ul>
@@ -82,12 +94,12 @@ Or, DIY arithmetic
 <pre class="sourceCode scheme"><code class="sourceCode scheme">λ x . x <span class="kw">+</span> <span class="dv">1</span></code></pre>
 <p>This is called <em>abstraction</em>: we have created a function which abstracts some operation. If we named this function <code>f</code>, for example, we could <em>apply</em> it like so:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">    (f <span class="dv">1</span>)</code></pre>
-<p>Which would yield 2. There's one problem with this, though: in lambda calculus <strong>everything is a function.</strong></p>
+<p>Which would yield 2. There’s one problem with this, though: in lambda calculus <strong>everything is a function.</strong></p>
 <p>DROP THE BASS</p>
-<p>So, strictly speaking, in the pure lambda calculus you wouldn't be able to write <code>x + 1</code> without first defining what plus and 1 are. However, if you <em>could</em> define arithmetic using only the lambda calculus, you'd be able to define literally anything.</p>
-<p>Let's give it a shot.</p>
-<h2 id="babys-first-arithmetic-isomorphism"><span class="header-section-number">0.2</span> Baby's first arithmetic isomorphism</h2>
-<p>Here's Racket code for defining a function <code>zero</code> and a function <code>succ</code> (for successor):</p>
+<p>So, strictly speaking, in the pure lambda calculus you wouldn’t be able to write <code>x + 1</code> without first defining what plus and 1 are. However, if you <em>could</em> define arithmetic using only the lambda calculus, you’d be able to define literally anything.</p>
+<p>Let’s give it a shot.</p>
+<h2 id="babys-first-arithmetic-isomorphism"><span class="header-section-number">0.2</span> Baby’s first arithmetic isomorphism</h2>
+<p>Here’s Racket code for defining a function <code>zero</code> and a function <code>succ</code> (for successor):</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme"><span class="co">; zero is a function</span>
 (<span class="kw">define</span><span class="fu"> zero </span>(λ (f)
   (λ (x)
@@ -98,26 +110,26 @@ Or, DIY arithmetic
   (λ (f)
     (λ (x)
       (f ((n f) x))))))</code></pre>
-<p>How the hell do I read this? Let's break it down:</p>
-<p>We define <code>zero</code> to be a function which accepts an argument <code>f</code> which returns ... a function which accepts an argument <code>x</code> which returns <code>x</code>, untouched.</p>
-<p><code>succ</code> is defined as a function with an argument <code>n</code> which returns ... a function with an argument <code>f</code> which returns ... a function with an argument <code>x</code> which returns (<code>f</code> applied to (<code>n</code> applied to <code>f</code>)) applied to <code>x</code>.</p>
-<p>It's all confusing, I know. I'll try to type more slowly.</p>
-<p>How are these functions equivalent to zero and &quot;plus 1?&quot; Perhaps if we can define some translation between them something more intuitive then it will make more sense.</p>
+<p>How the hell do I read this? Let’s break it down:</p>
+<p>We define <code>zero</code> to be a function which accepts an argument <code>f</code> which returns … a function which accepts an argument <code>x</code> which returns <code>x</code>, untouched.</p>
+<p><code>succ</code> is defined as a function with an argument <code>n</code> which returns … a function with an argument <code>f</code> which returns … a function with an argument <code>x</code> which returns (<code>f</code> applied to (<code>n</code> applied to <code>f</code>)) applied to <code>x</code>.</p>
+<p>It’s all confusing, I know. I’ll try to type more slowly.</p>
+<p>How are these functions equivalent to zero and “plus 1?” Perhaps if we can define some translation between them something more intuitive then it will make more sense.</p>
 <p>Okay:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> </span>(church-&gt;number n) ((n add1) <span class="dv">0</span>))</code></pre>
 <p>This defines <code>church-&gt;number</code> to be a function which accepts an argument <code>n</code> (in this case, our function-number-thing), applies it to a real-world function called <code>add1</code>, and then applies the resulting function to 0. <code>add1</code> is a function in Racket which adds 1 to its argument.</p>
-<p>Why do I call it <code>church-&gt;number</code>? Because the lambda calculus was conceived by a fellow named Alonzo Church. He's awesome.</p>
-<p>Let's be sure <code>church-&gt;number</code> does what we think it will and apply it to <code>zero</code>:</p>
+<p>Why do I call it <code>church-&gt;number</code>? Because the lambda calculus was conceived by a fellow named Alonzo Church. He’s awesome.</p>
+<p>Let’s be sure <code>church-&gt;number</code> does what we think it will and apply it to <code>zero</code>:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(church-&gt;number zero) <span class="kw">=&gt;</span> ((zero add1) <span class="dv">0</span>) <span class="kw">=&gt;</span> (((λ (f) (λ (x) x)) add1) <span class="dv">0</span>) <span class="kw">=&gt;</span> 
 ((λ (x) x) <span class="dv">0</span>) <span class="kw">=&gt;</span> <span class="dv">0</span></code></pre>
-<p>Okay, it works for zero. Let's create a <code>one</code> and test it. Here are both an explicit definition of <code>one</code> and a <code>one</code> created from <code>(succ zero)</code>:</p>
+<p>Okay, it works for zero. Let’s create a <code>one</code> and test it. Here are both an explicit definition of <code>one</code> and a <code>one</code> created from <code>(succ zero)</code>:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme"><span class="co">; These two definitions of `one` are equivalent</span>
 (<span class="kw">define</span><span class="fu"> one-manual </span>(λ (f)
   (λ (x)
     (f x))))
 
 (<span class="kw">define</span><span class="fu"> one-computed </span>(succ zero))</code></pre>
-<p><code>one</code> is a function which accepts an argument <code>f</code> and returns ... a function which accepts an argument <code>x</code> and returns ... <code>f</code> applied to <code>x</code>. Let's verify this is 1 with our <code>church-&gt;number</code> function:</p>
+<p><code>one</code> is a function which accepts an argument <code>f</code> and returns … a function which accepts an argument <code>x</code> and returns … <code>f</code> applied to <code>x</code>. Let’s verify this is 1 with our <code>church-&gt;number</code> function:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(church-&gt;number one-manual) <span class="kw">=&gt;</span> ((one-manual add1) <span class="dv">0</span>) <span class="kw">=&gt;</span> (((λ (f) (λ (x) (f x))) add1) <span class="dv">0</span>) <span class="kw">=&gt;</span>
 ((λ (x) (add1 x)) <span class="dv">0</span>) <span class="kw">=&gt;</span> (add1 <span class="dv">0</span>) <span class="kw">=&gt;</span> <span class="dv">1</span>.</code></pre>
 <p>Indeed, applying <code>church-&gt;number</code> to both <code>one-manual</code> and <code>one-computed</code> yields 1, as expected.</p>
@@ -138,7 +150,7 @@ Or, DIY arithmetic
     (λ (f)
       (n (m f))))))</code></pre>
 <p>Basically, giving two church numbers to <code>add</code> yields a function which accepts an argument <code>f</code> returning a function accepting an argument <code>x</code> returning the Church sum of the first two arguments. But how?</p>
-<p>Let's play it out:</p>
+<p>Let’s play it out:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(add one-manual one-computed)
 
 <span class="co">;=&gt;</span>
@@ -176,16 +188,16 @@ Or, DIY arithmetic
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(church-&gt;number (λ (f) (λ (x) (f (f x))))) <span class="kw">=&gt;</span> ((λ (f) (λ (x) (f (f x)))) add1) <span class="dv">0</span> <span class="kw">=&gt;</span>
 (add1 (add1 <span class="dv">0</span>)) <span class="kw">=&gt;</span> <span class="dv">2</span></code></pre>
 <p>HELL YEAH</p>
-<p>I'll leave it as an exercise to the reader to figure out how <code>mult</code> works :)</p>
+<p>I’ll leave it as an exercise to the reader to figure out how <code>mult</code> works :)</p>
 <h2 id="what-was-the-point-again"><span class="header-section-number">0.4</span> What was the point again?</h2>
-<p>We have provided some intuition for how to define arithmetic in the lambda calculus. If I can add, I can subtract; if I can multiply, I can divide; if I can add and multiply I can use exponents; if I have exponents, I have logarithms; if I have all those things I can compute limits; if I have limits, I can compute derivatives ... and we're at regular college calculus.</p>
+<p>We have provided some intuition for how to define arithmetic in the lambda calculus. If I can add, I can subtract; if I can multiply, I can divide; if I can add and multiply I can use exponents; if I have exponents, I have logarithms; if I have all those things I can compute limits; if I have limits, I can compute derivatives … and we’re at regular college calculus.</p>
 <p>All with lambda abstraction and lambda application.</p>
 <p>There are several consequences of this power, however:</p>
 <ol type="1">
-<li><p>Because lambda calculus is as expressive as arithmetic, it runs afoul of both Incompleteness Theorems. Look 'em up, it's fascinating.</p></li>
+<li><p>Because lambda calculus is as expressive as arithmetic, it runs afoul of both Incompleteness Theorems. Look ’em up, it’s fascinating.</p></li>
 <li><p>Because of the incompleteness theorem, programs written with the lambda calculus have the Halting problem: a program which reads programs and determines if they halt, will not be able to read itself and decide if it halts. This has very important consequences.</p></li>
 </ol>
-<p>At this point I could go down a bunch of fascinating rabbit holes but I've probably used up more than enough of your time. Hopefully this sheds some insight on how computer science actually &quot;works.&quot;</p>
+<p>At this point I could go down a bunch of fascinating rabbit holes but I’ve probably used up more than enough of your time. Hopefully this sheds some insight on how computer science actually “works.”</p>
         </div>
 </div><!-- row -->
 <hr>

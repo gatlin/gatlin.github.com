@@ -58,3 +58,14 @@ div#content img {
 .section-header {
     font-size: 24pt;
 }
+
+figure {
+    display: inline;
+    text-align: center;
+}
+
+blockquote, blockquote cite {
+    width: 100%;
+    text-align: center;
+    font-style: italic;
+}
