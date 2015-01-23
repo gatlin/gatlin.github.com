@@ -70,14 +70,14 @@ code > span.er { font-weight: bold; }
 What the fuck is a monad?
         </h1>
         <p class="lead">
-Or: functor? I ’ardly know ’er!
+Or: drinking alone isn’t healthy
         </p>
 <div id="toc-wrapper">
 <h2>Contents</h2>
 <ul>
 <li><a href="#preliminaries"><span class="toc-section-number">1</span> Preliminaries</a></li>
-<li><a href="#what-the-functor"><span class="toc-section-number">2</span> What the functor …</a></li>
-<li><a href="#what-the-functor-1"><span class="toc-section-number">3</span> What the functor … ?</a></li>
+<li><a href="#take-me-to-functor-town"><span class="toc-section-number">2</span> Take me to functor town</a></li>
+<li><a href="#what-the-functor"><span class="toc-section-number">3</span> What the functor … ?</a></li>
 <li><a href="#were-in-a-bind"><span class="toc-section-number">4</span> We’re in a bind …</a></li>
 <li><a href="#monad-for-nothing"><span class="toc-section-number">5</span> Monad for nothing</a></li>
 <li><a href="#conclusion"><span class="toc-section-number">6</span> Conclusion</a></li>
@@ -98,7 +98,7 @@ Or: functor? I ’ardly know ’er!
      #&#39;(<span class="kw">define</span><span class="fu"> sym </span>expr))
     ((<span class="kw">=</span> sym (arg ...) expr)
      #&#39;(<span class="kw">define</span><span class="fu"> </span>(sym arg ...) expr))))</code></pre>
-<h1 id="what-the-functor"><span class="header-section-number">2</span> What the functor …</h1>
+<h1 id="take-me-to-functor-town"><span class="header-section-number">2</span> Take me to functor town</h1>
 <p>Typed Racket is a functional programming language which heavily discourages imperative programming styles. Like, for instance, programs of this sort:</p>
 <pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> doSomething():
   x = <span class="dv">5</span>
@@ -118,7 +118,7 @@ Or: functor? I ’ardly know ’er!
     x))</code></pre>
 <p>But that becomes unwieldly after a while.</p>
 <p>Correct imperative programs are written every day so there must be some way of representing them in a principled manner which can catch type and other logic errors.</p>
-<h1 id="what-the-functor-1"><span class="header-section-number">3</span> What the functor … ?</h1>
+<h1 id="what-the-functor"><span class="header-section-number">3</span> What the functor … ?</h1>
 <p>Let’s take a side-step to introduce a fundamental concept in type theory. It’s called the <em>Functor</em>. A functor is a <em>higher-order</em> type; it depends on some <em>base</em> type for its full meaning. For instance, in Typed Racket <code>Listof</code> is a higher-order type: you can have <code>Listof Number</code> or <code>Listof String</code> or <code>Listof Boolean</code>.</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: list<span class="dv">-1</span> (Listof Number))
 (<span class="kw">=</span> list<span class="dv">-1</span> &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>))</code></pre>

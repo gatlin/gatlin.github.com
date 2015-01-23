@@ -1,6 +1,6 @@
 ---
 title: What the fuck is a monad?
-lead: "Or: functor? I 'ardly know 'er!"
+lead: "Or: drinking alone isn't healthy"
 ...
 
 Monads are difficult to explain without sounding either patronizing or
@@ -28,7 +28,7 @@ here for completeness' sake if you want to execute any of the code:
      #'(define (sym arg ...) expr))))
 ```
 
-# What the functor ...
+# Take me to functor town
 
 Typed Racket is a functional programming language which heavily discourages
 imperative programming styles. Like, for instance, programs of this sort:
