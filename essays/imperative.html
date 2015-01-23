@@ -75,10 +75,10 @@ Or, charming the Python
 <div id="toc-wrapper">
 <h2>Contents</h2>
 <ul>
-<li><a href="#part-the-first-the-boilerplate"><span class="toc-section-number">0.1</span> Part the First: The boilerplate</a></li>
-<li><a href="#part-the-second-show-me-already"><span class="toc-section-number">0.2</span> Part the Second: SHOW ME ALREADY</a></li>
-<li><a href="#part-the-third-give-my-creation-...-life"><span class="toc-section-number">0.3</span> Part the Third: Give my creation ... LIFE!</a></li>
-<li><a href="#part-the-fourth-examples"><span class="toc-section-number">0.4</span> Part the Fourth: Examples</a></li>
+<li><a href="#part-the-first-the-boilerplate"><span class="toc-section-number">1</span> Part the First: The boilerplate</a></li>
+<li><a href="#part-the-second-show-me-already"><span class="toc-section-number">2</span> Part the Second: SHOW ME ALREADY</a></li>
+<li><a href="#part-the-third-give-my-creation-...-life"><span class="toc-section-number">3</span> Part the Third: Give my creation ... LIFE!</a></li>
+<li><a href="#part-the-fourth-examples"><span class="toc-section-number">4</span> Part the Fourth: Examples</a></li>
 </ul>
 </div><!-- toc wrapper -->
         </div>
@@ -89,7 +89,7 @@ Or, charming the Python
 <img src="http://i.imgur.com/YDIaEPB.jpg" alt="Math? In my computer? Yeah right." /><figcaption>Math? In my computer? Yeah right.</figcaption>
 </figure>
 <p>I'm here to tell you that not only does Haskell make imperative programming a cinch, but safe and correct as well. Follow along! This post is written in Literate Haskell, so its source code can be compiled and run as a program. The source is <a href="https://gist.github.com/gatlin/9696088">here</a>.</p>
-<h2 id="part-the-first-the-boilerplate"><span class="header-section-number">0.1</span> Part the First: The boilerplate</h2>
+<h1 id="part-the-first-the-boilerplate"><span class="header-section-number">1</span> Part the First: The boilerplate</h1>
 <p>Surprisingly, you won't need much boilerplate for this exercise:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE DeriveFunctor #-}</span>
 <span class="ot">{-# LANGUAGE StandaloneDeriving #-}</span></code></pre>
@@ -98,13 +98,13 @@ Or, charming the Python
 <p>I'm going to assume you've at least seen the words <code>Functor</code> and <code>Monad</code> before, and if you haven't, you should Google around for any one of the thousands of existing explanations.</p>
 <p>Importing <code>Control.Monad.Free</code> brings in what has been my favorite feature of late: the Free monad.</p>
 <p>The Free monad is what it sounds like: it is a generic instance of the <code>Monad</code> typeclass. All you have to do is supply a <code>Functor</code> type and the <code>Free</code> type constructor spits out a <code>Monad</code>.</p>
-<h2 id="part-the-second-show-me-already"><span class="header-section-number">0.2</span> Part the Second: SHOW ME ALREADY</h2>
+<h1 id="part-the-second-show-me-already"><span class="header-section-number">2</span> Part the Second: SHOW ME ALREADY</h1>
 <p><em>Voici</em>:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">Then</span> k <span class="fu">=</span> <span class="dt">Then</span> k
 <span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">Then</span>
 <span class="kw">type</span> <span class="dt">Imperative</span> <span class="fu">=</span> <span class="dt">Free</span> <span class="dt">Then</span></code></pre>
 <p>That's it. <code>Imperative</code> is now a monad. But what does it <em>do</em>? Good question - that's the part we must fill in. In our case we wish to be able to write imperative, this-then-this-then-this style programs.</p>
-<h2 id="part-the-third-give-my-creation-...-life"><span class="header-section-number">0.3</span> Part the Third: Give my creation ... LIFE!</h2>
+<h1 id="part-the-third-give-my-creation-...-life"><span class="header-section-number">3</span> Part the Third: Give my creation ... LIFE!</h1>
 <figure>
 <img src="http://i.imgur.com/afH9ODT.jpg" alt="Dr Frankenstein has been a very naughty boy" /><figcaption>Dr Frankenstein has been a very naughty boy</figcaption>
 </figure>
@@ -113,7 +113,7 @@ Or, charming the Python
 imperative (<span class="dt">Free</span> (<span class="dt">Then</span> next)) <span class="fu">=</span> imperative next
 imperative (<span class="dt">Pure</span> v)           <span class="fu">=</span> v</code></pre>
 <p>We did it. Really. This code says that if we get a value of <code>Free</code> we should unpack the value inside of it and loop; otherwise, we have broken the program down as far as we can and should evaluate the expression we have uncovered.</p>
-<h2 id="part-the-fourth-examples"><span class="header-section-number">0.4</span> Part the Fourth: Examples</h2>
+<h1 id="part-the-fourth-examples"><span class="header-section-number">4</span> Part the Fourth: Examples</h1>
 <p>We'll write some simple arithmetic functions, including the types for pedagogical thoroughness:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">mySquare ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Imperative</span> <span class="dt">Int</span>
 mySquare n <span class="fu">=</span> return <span class="fu">$</span> n <span class="fu">*</span> n</code></pre>

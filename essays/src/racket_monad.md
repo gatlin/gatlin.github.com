@@ -28,7 +28,7 @@ here for completeness' sake if you want to execute any of the code:
      #'(define (sym arg ...) expr))))
 ```
 
-# Put a lid on it
+# What the functor ...
 
 Typed Racket is a functional programming language which heavily discourages
 imperative programming styles. Like, for instance, programs of this sort:
@@ -71,7 +71,7 @@ Correct imperative programs are written every day so there must be some way of
 representing them in a principled manner which can catch type and other logic
 errors.
 
-# What the functor ... ?
+# Put a lid on it!
 
 Let's take a side-step to introduce a fundamental concept in type theory. It's
 called the *Functor*. A functor is a *higher-order* type; it depends on some

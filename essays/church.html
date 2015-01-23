@@ -75,10 +75,10 @@ Or, DIY arithmetic
 <div id="toc-wrapper">
 <h2>Contents</h2>
 <ul>
-<li><a href="#abstraction-and-application"><span class="toc-section-number">0.1</span> Abstraction and application</a></li>
-<li><a href="#babys-first-arithmetic-isomorphism"><span class="toc-section-number">0.2</span> Baby’s first arithmetic isomorphism</a></li>
-<li><a href="#addition-and-multiplication"><span class="toc-section-number">0.3</span> Addition and multiplication</a></li>
-<li><a href="#what-was-the-point-again"><span class="toc-section-number">0.4</span> What was the point again?</a></li>
+<li><a href="#abstraction-and-application"><span class="toc-section-number">1</span> Abstraction and application</a></li>
+<li><a href="#babys-first-arithmetic-isomorphism"><span class="toc-section-number">2</span> Baby’s first arithmetic isomorphism</a></li>
+<li><a href="#addition-and-multiplication"><span class="toc-section-number">3</span> Addition and multiplication</a></li>
+<li><a href="#what-was-the-point-again"><span class="toc-section-number">4</span> What was the point again?</a></li>
 </ul>
 </div>
         </div>
@@ -89,7 +89,7 @@ Or, DIY arithmetic
 <p>This post will introduce the lambda calculus and motivate why it is so powerful.</p>
 <p>We will use the <a href="http://racket-lang.org">Racket</a> programming language for some code snippets. Racket is a friendly yet powerful language which closely resembles lambda calculus; and the <a href="http://racket-lang.org/download/">download</a> comes with the friendly yet powerful Dr Racket environment for programming.</p>
 <p>You can copy the code snippets into Dr Racket and play around with them. Try it!</p>
-<h2 id="abstraction-and-application"><span class="header-section-number">0.1</span> Abstraction and application</h2>
+<h1 id="abstraction-and-application"><span class="header-section-number">1</span> Abstraction and application</h1>
 <p>Lambda calculus is a language for expressing computation. In math notation, a function which takes some argument <code>x</code> and returns <code>x + 1</code> looks like this:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">λ x . x <span class="kw">+</span> <span class="dv">1</span></code></pre>
 <p>This is called <em>abstraction</em>: we have created a function which abstracts some operation. If we named this function <code>f</code>, for example, we could <em>apply</em> it like so:</p>
@@ -98,7 +98,7 @@ Or, DIY arithmetic
 <p>DROP THE BASS</p>
 <p>So, strictly speaking, in the pure lambda calculus you wouldn’t be able to write <code>x + 1</code> without first defining what plus and 1 are. However, if you <em>could</em> define arithmetic using only the lambda calculus, you’d be able to define literally anything.</p>
 <p>Let’s give it a shot.</p>
-<h2 id="babys-first-arithmetic-isomorphism"><span class="header-section-number">0.2</span> Baby’s first arithmetic isomorphism</h2>
+<h1 id="babys-first-arithmetic-isomorphism"><span class="header-section-number">2</span> Baby’s first arithmetic isomorphism</h1>
 <p>Here’s Racket code for defining a function <code>zero</code> and a function <code>succ</code> (for successor):</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme"><span class="co">; zero is a function</span>
 (<span class="kw">define</span><span class="fu"> zero </span>(λ (f)
@@ -137,7 +137,7 @@ Or, DIY arithmetic
 <figure>
 <img src="http://zanyjaney.com/wp-content/uploads/2012/09/1656-462x600.jpg" alt="I see what you did there." /><figcaption>I see what you did there.</figcaption>
 </figure>
-<h2 id="addition-and-multiplication"><span class="header-section-number">0.3</span> Addition and multiplication</h2>
+<h1 id="addition-and-multiplication"><span class="header-section-number">3</span> Addition and multiplication</h1>
 <p>Now that we have <code>zero</code>, a successor function, and a means of converting the lambda calculus value to more friendly representations of numbers, we can define addition and multiplication:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> add </span>(λ (n)
   (λ (m)
@@ -189,7 +189,7 @@ Or, DIY arithmetic
 (add1 (add1 <span class="dv">0</span>)) <span class="kw">=&gt;</span> <span class="dv">2</span></code></pre>
 <p>HELL YEAH</p>
 <p>I’ll leave it as an exercise to the reader to figure out how <code>mult</code> works :)</p>
-<h2 id="what-was-the-point-again"><span class="header-section-number">0.4</span> What was the point again?</h2>
+<h1 id="what-was-the-point-again"><span class="header-section-number">4</span> What was the point again?</h1>
 <p>We have provided some intuition for how to define arithmetic in the lambda calculus. If I can add, I can subtract; if I can multiply, I can divide; if I can add and multiply I can use exponents; if I have exponents, I have logarithms; if I have all those things I can compute limits; if I have limits, I can compute derivatives … and we’re at regular college calculus.</p>
 <p>All with lambda abstraction and lambda application.</p>
 <p>There are several consequences of this power, however:</p>
