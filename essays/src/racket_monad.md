@@ -223,10 +223,14 @@ safely quarantined inside the monadic function.
 # Monad for nothing
 
 `Box`, together with its `return` and `bind` functions, form what is called a
-*monad*.
+*monad*. `Box` recreates the imperative programming style we miss from other
+languages, but it is literally the simplest functor to base a monad on. Using
+other functors we can go beyond merely being able to write sequential actions
+to other more advanced forms of flow control - and still write it imperatively.
 
-All monads are functors with extra operations defined for them. `List`s, which
-we know are functors, are also monads:
+Say I have a function which transforms a number and I want to run this
+transformation over a list of numbers. I can base a monad off of the `List`
+functor like so:
 
 ```scheme
 (: list-return (All (a) (-> a (Listof a))))
@@ -242,20 +246,24 @@ we know are functors, are also monads:
   (flatten (map f ma)))
 ```
 
-What does this do? Observe:
+With this in hand, I can write a nice procedural function which multiplies a
+single number by 5:
 
 ```scheme
 (: times-5 (-> Number (Listof Number)))
 (= times-5 (n)
   (list-bind (list-return (* n 5)) (λ: ((x : Number))
   (list-return x))))
+```
 
+And yet, when I run it on a list, it iterates over the entire list for me:
+
+```scheme
 (list-bind '(1 2 3 4 5) times-5)
 ; => '(5 10 15 20 25)
 ```
 
-A `List` monad essentially runs an entire list through a function written as if
-it were for but one value.
+Try re-writing the semantics of Python code this easily. Or at all.
 
 Note that `list-bind` makes use of `map`. In general, a monad will be forced to
 make use of its `map` function in one way or another. There are math-y reasons

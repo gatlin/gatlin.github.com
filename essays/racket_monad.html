@@ -171,8 +171,8 @@ Or: functor? I ’ardly know ’er!
   (return answer))</code></pre>
 <p>HOLY GODBALLS we just recreated imperative programming. Except it’s typesafe, and all those intermediate local variables are guaranteed not to leak out of their enclosing scope. Any side-effects created or observed as a result are safely quarantined inside the monadic function.</p>
 <h1 id="monad-for-nothing"><span class="header-section-number">5</span> Monad for nothing</h1>
-<p><code>Box</code>, together with its <code>return</code> and <code>bind</code> functions, form what is called a <em>monad</em>.</p>
-<p>All monads are functors with extra operations defined for them. <code>List</code>s, which we know are functors, are also monads:</p>
+<p><code>Box</code>, together with its <code>return</code> and <code>bind</code> functions, form what is called a <em>monad</em>. <code>Box</code> recreates the imperative programming style we miss from other languages, but it is literally the simplest functor to base a monad on. Using other functors we can go beyond merely being able to write sequential actions to other more advanced forms of flow control - and still write it imperatively.</p>
+<p>Say I have a function which transforms a number and I want to run this transformation over a list of numbers. I can base a monad off of the <code>List</code> functor like so:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: list-return (All (a) (-&gt; a (Listof a))))
 (<span class="kw">=</span> list-return (x) (<span class="kw">cons</span> x &#39;()))
 
@@ -184,15 +184,15 @@ Or: functor? I ’ardly know ’er!
 (: list-bind (All (a b) (-&gt; (Listof a) (-&gt; a (Listof b)) (Listof b))))
 (<span class="kw">=</span> list-bind (ma f)
   (flatten (map f ma)))</code></pre>
-<p>What does this do? Observe:</p>
+<p>With this in hand, I can write a nice procedural function which multiplies a single number by 5:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: times<span class="dv">-5</span> (-&gt; Number (Listof Number)))
 (<span class="kw">=</span> times<span class="dv">-5</span> (n)
   (list-bind (list-return (* n <span class="dv">5</span>)) (λ: ((x : Number))
-  (list-return x))))
-
-(list-bind &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span>) times<span class="dv">-5</span>)
+  (list-return x))))</code></pre>
+<p>And yet, when I run it on a list, it iterates over the entire list for me:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(list-bind &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span>) times<span class="dv">-5</span>)
 <span class="co">; =&gt; &#39;(5 10 15 20 25)</span></code></pre>
-<p>A <code>List</code> monad essentially runs an entire list through a function written as if it were for but one value.</p>
+<p>Try re-writing the semantics of Python code this easily. Or at all.</p>
 <p>Note that <code>list-bind</code> makes use of <code>map</code>. In general, a monad will be forced to make use of its <code>map</code> function in one way or another. There are math-y reasons for this; I won’t get into it here.</p>
 <h1 id="conclusion"><span class="header-section-number">6</span> Conclusion</h1>
 <p>Monads are not a difficult concept: they are contexts inside of which pure values may create and react to side-effects in the course of computing some final value.</p>
