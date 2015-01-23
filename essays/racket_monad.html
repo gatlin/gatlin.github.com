@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>
+What the fuck is a monad?
+| Gatlin Johnson</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- glyphicons -->
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+
+    <link href="style.css" rel="stylesheet">
+    <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+
+        div#toc-wrapper ul, div#toc-wrapper ol {
+            list-style: none;
+        }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right clearfix hidden-xs">
+          <li>
+          <a href="mailto:gatlin@niltag.net">
+              <span class="glyphicon glyphicon-envelope"></span>
+              Send me an email!</a></li>
+          <li>
+            <a href="gatlin.gpg">PGP</a>
+          </li>
+          <li>
+              <a href="/">Home</a>
+          </li>
+        </ul>
+        <h3 class="text-muted">
+            <em>Veni veni veni</em>
+        </h3>
+      </div>
+      <hr>
+      <ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+          <li><a href="/essays/">Essays</a></li>
+      </ol>
+      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
+        <h1>
+What the fuck is a monad?
+        </h1>
+        <p class="lead">
+Or: functor? I ’ardly know ’er!
+        </p>
+<div id="toc-wrapper">
+<h2>Contents</h2>
+<ul>
+<li><a href="#preliminaries"><span class="toc-section-number">1</span> Preliminaries</a></li>
+<li><a href="#put-a-lid-on-it"><span class="toc-section-number">2</span> Put a lid on it</a></li>
+<li><a href="#what-the-functor"><span class="toc-section-number">3</span> What the functor … ?</a></li>
+<li><a href="#were-in-a-bind"><span class="toc-section-number">4</span> We’re in a bind …</a></li>
+<li><a href="#monad-for-nothing"><span class="toc-section-number">5</span> Monad for nothing</a></li>
+<li><a href="#conclusion"><span class="toc-section-number">6</span> Conclusion</a></li>
+</ul>
+</div>
+        </div>
+
+      <div class="row">
+        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+<p>Monads are difficult to explain without sounding either patronizing or condescending: I would sound patronizing if I came up with some facile analogy and I would be condescending to describe it categorically.</p>
+<p>Instead, I’ll frame a problem and piece-by-piece solve the problem with what will turn out to be a monad.</p>
+<p>This post is written in <a href="http://docs.racket-lang.org/ts-guide/index.html">Typed Racket</a> which you can download for free at <a href="http://racket-lang.org">the Racket website</a>.</p>
+<h1 id="preliminaries"><span class="header-section-number">1</span> Preliminaries</h1>
+<p>To make the code a little more pleasing to write and look at I have a standard syntax extension that I always begin Typed Racket programs with; this is only here for completeness’ sake if you want to execute any of the code:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define-syntax</span><span class="fu"> </span>(<span class="kw">=</span> stx)
+  (syntax-case stx ()
+    ((<span class="kw">=</span> sym expr)
+     #&#39;(<span class="kw">define</span><span class="fu"> sym </span>expr))
+    ((<span class="kw">=</span> sym (arg ...) expr)
+     #&#39;(<span class="kw">define</span><span class="fu"> </span>(sym arg ...) expr))))</code></pre>
+<h1 id="put-a-lid-on-it"><span class="header-section-number">2</span> Put a lid on it</h1>
+<p>Typed Racket is a functional programming language which heavily discourages imperative programming styles. Like, for instance, programs of this sort:</p>
+<pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> doSomething():
+  x = <span class="dv">5</span>
+  y = foo()
+  <span class="kw">return</span> bar(x, y)</code></pre>
+<p>Here we have three imperative statements modifying some state. Functional languages would prefer that state didn’t exist. At least, not the Wild West, anything-goes, no-guarantees-whatsoever-about-who-is-accessing-what-free-love-festival that is the typical understanding.</p>
+<p>Imperative programming makes use of <em>side-effects</em>: I may write code which alters a database, or reads the time, or has some other side-effect on the state of the machine or surrounding world. Every time I query a network time server I get a different response, meaning that the result is dependent on mutation of state.</p>
+<p>Hell, even just storing the result of a pure computation in a value for use at a later time is relying on the side effect of storing values in memory.</p>
+<p>On the other hand, pure functional programming requires you to sequence actions through function composition:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: square-then-double (-&gt; Real Real))
+(<span class="kw">=</span> square-then-double (n) (* <span class="dv">2</span> (*n n)))</code></pre>
+<p>This is great and all, but how can I perform side effects, capture the resulting values, and do stuff with them? Composing a long networking program would be miserable to write in this style.</p>
+<p>Correct imperative programs are written every day so there must be some way of representing them in a principled manner which can catch type and other logic errors.</p>
+<h1 id="what-the-functor"><span class="header-section-number">3</span> What the functor … ?</h1>
+<p>Let’s take a side-step to introduce a fundamental concept in type theory. It’s called the <em>Functor</em>. A functor is a <em>higher-order</em> type; it depends on some <em>base</em> type for its full meaning. For instance, in Typed Racket <code>Listof</code> is a higher-order type: you can have <code>Listof Number</code> or <code>Listof String</code> or <code>Listof Boolean</code>.</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: list<span class="dv">-1</span> (Listof Number))
+(<span class="kw">=</span> list<span class="dv">-1</span> &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>))</code></pre>
+<p>Not just every higher-order type is a functor, though. A functor must also implement some way to <em>map</em> pure transformations inside the functor. As a specific example, I can map the function <code>(lambda (x) (* x x))</code> inside a <code>Listof Number</code>s and the result will be a new list with the squares of the items of the old list.</p>
+<p>Perhaps I have a function to determine if a real number is greater than zero:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: gt-zero? (-&gt; Real Boolean))
+(<span class="kw">=</span> gt-zero? (n) (<span class="kw">&gt;</span> n <span class="dv">0</span>))
+
+(map gt-zero? list<span class="dv">-1</span>)
+<span class="co">; =&gt; &#39;(#t #t #t)</span></code></pre>
+<p>This is a function from <code>Real</code> numbers to <code>Boolean</code> values. Mapping <code>gt-zero?</code> over a <code>Listof Number</code>s yields a <code>Listof Boolean</code>s. Lists are definitely functors since their map function is actually called <code>map</code>.</p>
+<p>There are other kinds of functors. The simplest functor is what I like to call <code>Box</code>. It may be defined in Typed Racket as follows:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(struct: (a) Box ((open : a)))</code></pre>
+<p>A <code>Box</code> just contains some base value and lets you retrieve it later, like so:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">=</span> boxed-two (Box <span class="dv">2</span>))
+(<span class="kw">=</span> two (Box-open boxed-two))</code></pre>
+<p>It doesn’t do anything interesting to your value. You can write a simple map function for <code>Box</code> quite easily:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: box-map (All (a b) (-&gt; (-&gt; a b) (Box a) (Box b))))
+(<span class="kw">=</span> box-map (f bx)
+  (Box (f (Box-open bx))))</code></pre>
+<p>Thus:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">=</span> b1 (Box <span class="dv">2</span>))
+(<span class="kw">=</span> b2 (box-map gt-zero? b1))</code></pre>
+<p>produces <code>Box 2</code> and <code>Box #t</code>.</p>
+<h1 id="were-in-a-bind"><span class="header-section-number">4</span> We’re in a bind …</h1>
+<p>A <code>Box</code> is a simple context around a base value. A function expecting a <code>Number</code> argument won’t accept a <code>Box Number</code> argument, however we can project or map functions with <code>Number</code> arguments into a <code>Box Number</code>. And after we map that operation we can retrieve the resulting pure value.</p>
+<p>An imperative, side-effect-ful function is one in which we have some kind of workspace or context in which we may do crazy shit and then, at the end, retrieve a pure value. We know how to take values out of a context, and we also know how to put them in (at least, when that context is <code>Box</code>):</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: return (All (a) (-&gt; a (Box a))))
+(<span class="kw">=</span> return (x) (Box x))</code></pre>
+<p>Why did we call this function <code>return</code>? Think about it. Harking back to our <code>gt-zero?</code> function, we can write an upgraded version:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: gt-zero-box? (-&gt; Real (Box Boolean)))
+(<span class="kw">=</span> gt-zero-box? (n) (return (gt-zero? n)))</code></pre>
+<p>The base type changed <em>and</em> the value was put inside a <code>Box</code>. Given arguments of a pure value I can perform some operation inside a <code>Box</code> context and return to you that context, and you would be free to extract the pure value at any time. And when I say <code>Box</code> I really mean any <code>monad</code> but shh we’re getting there.</p>
+<p>But normal functions, like <code>filter</code> or <code>sum</code> on lists, compose. I can write <code>(f (g x))</code> provided that <code>g</code>’s output matches <code>f</code>’s input. Can I compose these <code>monadic</code> functions of type <code>(All (a b) (-&gt; a (Box b)))</code>?</p>
+<p>Sure you can! First let’s think about the type. The result of some monadic function from <code>a</code> to <code>b</code> would have the above type, and then another function might have <code>(All (b c) (-&gt; b (Box c)))</code>. So ultimately we want to extract values from one context, feed them into a monadic continuation, and get the resulting monadic value.</p>
+<p>It’s called <code>bind</code>:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: bind (All (a b) (-&gt; (Box a) (-&gt; a (Box b)) (Box b))))
+(<span class="kw">=</span> bind (ma f) (f (Box-open ma)))</code></pre>
+<p>Have we solved our problem yet? Let’s write a monadic function which subtracts 10 from a number, and then determines if the result is greater than zero:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: sub<span class="dv">-10</span>-gt-zero? (-&gt; Real (Box Boolean)))
+(<span class="kw">=</span> sub<span class="dv">-10</span>-gt-zero? (n)
+  (bind (return (<span class="kw">-</span> n <span class="dv">10</span>)) (λ: ((x : Number))
+  (bind (gt-zero-box? x) (λ: ((answer : Boolean))
+  (return answer))))))</code></pre>
+<p>If you squint, and imagine a straightforward syntax transformation, the code sort of looks like the following:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: sub<span class="dv">-10</span>-gt-zero? (-&gt; Real (Box Boolean)))
+(<span class="kw">=</span> sub<span class="dv">-10</span>-gt-zero? (n)
+  (:= x (return (<span class="kw">-</span> n <span class="dv">10</span>)))
+  (:= answer (gt-zero-box? x))
+  (return answer))</code></pre>
+<p>HOLY GODBALLS we just recreated imperative programming. Except it’s typesafe, and all those intermediate local variables are guaranteed not to leak out of their enclosing scope. Any side-effects created or observed as a result are safely quarantined inside the monadic function.</p>
+<h1 id="monad-for-nothing"><span class="header-section-number">5</span> Monad for nothing</h1>
+<p><code>Box</code>, together with its <code>return</code> and <code>bind</code> functions, form what is called a <em>monad</em>.</p>
+<p>All monads are functors with extra operations defined for them. <code>List</code>s, which we know are functors, are also monads:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: list-return (All (a) (-&gt; a (Listof a))))
+(<span class="kw">=</span> list-return (x) (<span class="kw">cons</span> x &#39;()))
+
+(: flatten (All (a) (-&gt; (Listof (Listof a)) (Listof a))))
+(<span class="kw">=</span> flatten (xss)
+  (foldr (λ: ((y : (Listof a)) (ys : (Listof a))) (<span class="kw">append</span> y ys))
+           empty xss))
+
+(: list-bind (All (a b) (-&gt; (Listof a) (-&gt; a (Listof b)) (Listof b))))
+(<span class="kw">=</span> list-bind (ma f)
+  (flatten (map f ma)))</code></pre>
+<p>What does this do? Observe:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: times<span class="dv">-5</span> (-&gt; Number (Listof Number)))
+(<span class="kw">=</span> times<span class="dv">-5</span> (n)
+  (list-bind (list-return (* n <span class="dv">5</span>)) (λ: ((x : Number))
+  (list-return x))))
+
+(list-bind &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span>) times<span class="dv">-5</span>)
+<span class="co">; =&gt; &#39;(5 10 15 20 25)</span></code></pre>
+<p>A <code>List</code> monad essentially runs an entire list through a function written as if it were for but one value.</p>
+<p>Note that <code>list-bind</code> makes use of <code>map</code>. In general, a monad will be forced to make use of its <code>map</code> function in one way or another. There are math-y reasons for this; I won’t get into it here.</p>
+<h1 id="conclusion"><span class="header-section-number">6</span> Conclusion</h1>
+<p>Monads are not a difficult concept: they are contexts inside of which pure values may create and react to side-effects in the course of computing some final value.</p>
+<p>Depending on the implementation of two functions - called <code>return</code> and <code>bind</code> - the same imperative style of programming can take on different operational meanings.</p>
+<p>How could you create a monad which terminates early if an error value is returned at any point? You can figure it out.</p>
+        </div>
+</div><!-- row -->
+<hr>
+
+
+      <div class="footer">
+        <p>&copy; 2013-2014. Theme lovingly stolen from other people.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
+
