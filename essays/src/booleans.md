@@ -14,7 +14,7 @@ write your own.
 I'm going to demonstrate how to do this in perfectly valid R6RS Scheme (Racket, specifically). Hopefully it will be illuminating.
 
 Creating the data type
----
+===
 
 Racket doesn't have static typing or algebraic data types but we can make pretend like so:
 
@@ -44,7 +44,7 @@ So that we can display these values properly, I also define some helper procedur
 ```
 
 Boolean operators
----
+===
 
 So far, so good. But what can we *do* with these values? Why, we can perform Boolean logic! Below I define `and`, `or`, and `not`.
 
@@ -68,7 +68,7 @@ So far, so good. But what can we *do* with these values? Why, we can perform Boo
 ```
 
 `if` expressions
----
+===
 
 Ah, the part you've all been waiting for. First the code, then the explanation:
 
@@ -102,7 +102,7 @@ So `functions` run at runtime, and `macros` run at compile time. Scheme provides
 See if you can figure out why this macro is correct given what I have just told you.
 
 Epilogue
----
+===
 
 So you don't really need conditionals baked into your language. A question, though, is how expensive are these operations?
 
