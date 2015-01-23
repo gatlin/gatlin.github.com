@@ -30,7 +30,7 @@ This post is a simple exploration of implementing the `Functor` typeclass as an
 algebraic data type, and then deriving a free monad from it.
 
 Functors and Free Monads
----
+===
 
 > {-# LANGUAGE RankNTypes #-}
 >
@@ -83,7 +83,7 @@ will essentially use this or an equivalent function to implement `do` notation
 under the covers.
 
 An example: re-creating the `Maybe` monad.
----
+===
 
 Apple's Swift programming language seems to have ignited more widespread
 interest in optional types. So, just to show there is nothing up my sleeves, I
@@ -124,7 +124,7 @@ monadic computation built up using `unit` and `bind`.
 >     Some v  -> runOptional v
 
 Tests!
----
+===
 
 Without further ado, here is some example code written in our `Optional` monad.
 

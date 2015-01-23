@@ -14,7 +14,7 @@ Literate Haskell, so its source code can be compiled and run as a program. The
 source is [here](https://gist.github.com/gatlin/9696088).
 
 Part the First: The boilerplate
----
+===
 
 Surprisingly, you won't need much boilerplate for this exercise:
 
@@ -38,7 +38,7 @@ typeclass. All you have to do is supply a `Functor` type and the `Free` type
 constructor spits out a `Monad`.
 
 Part the Second: SHOW ME ALREADY
----
+===
 
 *Voici*:
 
@@ -51,7 +51,7 @@ that's the part we must fill in. In our case we wish to be able to write
 imperative, this-then-this-then-this style programs.
 
 Part the Third: Give my creation ... LIFE!
----
+===
 ![Dr Frankenstein has been a very naughty boy](http://i.imgur.com/afH9ODT.jpg)
 
 So now we should specify the behavior of our newly minted monad. We will define
@@ -66,7 +66,7 @@ unpack the value inside of it and loop; otherwise, we have broken the program
 down as far as we can and should evaluate the expression we have uncovered.
 
 Part the Fourth: Examples
----
+===
 
 We'll write some simple arithmetic functions, including the types for
 pedagogical thoroughness:

@@ -17,7 +17,7 @@ comes with the friendly yet powerful Dr Racket environment for programming.
 You can copy the code snippets into Dr Racket and play around with them. Try it!
 
 Abstraction and application
----
+===
 
 Lambda calculus is a language for expressing computation. In math notation, a
 function which takes some argument `x` and returns `x + 1` looks like this:
@@ -47,7 +47,7 @@ define literally anything.
 Let's give it a shot.
 
 Baby's first arithmetic isomorphism
----
+===
 
 Here's Racket code for defining a function `zero` and a function `succ` (for successor):
 
@@ -130,7 +130,7 @@ and for `one` it is applied 1 time. And `x` is just 0.
 ![I see what you did there.](http://zanyjaney.com/wp-content/uploads/2012/09/1656-462x600.jpg)
 
 Addition and multiplication
----
+===
 
 Now that we have `zero`, a successor function, and a means of converting the
 lambda calculus value to more friendly representations of numbers, we can
@@ -203,7 +203,7 @@ HELL YEAH
 I'll leave it as an exercise to the reader to figure out how `mult` works :)
 
 What was the point again?
----
+===
 
 We have provided some intuition for how to define arithmetic in the lambda
 calculus. If I can add, I can subtract; if I can multiply, I can divide; if I
