@@ -37,7 +37,8 @@ imperative programming styles. Like, for instance, programs of this sort:
 def doSomething():
   x = 5
   y = foo()
-  return bar(x, y)
+  x = bar(10, y)
+  return x
 ```
 
 Here we have three imperative statements modifying some state. Functional
@@ -63,15 +64,23 @@ through function composition:
 (= square-then-double (n) (* 2 (*n n)))
 ```
 
-This is great and all, but how can I perform side effects, capture the
-resulting values, and do stuff with them? Composing a long networking program
-would be miserable to write in this style.
+This is great and all, but how can I recapture the (admitted) simplicity of
+that python snippet? Maybe this way:
 
+```scheme
+(let ((x 5)
+      (y (foo)))
+  (let ((x (bar 10 y)))
+    x))
+```
+
+But that becomes unwieldly after a while.
+ 
 Correct imperative programs are written every day so there must be some way of
 representing them in a principled manner which can catch type and other logic
 errors.
 
-# Put a lid on it!
+# What the functor ... ?
 
 Let's take a side-step to introduce a fundamental concept in type theory. It's
 called the *Functor*. A functor is a *higher-order* type; it depends on some

@@ -77,7 +77,7 @@ Or: functor? I ’ardly know ’er!
 <ul>
 <li><a href="#preliminaries"><span class="toc-section-number">1</span> Preliminaries</a></li>
 <li><a href="#what-the-functor"><span class="toc-section-number">2</span> What the functor …</a></li>
-<li><a href="#put-a-lid-on-it"><span class="toc-section-number">3</span> Put a lid on it!</a></li>
+<li><a href="#what-the-functor-1"><span class="toc-section-number">3</span> What the functor … ?</a></li>
 <li><a href="#were-in-a-bind"><span class="toc-section-number">4</span> We’re in a bind …</a></li>
 <li><a href="#monad-for-nothing"><span class="toc-section-number">5</span> Monad for nothing</a></li>
 <li><a href="#conclusion"><span class="toc-section-number">6</span> Conclusion</a></li>
@@ -103,16 +103,22 @@ Or: functor? I ’ardly know ’er!
 <pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> doSomething():
   x = <span class="dv">5</span>
   y = foo()
-  <span class="kw">return</span> bar(x, y)</code></pre>
+  x = bar(<span class="dv">10</span>, y)
+  <span class="kw">return</span> x</code></pre>
 <p>Here we have three imperative statements modifying some state. Functional languages would prefer that state didn’t exist. At least, not the Wild West, anything-goes, no-guarantees-whatsoever-about-who-is-accessing-what-free-love-festival that is the typical understanding.</p>
 <p>Imperative programming makes use of <em>side-effects</em>: I may write code which alters a database, or reads the time, or has some other side-effect on the state of the machine or surrounding world. Every time I query a network time server I get a different response, meaning that the result is dependent on mutation of state.</p>
 <p>Hell, even just storing the result of a pure computation in a value for use at a later time is relying on the side effect of storing values in memory.</p>
 <p>On the other hand, pure functional programming requires you to sequence actions through function composition:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: square-then-double (-&gt; Real Real))
 (<span class="kw">=</span> square-then-double (n) (* <span class="dv">2</span> (*n n)))</code></pre>
-<p>This is great and all, but how can I perform side effects, capture the resulting values, and do stuff with them? Composing a long networking program would be miserable to write in this style.</p>
+<p>This is great and all, but how can I recapture the (admitted) simplicity of that python snippet? Maybe this way:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">let</span> ((x <span class="dv">5</span>)
+      (y (foo)))
+  (<span class="kw">let</span> ((x (bar <span class="dv">10</span> y)))
+    x))</code></pre>
+<p>But that becomes unwieldly after a while.</p>
 <p>Correct imperative programs are written every day so there must be some way of representing them in a principled manner which can catch type and other logic errors.</p>
-<h1 id="put-a-lid-on-it"><span class="header-section-number">3</span> Put a lid on it!</h1>
+<h1 id="what-the-functor-1"><span class="header-section-number">3</span> What the functor … ?</h1>
 <p>Let’s take a side-step to introduce a fundamental concept in type theory. It’s called the <em>Functor</em>. A functor is a <em>higher-order</em> type; it depends on some <em>base</em> type for its full meaning. For instance, in Typed Racket <code>Listof</code> is a higher-order type: you can have <code>Listof Number</code> or <code>Listof String</code> or <code>Listof Boolean</code>.</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: list<span class="dv">-1</span> (Listof Number))
 (<span class="kw">=</span> list<span class="dv">-1</span> &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>))</code></pre>
