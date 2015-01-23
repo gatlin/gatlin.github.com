@@ -146,29 +146,51 @@ Or: functor? I ’ardly know ’er!
 <h1 id="were-in-a-bind"><span class="header-section-number">4</span> We’re in a bind …</h1>
 <p>A <code>Box</code> is a simple context around a base value. A function expecting a <code>Number</code> argument won’t accept a <code>Box Number</code> argument, however we can project or map functions with <code>Number</code> arguments into a <code>Box Number</code>. And after we map that operation we can retrieve the resulting pure value.</p>
 <p>An imperative, side-effect-ful function is one in which we have some kind of workspace or context in which we may do crazy shit and then, at the end, retrieve a pure value. We know how to take values out of a context, and we also know how to put them in (at least, when that context is <code>Box</code>):</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: return (All (a) (-&gt; a (Box a))))
-(<span class="kw">=</span> return (x) (Box x))</code></pre>
-<p>Why did we call this function <code>return</code>? Think about it. Harking back to our <code>gt-zero?</code> function, we can write an upgraded version:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: box-return (All (a) (-&gt; a (Box a))))
+(<span class="kw">=</span> box-return (x) (Box x))</code></pre>
+<p>Why did we call this function <code>return</code>? Think about its use in Python. That’s a clue. In the meantime, let’s write a box-y version of <code>gt-zero?</code>:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: gt-zero-box? (-&gt; Real (Box Boolean)))
 (<span class="kw">=</span> gt-zero-box? (n) (return (gt-zero? n)))</code></pre>
 <p>The base type changed <em>and</em> the value was put inside a <code>Box</code>. Given arguments of a pure value I can perform some operation inside a <code>Box</code> context and return to you that context, and you would be free to extract the pure value at any time. And when I say <code>Box</code> I really mean any <code>monad</code> but shh we’re getting there.</p>
 <p>But normal functions, like <code>filter</code> or <code>sum</code> on lists, compose. I can write <code>(f (g x))</code> provided that <code>g</code>’s output matches <code>f</code>’s input. Can I compose these <code>monadic</code> functions of type <code>(All (a b) (-&gt; a (Box b)))</code>?</p>
 <p>Sure you can! First let’s think about the type. The result of some monadic function from <code>a</code> to <code>b</code> would have the above type, and then another function might have <code>(All (b c) (-&gt; b (Box c)))</code>. So ultimately we want to extract values from one context, feed them into a monadic continuation, and get the resulting monadic value.</p>
 <p>It’s called <code>bind</code>:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: bind (All (a b) (-&gt; (Box a) (-&gt; a (Box b)) (Box b))))
-(<span class="kw">=</span> bind (ma f) (f (Box-open ma)))</code></pre>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: box-bind (All (a b) (-&gt; (Box a) (-&gt; a (Box b)) (Box b))))
+(<span class="kw">=</span> box-bind (ma f) (f (Box-open ma)))</code></pre>
 <p>Have we solved our problem yet? Let’s write a monadic function which subtracts 10 from a number, and then determines if the result is greater than zero:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: sub<span class="dv">-10</span>-gt-zero? (-&gt; Real (Box Boolean)))
 (<span class="kw">=</span> sub<span class="dv">-10</span>-gt-zero? (n)
-  (bind (return (<span class="kw">-</span> n <span class="dv">10</span>)) (λ: ((x : Number))
-  (bind (gt-zero-box? x) (λ: ((answer : Boolean))
-  (return answer))))))</code></pre>
-<p>If you squint, and imagine a straightforward syntax transformation, the code sort of looks like the following:</p>
+  (box-bind (box-return (<span class="kw">-</span> n <span class="dv">10</span>)) (λ: ((x : Number))
+  (box-bind (gt-zero-box? x) (λ: ((answer : Boolean))
+  (box-return answer))))))</code></pre>
+<p>If you squint, this sort of looks like we are binding <code>(return (- n 10))</code> to the variable <code>x</code> like in an imperative language.</p>
+<p>Let’s write a syntax-extension to do just this <strong>warning: you can ignore this next snippet; I’m only providing it to prove it is possible</strong>:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define-syntax</span><span class="fu"> do</span>^
+  (<span class="kw">syntax-rules</span> (:= <span class="kw">let</span>)
+    ((_ (:= v e) e2 es ...)
+     (bind e (<span class="kw">lambda</span> (v) (<span class="kw">do</span>^ e2 es ...))))
+    ((_ (<span class="kw">let</span> [v e] ...) e2 es ...)
+     (<span class="kw">let</span> ((v e) ...)
+       (<span class="kw">do</span>^ e2 es ...)))
+    ((_ e e2 es ...) (bind e (<span class="kw">lambda</span> (_) (<span class="kw">do</span>^ e2 es ...))))
+    ((_ e) e)))
+
+(<span class="kw">define-syntax</span><span class="fu"> </span>(<span class="kw">do</span> stx)
+  (syntax-case stx ()
+    ((_ prefix e1 e2 ...)
+     (with-syntax ((prefix-bind (format-id #&#39;prefix <span class="st">&quot;~a-bind&quot;</span> #&#39;prefix))
+                   (prefix-return (format-id #&#39;return <span class="st">&quot;~a-return&quot;</span> #&#39;prefix)))
+       #&#39;(syntax-parameterize ((bind (make-rename-transformer #&#39;prefix-bind))
+                               (return (make-rename-transformer #&#39;prefix-return)))
+                              (<span class="kw">do</span>^ e1 e2 ...))))))</code></pre>
+<p><em>Thanks to user chandler on the #racket IRC room for teaching me how to do this.</em></p>
+<p>So now this is legal:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: sub<span class="dv">-10</span>-gt-zero? (-&gt; Real (Box Boolean)))
 (<span class="kw">=</span> sub<span class="dv">-10</span>-gt-zero? (n)
-  (:= x (return (<span class="kw">-</span> n <span class="dv">10</span>)))
-  (:= answer (gt-zero-box? x))
-  (return answer))</code></pre>
+  (<span class="kw">do</span> box
+    (:= x (return (<span class="kw">-</span> n <span class="dv">10</span>)))
+    (:= answer (gt-zero-box? x))
+    (return answer)))</code></pre>
 <p>HOLY GODBALLS we just recreated imperative programming. Except it’s typesafe, and all those intermediate local variables are guaranteed not to leak out of their enclosing scope. Any side-effects created or observed as a result are safely quarantined inside the monadic function.</p>
 <h1 id="monad-for-nothing"><span class="header-section-number">5</span> Monad for nothing</h1>
 <p><code>Box</code>, together with its <code>return</code> and <code>bind</code> functions, form what is called a <em>monad</em>. <code>Box</code> recreates the imperative programming style we miss from other languages, but it is literally the simplest functor to base a monad on. Using other functors we can go beyond merely being able to write sequential actions to other more advanced forms of flow control - and still write it imperatively.</p>
@@ -187,13 +209,19 @@ Or: functor? I ’ardly know ’er!
 <p>With this in hand, I can write a nice procedural function which multiplies a single number by 5:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: times<span class="dv">-5</span> (-&gt; Number (Listof Number)))
 (<span class="kw">=</span> times<span class="dv">-5</span> (n)
-  (list-bind (list-return (* n <span class="dv">5</span>)) (λ: ((x : Number))
-  (list-return x))))</code></pre>
+  (<span class="kw">do</span> <span class="kw">list</span>
+    (<span class="kw">let</span> [n (* n <span class="dv">5</span>)])
+    (return n)))</code></pre>
 <p>And yet, when I run it on a list, it iterates over the entire list for me:</p>
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(list-bind &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span>) times<span class="dv">-5</span>)
 <span class="co">; =&gt; &#39;(5 10 15 20 25)</span></code></pre>
-<p>Try re-writing the semantics of Python code this easily. Or at all.</p>
-<p>Note that <code>list-bind</code> makes use of <code>map</code>. In general, a monad will be forced to make use of its <code>map</code> function in one way or another. There are math-y reasons for this; I won’t get into it here.</p>
+<p>While this may seem a bit overwhelming, remember this only needs to be done once .. and it was just done.</p>
+<p>Note that <code>list-bind</code> makes use of <code>map</code>. In fact, while you can write <code>bind</code> functions without directly using <code>map</code>, the classical definition of a monad was a triple of functions called <code>map</code>, <code>return</code>, and <em>join</em>.</p>
+<p><code>join</code> has the type (when dealing with <code>Box</code>es) of <code>(All (a) (-&gt; (Box (Box a)) (Box a)))</code>. We have already seen a function with this signature: <code>flatten</code>, for <code>List</code>s.</p>
+<p><code>join</code> is really just <code>flatten</code> for monads which aren’t <code>List</code>s. Given a suitable definition of <code>join</code>, <code>bind</code> may always be defined as such:</p>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(: bind (All (a) (-&gt; (M a) (-&gt; a (M b)) (M b))))
+(<span class="kw">=</span> bind (mma) (join (map f mma)))</code></pre>
+<p>This is exactly how we defined <code>list-bind</code> above. However, anecdotally, most of the time <code>join</code>’s only purpose is to define <code>bind</code> so I started with that. So shoot me.</p>
 <h1 id="conclusion"><span class="header-section-number">6</span> Conclusion</h1>
 <p>Monads are not a difficult concept: they are contexts inside of which pure values may create and react to side-effects in the course of computing some final value.</p>
 <p>Depending on the implementation of two functions - called <code>return</code> and <code>bind</code> - the same imperative style of programming can take on different operational meanings.</p>
