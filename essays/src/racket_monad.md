@@ -13,21 +13,6 @@ will turn out to be a monad.
 This post is written in [Typed Racket][typedracket] which you can download for
 free at [the Racket website][racket].
 
-# Preliminaries
-
-To make the code a little more pleasing to write and look at I have a standard
-syntax extension that I always begin Typed Racket programs with; this is only
-here for completeness' sake if you want to execute any of the code:
-
-```scheme
-(define-syntax (= stx)
-  (syntax-case stx ()
-    ((= sym expr)
-     #'(define sym expr))
-    ((= sym (arg ...) expr)
-     #'(define (sym arg ...) expr))))
-```
-
 # Take me to functor town
 
 Typed Racket is a functional programming language which heavily discourages
@@ -61,7 +46,7 @@ through function composition:
 
 ```scheme
 (: square-then-double (-> Real Real))
-(= square-then-double (n) (* 2 (*n n)))
+(define (square-then-double n) (* 2 (*n n)))
 ```
 
 This is great and all, but how can I recapture the (admitted) simplicity of
@@ -90,7 +75,7 @@ Boolean`.
 
 ```scheme
 (: list-1 (Listof Number))
-(= list-1 '(1 2 3))
+(define list-1 '(1 2 3))
 ```
 
 Not just every higher-order type is a functor, though. A functor must also
@@ -103,7 +88,7 @@ Perhaps I have a function to determine if a real number is greater than zero:
 
 ```scheme
 (: gt-zero? (-> Real Boolean))
-(= gt-zero? (n) (> n 0))
+(define (gt-zero? n) (> n 0))
 
 (map gt-zero? list-1)
 ; => '(#t #t #t)
@@ -123,8 +108,8 @@ There are other kinds of functors. The simplest functor is what I like to call
 A `Box` just contains some base value and lets you retrieve it later, like so:
 
 ```scheme
-(= boxed-two (Box 2))
-(= two (Box-open boxed-two))
+(define boxed-two (Box 2))
+(define two (Box-open boxed-two))
 ```
 
 It doesn't do anything interesting to your value. You can write a simple map
@@ -132,15 +117,15 @@ function for `Box` quite easily:
 
 ```scheme
 (: box-map (All (a b) (-> (-> a b) (Box a) (Box b))))
-(= box-map (f bx)
+(define (box-map f bx)
   (Box (f (Box-open bx))))
 ```
 
 Thus:
 
 ```scheme
-(= b1 (Box 2))
-(= b2 (box-map gt-zero? b1))
+(define b1 (Box 2))
+(define b2 (box-map gt-zero? b1))
 ```
 
 produces `Box 2` and `Box #t`.
@@ -159,7 +144,7 @@ know how to put them in (at least, when that context is `Box`):
 
 ```scheme
 (: box-return (All (a) (-> a (Box a))))
-(= box-return (x) (Box x))
+(define (box-return x) (Box x))
 ```
 
 Why did we call this function `return`? Think about its use in Python. That's a
@@ -167,7 +152,7 @@ clue. In the meantime, let's write a box-y version of `gt-zero?`:
 
 ```scheme
 (: gt-zero-box? (-> Real (Box Boolean)))
-(= gt-zero-box? (n) (return (gt-zero? n)))
+(define (gt-zero-box? n) (return (gt-zero? n)))
 ```
 
 The base type changed *and* the value was put inside a `Box`. Given arguments
@@ -190,7 +175,7 @@ It's called `bind`:
 
 ```scheme
 (: box-bind (All (a b) (-> (Box a) (-> a (Box b)) (Box b))))
-(= box-bind (ma f) (f (Box-open ma)))
+(define (box-bind ma f) (f (Box-open ma)))
 ```
 
 Have we solved our problem yet? Let's write a monadic function which subtracts
@@ -198,7 +183,7 @@ Have we solved our problem yet? Let's write a monadic function which subtracts
 
 ```scheme
 (: sub-10-gt-zero? (-> Real (Box Boolean)))
-(= sub-10-gt-zero? (n)
+(define (sub-10-gt-zero? n)
   (box-bind (box-return (- n 10)) (λ: ((x : Number))
   (box-bind (gt-zero-box? x) (λ: ((answer : Boolean))
   (box-return answer))))))
@@ -237,7 +222,7 @@ So now this is legal:
 
 ```scheme
 (: sub-10-gt-zero? (-> Real (Box Boolean)))
-(= sub-10-gt-zero? (n)
+(define (sub-10-gt-zero? n)
   (do box
     (:= x (return (- n 10)))
     (:= answer (gt-zero-box? x))
@@ -263,15 +248,17 @@ functor like so:
 
 ```scheme
 (: list-return (All (a) (-> a (Listof a))))
-(= list-return (x) (cons x '()))
+(define (list-return x) (cons x '()))
+
+; this is the same as (list x), but I wanted to show what it is doing
 
 (: flatten (All (a) (-> (Listof (Listof a)) (Listof a))))
-(= flatten (xss)
+(define (flatten xss)
   (foldr (λ: ((y : (Listof a)) (ys : (Listof a))) (append y ys))
            empty xss))
 
 (: list-bind (All (a b) (-> (Listof a) (-> a (Listof b)) (Listof b))))
-(= list-bind (ma f)
+(define (list-bind ma f)
   (flatten (map f ma)))
 ```
 
@@ -280,7 +267,7 @@ single number by 5:
 
 ```scheme
 (: times-5 (-> Number (Listof Number)))
-(= times-5 (n)
+(define (times-5 n)
   (do list
     (let [n (* n 5)])
     (return n)))
@@ -309,7 +296,7 @@ suitable definition of `join`, `bind` may always be defined as such:
 
 ```scheme
 (: bind (All (a) (-> (M a) (-> a (M b)) (M b))))
-(= bind (mma) (join (map f mma)))
+(define (bind mma) (join (map f mma)))
 ```
 
 This is exactly how we defined `list-bind` above. However, anecdotally, most of
