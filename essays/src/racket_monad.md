@@ -224,8 +224,8 @@ So now this is legal:
 (: sub-10-gt-zero? (-> Real (Box Boolean)))
 (define (sub-10-gt-zero? n)
   (do box
-    (:= x (return (- n 10)))
-    (:= answer (gt-zero-box? x))
+    (let [n (- n 10)])
+    (:= answer (gt-zero-box? n))
     (return answer)))
 ```
 
@@ -233,6 +233,9 @@ HOLY GODBALLS we just recreated imperative programming. Except it's typesafe,
 and all those intermediate local variables are guaranteed not to leak out of
 their enclosing scope. Any side-effects created or observed as a result are
 safely quarantined inside the monadic function.
+
+**Aside**: Why did I use `let` in one place and `:=` in another? Think about
+what type `gt-zero-box?` returns and what type `-` returns.
 
 # Monad for nothing
 

@@ -179,10 +179,11 @@ Or: drinking alone isn’t healthy
 <pre class="sourceCode scheme"><code class="sourceCode scheme">(: sub<span class="dv">-10</span>-gt-zero? (-&gt; Real (Box Boolean)))
 (<span class="kw">define</span><span class="fu"> </span>(sub<span class="dv">-10</span>-gt-zero? n)
   (<span class="kw">do</span> box
-    (:= x (return (<span class="kw">-</span> n <span class="dv">10</span>)))
-    (:= answer (gt-zero-box? x))
+    (<span class="kw">let</span> [n (<span class="kw">-</span> n <span class="dv">10</span>)])
+    (:= answer (gt-zero-box? n))
     (return answer)))</code></pre>
 <p>HOLY GODBALLS we just recreated imperative programming. Except it’s typesafe, and all those intermediate local variables are guaranteed not to leak out of their enclosing scope. Any side-effects created or observed as a result are safely quarantined inside the monadic function.</p>
+<p><strong>Aside</strong>: Why did I use <code>let</code> in one place and <code>:=</code> in another? Think about what type <code>gt-zero-box?</code> returns and what type <code>-</code> returns.</p>
 <h1 id="monad-for-nothing"><span class="header-section-number">4</span> Monad for nothing</h1>
 <p><code>Box</code>, together with its <code>return</code> and <code>bind</code> functions, form what is called a <em>monad</em>. <code>Box</code> recreates the imperative programming style we miss from other languages, but it is literally the simplest functor to base a monad on. Using other functors we can go beyond merely being able to write sequential actions to other more advanced forms of flow control - and still write it imperatively.</p>
 <p>Say I have a function which transforms a number and I want to run this transformation over a list of numbers. I can base a monad off of the <code>List</code> functor like so:</p>
