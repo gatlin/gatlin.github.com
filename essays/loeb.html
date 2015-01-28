@@ -78,8 +78,8 @@ Or, what's Löb got to do with it?
 <p>In modal logic, Löb's theorem states:</p>
 <pre><code>□ ( □ P → P ) → □ P</code></pre>
 <p>In English, &quot;If a system has Peano arithmetic, then if for any <em>p</em> the statement 'if <em>p</em> is provable then <em>p</em> is true' is true, then <em>p</em> is provable.&quot;</p>
-<p>This is significant because</p>
-<p>Somebody had this bright idea of pretending □ was some functor <em>f</em> and named it <code>loeb</code>, along with a valid definition.</p>
+<p>According to the <a href="http://en.wikipedia.org/wiki/Curry%E2%80%93Howard_correspondence">Curry-Howard isomorphism</a>, in type systems like that of Haskell's types correspond to logical propositions, and functions inhabiting those types are proofs. So if a type's definability implies its validity then it is definable.</p>
+<p>Somebody had this bright idea of pretending □ was some functor <em>f</em> and encoded this property in a function called <code>loeb</code>:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">loeb ::</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> f (f a <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> f a
 loeb x <span class="fu">=</span> fmap (\a <span class="ot">-&gt;</span> a (loeb x)) x</code></pre>
 <p>How could this be useful? Recalling that the type <code>[a]</code> is a functor,</p>
