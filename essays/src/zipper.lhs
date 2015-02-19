@@ -152,8 +152,9 @@ make sense just go with the flow.
 
 The reason, though, is that comonads describe computations where, instead of
 sequentially moving from state to state reacting to and causing effects like
-normal imperative programming, we write code to handle all possibilities.
-Duplication may be thought of as generating this field of future states.
+normal imperative programming, we instead are presented with multiple
+simultaneous future states. We can write a function to transform one of them,
+abstractly, and this function will be applied to all possible future states.
 
 This is intimately related to the fact that we know for certain we will be able
 to yank a value out of the comonad: thus, we can borrow against the future.
