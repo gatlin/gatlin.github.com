@@ -167,9 +167,6 @@ extract :: (Comonad w) => w a -> a
 duplicate :: (Comonad w) => w a -> w (w a)
 ```
 
-If you define `duplicate` you don't need to define `extend`, and vice versa.
-`extract` is mandatory. For a `Zipper` we just hand back the focus.
-
 What about the `duplicate` function? We know we can create a `Zipper` by giving
 a seed value to `seed`. What if that seed value was a `Zipper`? What does a
 `Zipper` of `Zipper`s look like?
