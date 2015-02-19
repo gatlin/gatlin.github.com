@@ -3,9 +3,11 @@ title: Excelsior!
 lead: "Or, I may have finally gone insane"
 ...
 
-I've written previously about Löb's theorem and the curious manner in which we
-can evaluate a list of functions which depend on each other's outputs
+I've written [previously][l] about Löb's theorem and the curious manner in
+which we can evaluate a list of functions which depend on each other's outputs
 *simultaneously* without much fuss, like a shitty one-row spreadsheet.
+
+[l]: http://niltag.net/essays/loeb.html
 
 Today I am going to get inter-dimensional.
 
