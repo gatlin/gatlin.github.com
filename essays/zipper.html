@@ -173,9 +173,9 @@ seed prev center next <span class="fu">=</span>
 <p>like this one is focused on some number, and the values to the left and right are modifications defined by some transformation function (in this case, adding or subtracting 1).</p>
 <p>So a <code>Zipper</code> of <code>Zipper</code>s is focused on one zipper and the left and right neighbors are other zippers. How we want to transform the focus should really just be left up to the user. Hence:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell">iterate<span class="ot"> ::</span> (a <span class="ot">-&gt;</span> a)
-     <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> a)
-     <span class="ot">-&gt;</span> a
-     <span class="ot">-&gt;</span> <span class="dt">Zipper</span> a
+        <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> a)
+        <span class="ot">-&gt;</span> a
+        <span class="ot">-&gt;</span> <span class="dt">Zipper</span> a
 iterate prev next <span class="fu">=</span>
     seed (dup <span class="fu">.</span> prev) id (dup <span class="fu">.</span> next)
     <span class="kw">where</span> dup a <span class="fu">=</span> (a, a)</code></pre>

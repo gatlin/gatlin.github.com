@@ -187,9 +187,9 @@ neighbors are other zippers. How we want to transform the focus should really
 just be left up to the user. Hence:
 
 > iterate :: (a -> a)
->      -> (a -> a)
->      -> a
->      -> Zipper a
+>         -> (a -> a)
+>         -> a
+>         -> Zipper a
 > iterate prev next =
 >     seed (dup . prev) id (dup . next)
 >     where dup a = (a, a)
