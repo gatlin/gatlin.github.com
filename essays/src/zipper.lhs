@@ -336,13 +336,9 @@ two functions in the same column:
 
 > sheet1 :: Cursor (Cursor Int -> Int)
 > sheet1 = makeCursor 0
->     [ [ (\c -> 15 + 2 * (c # left # extract)) ]
->     , [ (\c -> 1 + (c # up # extract))        ] ]
+>     [ [ (\c -> 15 + 2 * (extract (left c)))   ]
+>     , [ (\c -> 1 + (extract (up c)))          ] ]
 
-(Note the `#`: I think "backward" function composition is easier to read in this
-case, so I wrote a little function for that. Pay it no mind.)
-
-> (#) = flip ($)
 
 Let's run this in `ghci`:
 

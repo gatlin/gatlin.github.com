@@ -252,10 +252,8 @@ makeCursor def grid <span class="fu">=</span> <span class="dt">Cursor</span> <sp
 <p>Armed and ready, let's create a spreadsheet with default cell values of <code>0</code> and two functions in the same column:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">sheet1 ::</span> <span class="dt">Cursor</span> (<span class="dt">Cursor</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>)
 sheet1 <span class="fu">=</span> makeCursor <span class="dv">0</span>
-    [ [ (\c <span class="ot">-&gt;</span> <span class="dv">15</span> <span class="fu">+</span> <span class="dv">2</span> <span class="fu">*</span> (c <span class="st"># left # extract)) ]</span>
-    , [ (\c <span class="ot">-&gt;</span> <span class="dv">1</span> <span class="fu">+</span> (c <span class="st"># up # extract))        ] ]</span></code></pre>
-<p>(Note the <code>#</code>: I think &quot;backward&quot; function composition is easier to read in this case, so I wrote a little function for that. Pay it no mind.)</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">(<span class="st">#) = flip ($)</span></code></pre>
+    [ [ (\c <span class="ot">-&gt;</span> <span class="dv">15</span> <span class="fu">+</span> <span class="dv">2</span> <span class="fu">*</span> (extract (left c)))   ]
+    , [ (\c <span class="ot">-&gt;</span> <span class="dv">1</span> <span class="fu">+</span> (extract (up c)))          ] ]</code></pre>
 <p>Let's run this in <code>ghci</code>:</p>
 <pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> sheet1 <span class="st"># evaluate # down # right # extract</span>
 <span class="dv">15</span>
