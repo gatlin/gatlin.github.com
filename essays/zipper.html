@@ -166,6 +166,7 @@ seed prev center next <span class="fu">=</span>
 <pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">extract ::</span> (<span class="dt">Comonad</span> w) <span class="ot">=&gt;</span> w a <span class="ot">-&gt;</span> a
 <span class="co">-- and</span>
 <span class="ot">duplicate ::</span> (<span class="dt">Comonad</span> w) <span class="ot">=&gt;</span> w a <span class="ot">-&gt;</span> w (w a)</code></pre>
+<p><code>extract</code> is easy: hand back the focus of the <code>Zipper</code>. That's kind of why we have it in the first place.</p>
 <p>What about the <code>duplicate</code> function? We know we can create a <code>Zipper</code> by giving a seed value to <code>seed</code>. What if that seed value was a <code>Zipper</code>? What does a <code>Zipper</code> of <code>Zipper</code>s look like?</p>
 <p>Let's take this shit slow. A <code>Zipper</code> of, say, <code>Int</code> values</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell">z1 <span class="fu">=</span> seed (\x <span class="ot">-&gt;</span> (x<span class="fu">-</span><span class="dv">1</span>,x<span class="fu">-</span><span class="dv">1</span>)) <span class="dv">0</span> (\x <span class="ot">-&gt;</span> (x<span class="fu">+</span><span class="dv">1</span>,x<span class="fu">+</span><span class="dv">1</span>))</code></pre>

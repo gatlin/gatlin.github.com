@@ -167,6 +167,9 @@ extract :: (Comonad w) => w a -> a
 duplicate :: (Comonad w) => w a -> w (w a)
 ```
 
+`extract` is easy: hand back the focus of the `Zipper`. That's kind of why we
+have it in the first place.
+
 What about the `duplicate` function? We know we can create a `Zipper` by giving
 a seed value to `seed`. What if that seed value was a `Zipper`? What does a
 `Zipper` of `Zipper`s look like?
