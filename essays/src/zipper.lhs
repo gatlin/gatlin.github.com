@@ -343,9 +343,10 @@ two functions in the same column:
 Let's run this in `ghci`:
 
 ```haskell
-ghci> sheet1 # evaluate # down # right # extract
+ghci> let (&) = flip ($)
+ghci> sheet1 & evaluate & down & right & extract
 15
-ghci> sheet1 # evaluate # down # down # right # extract
+ghci> sheet1 & evaluate & down & down & right & extract
 16
 ```
 

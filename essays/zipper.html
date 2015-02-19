@@ -255,9 +255,10 @@ sheet1 <span class="fu">=</span> makeCursor <span class="dv">0</span>
     [ [ (\c <span class="ot">-&gt;</span> <span class="dv">15</span> <span class="fu">+</span> <span class="dv">2</span> <span class="fu">*</span> (extract (left c)))   ]
     , [ (\c <span class="ot">-&gt;</span> <span class="dv">1</span> <span class="fu">+</span> (extract (up c)))          ] ]</code></pre>
 <p>Let's run this in <code>ghci</code>:</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> sheet1 <span class="st"># evaluate # down # right # extract</span>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="kw">let</span> (<span class="fu">&amp;</span>) <span class="fu">=</span> flip (<span class="fu">$</span>)
+ghci<span class="fu">&gt;</span> sheet1 <span class="fu">&amp;</span> evaluate <span class="fu">&amp;</span> down <span class="fu">&amp;</span> right <span class="fu">&amp;</span> extract
 <span class="dv">15</span>
-ghci<span class="fu">&gt;</span> sheet1 <span class="st"># evaluate # down # down # right # extract</span>
+ghci<span class="fu">&gt;</span> sheet1 <span class="fu">&amp;</span> evaluate <span class="fu">&amp;</span> down <span class="fu">&amp;</span> down <span class="fu">&amp;</span> right <span class="fu">&amp;</span> extract
 <span class="dv">16</span></code></pre>
 <p>Boom.</p>
 <h1 id="excursor-sions"><span class="header-section-number">9</span> Excursor-sions</h1>
