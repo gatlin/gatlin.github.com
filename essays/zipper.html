@@ -254,13 +254,26 @@ makeCursor def grid <span class="fu">=</span> <span class="dt">Cursor</span> <sp
 sheet1 <span class="fu">=</span> makeCursor <span class="dv">0</span>
     [ [ (\c <span class="ot">-&gt;</span> <span class="dv">15</span> <span class="fu">+</span> <span class="dv">2</span> <span class="fu">*</span> (extract (left c)))   ]
     , [ (\c <span class="ot">-&gt;</span> <span class="dv">1</span> <span class="fu">+</span> (extract (up c)))          ] ]</code></pre>
+<p>It would be nice if we could view some subset of our <code>Cursor</code> as a list of lists, analogously to our <code>toList</code> function.</p>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">cursorView ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Cursor</span> a <span class="ot">-&gt;</span> [[a]]
+cursorView n (<span class="dt">Cursor</span> zs) <span class="fu">=</span> toList n <span class="fu">$</span> fmap (toList n) zs</code></pre>
 <p>Let's run this in <code>ghci</code>:</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="kw">let</span> (<span class="fu">&amp;</span>) <span class="fu">=</span> flip (<span class="fu">$</span>)
-ghci<span class="fu">&gt;</span> sheet1 <span class="fu">&amp;</span> evaluate <span class="fu">&amp;</span> down <span class="fu">&amp;</span> right <span class="fu">&amp;</span> extract
-<span class="dv">15</span>
-ghci<span class="fu">&gt;</span> sheet1 <span class="fu">&amp;</span> evaluate <span class="fu">&amp;</span> down <span class="fu">&amp;</span> down <span class="fu">&amp;</span> right <span class="fu">&amp;</span> extract
-<span class="dv">16</span></code></pre>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="kw">let</span> rows <span class="fu">=</span> sheet1 <span class="fu">&amp;</span> evaluate <span class="fu">&amp;</span> cursorView <span class="dv">5</span>
+ghci<span class="fu">&gt;</span> forM_ rows (putStrLn <span class="fu">.</span> show)
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">15</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">16</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]</code></pre>
 <p>Boom.</p>
+<p><em>The definition of <code>(&amp;)</code> is very simple:</em></p>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">(<span class="fu">&amp;</span>) <span class="fu">=</span> flip (<span class="fu">$</span>)</code></pre>
 <h1 id="excursor-sions"><span class="header-section-number">9</span> Excursor-sions</h1>
 <p>For completeness, let's define a way to insert a value at the focus of a <code>Cursor</code> or a <code>Zipper</code>. I made up a simple typeclass for things that can be inserted into so that I wouldn't have to have <code>insertCursor</code> and <code>insertZipper</code> or some other ugly nonsense.</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">Insertable</span> i <span class="kw">where</span>

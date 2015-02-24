@@ -341,19 +341,37 @@ two functions in the same column:
 >     [ [ (\c -> 15 + 2 * (extract (left c)))   ]
 >     , [ (\c -> 1 + (extract (up c)))          ] ]
 
+It would be nice if we could view some subset of our `Cursor` as a list of
+lists, analogously to our `toList` function.
+
+> cursorView :: Int -> Cursor a -> [[a]]
+> cursorView n (Cursor zs) = toList n $ fmap (toList n) zs
+
 
 Let's run this in `ghci`:
 
 ```haskell
-ghci> let (&) = flip ($)
-ghci> sheet1 & evaluate & down & right & extract
-15
-ghci> sheet1 & evaluate & down & down & right & extract
-16
+ghci> let rows = sheet1 & evaluate & cursorView 5
+ghci> forM_ rows (putStrLn . show)
+[0,0,0,0,0,0,0,0,0,0,0]
+[0,0,0,0,0,0,0,0,0,0,0]
+[0,0,0,0,0,0,0,0,0,0,0]
+[0,0,0,0,0,0,0,0,0,0,0]
+[0,0,0,0,0,0,0,0,0,0,0]
+[0,0,0,0,0,0,0,0,0,0,0]
+[0,0,0,0,0,0,15,0,0,0,0]
+[0,0,0,0,0,0,16,0,0,0,0]
+[0,0,0,0,0,0,0,0,0,0,0]
+[0,0,0,0,0,0,0,0,0,0,0]
+[0,0,0,0,0,0,0,0,0,0,0]
+
 ```
 
 Boom.
 
+*The definition of `(&)` is very simple:*
+
+> (&) = flip ($)
 
 Excursor-sions
 ===
