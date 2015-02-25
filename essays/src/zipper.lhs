@@ -42,25 +42,28 @@ Double Löb-el
 
 To recap, by abusing Löb's theorem we were able to write this:
 
-> loeb :: (Functor f) => f ( f a -> a ) -> f  a
+> loeb :: (Functor f) => f ( f a -> a ) -> f a
 > loeb x = fmap (\a -> a (loeb x)) x
 
-Since the goal is to recreate a spreadsheet, and the cells of a spreadsheet
-contain functions, we will tell the Haskell compiler how to treat functions as
-placeholders for numbers. Fortunately, `Num` is a class which only has a few
-simple methods to define:
+What? Here is an example:
 
-> instance (Num a, Eq a) => Num (x -> a) where
->     fromInteger = const . fromInteger
->     f + g = \x -> f x + g x
->     f * g = \x -> f x * g x
->     negate f = \x -> negate (f x)
->     abs f = \x -> abs (f x)
->     signum f = \x -> signum (f x)
+> test_list :: [[Integer] -> Integer]
+> test_list = [ \ _ -> 0             -- a constant value
+>             , \ l -> (l !! 0) + 2  -- 2 + the first item
+>             , \ l -> (l !! 1) * 2  -- 2 * the second element
+>             ]
 
-These functions basically say that if I use a function where a number should
-go, create a new function where I wait on an actual number and then do stuff
-with it.
+`test_list` is a list of functions of the type `[Integer] -> Integer`. Let's
+see what happens when we apply `loeb`:
+
+```haskell
+ghci> loeb test_List
+[0,2,4]
+```
+
+NB: there is a standard Haskell function, `const`, which we could have used in
+place of `\ _ -> 0`. It takes two arguments, ignores the second one and returns
+the first. We will use that from now on.
 
 Your zipper is undone
 ===
@@ -178,7 +181,7 @@ a seed value to `seed`. What if that seed value was a `Zipper`? What does a
 
 Let's take this shit slow. A `Zipper` of, say, `Int` values
 
-> z1 = seed (\x -> (x-1,x-1)) 0 (\x -> (x+1,x+1))
+> z1 = seed (\x -> (x-1,x-1)) (const 0) (\x -> (x+1,x+1))
 
 like this one is focused on some number, and the values to the left and right
 are modifications defined by some transformation function (in this case, adding
@@ -249,7 +252,7 @@ So let's create a `Zipper` of functions that evaluate `Zipper`s:
 
 > zipper_1 :: Zipper (Zipper Int -> Int)
 > zipper_1 = Zipper (repeat ((*2) . extract . moveR))
->             1 (repeat ((+1) . extract . moveL))
+>             (const 1) (repeat ((+1) . extract . moveL))
 
 The initial focus is `1`; as you move left, you double; as you move right, you
 add 1.
@@ -337,7 +340,7 @@ Armed and ready, let's create a spreadsheet with default cell values of `0` and
 two functions in the same column:
 
 > sheet1 :: Cursor (Cursor Int -> Int)
-> sheet1 = makeCursor 0
+> sheet1 = makeCursor (const 0)
 >     [ [ (\c -> 15 + 2 * (extract (left c)))   ]
 >     , [ (\c -> 1 + (extract (up c)))          ] ]
 

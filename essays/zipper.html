@@ -108,17 +108,18 @@ Or, I may have finally gone insane
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Prelude</span> <span class="kw">hiding</span> (iterate)</code></pre>
 <h1 id="double-löb-el"><span class="header-section-number">2</span> Double Löb-el</h1>
 <p>To recap, by abusing Löb's theorem we were able to write this:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">loeb ::</span> (<span class="dt">Functor</span> f) <span class="ot">=&gt;</span> f ( f a <span class="ot">-&gt;</span> a ) <span class="ot">-&gt;</span> f  a
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">loeb ::</span> (<span class="dt">Functor</span> f) <span class="ot">=&gt;</span> f ( f a <span class="ot">-&gt;</span> a ) <span class="ot">-&gt;</span> f a
 loeb x <span class="fu">=</span> fmap (\a <span class="ot">-&gt;</span> a (loeb x)) x</code></pre>
-<p>Since the goal is to recreate a spreadsheet, and the cells of a spreadsheet contain functions, we will tell the Haskell compiler how to treat functions as placeholders for numbers. Fortunately, <code>Num</code> is a class which only has a few simple methods to define:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">instance</span> (<span class="dt">Num</span> a, <span class="dt">Eq</span> a) <span class="ot">=&gt;</span> <span class="dt">Num</span> (x <span class="ot">-&gt;</span> a) <span class="kw">where</span>
-    fromInteger <span class="fu">=</span> const <span class="fu">.</span> fromInteger
-    f <span class="fu">+</span> g <span class="fu">=</span> \x <span class="ot">-&gt;</span> f x <span class="fu">+</span> g x
-    f <span class="fu">*</span> g <span class="fu">=</span> \x <span class="ot">-&gt;</span> f x <span class="fu">*</span> g x
-    negate f <span class="fu">=</span> \x <span class="ot">-&gt;</span> negate (f x)
-    abs f <span class="fu">=</span> \x <span class="ot">-&gt;</span> abs (f x)
-    signum f <span class="fu">=</span> \x <span class="ot">-&gt;</span> signum (f x)</code></pre>
-<p>These functions basically say that if I use a function where a number should go, create a new function where I wait on an actual number and then do stuff with it.</p>
+<p>What? Here is an example:</p>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">test_list ::</span> [[<span class="dt">Integer</span>] <span class="ot">-&gt;</span> <span class="dt">Integer</span>]
+test_list <span class="fu">=</span> [ \ _ <span class="ot">-&gt;</span> <span class="dv">0</span>             <span class="co">-- a constant value</span>
+            , \ l <span class="ot">-&gt;</span> (l <span class="fu">!!</span> <span class="dv">0</span>) <span class="fu">+</span> <span class="dv">2</span>  <span class="co">-- 2 + the first item</span>
+            , \ l <span class="ot">-&gt;</span> (l <span class="fu">!!</span> <span class="dv">1</span>) <span class="fu">*</span> <span class="dv">2</span>  <span class="co">-- 2 * the second element</span>
+            ]</code></pre>
+<p><code>test_list</code> is a list of functions of the type <code>[Integer] -&gt; Integer</code>. Let's see what happens when we apply <code>loeb</code>:</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> loeb test_List
+[<span class="dv">0</span>,<span class="dv">2</span>,<span class="dv">4</span>]</code></pre>
+<p>NB: there is a standard Haskell function, <code>const</code>, which we could have used in place of <code>\ _ -&gt; 0</code>. It takes two arguments, ignores the second one and returns the first. We will use that from now on.</p>
 <h1 id="your-zipper-is-undone"><span class="header-section-number">3</span> Your zipper is undone</h1>
 <p>So a fixed length list of functions is cool but, and I don't know about you, but when I use Excel it's kind of infinite in all directions.</p>
 <p>But how do I represent an infinite list in such a way that I can navigate it, read data from it, and modify its internals? The structure I'll use is often called a <em>list zipper</em>.</p>
@@ -169,7 +170,7 @@ seed prev center next <span class="fu">=</span>
 <p><code>extract</code> is easy: hand back the focus of the <code>Zipper</code>. That's kind of why we have it in the first place.</p>
 <p>What about the <code>duplicate</code> function? We know we can create a <code>Zipper</code> by giving a seed value to <code>seed</code>. What if that seed value was a <code>Zipper</code>? What does a <code>Zipper</code> of <code>Zipper</code>s look like?</p>
 <p>Let's take this shit slow. A <code>Zipper</code> of, say, <code>Int</code> values</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">z1 <span class="fu">=</span> seed (\x <span class="ot">-&gt;</span> (x<span class="fu">-</span><span class="dv">1</span>,x<span class="fu">-</span><span class="dv">1</span>)) <span class="dv">0</span> (\x <span class="ot">-&gt;</span> (x<span class="fu">+</span><span class="dv">1</span>,x<span class="fu">+</span><span class="dv">1</span>))</code></pre>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">z1 <span class="fu">=</span> seed (\x <span class="ot">-&gt;</span> (x<span class="fu">-</span><span class="dv">1</span>,x<span class="fu">-</span><span class="dv">1</span>)) (const <span class="dv">0</span>) (\x <span class="ot">-&gt;</span> (x<span class="fu">+</span><span class="dv">1</span>,x<span class="fu">+</span><span class="dv">1</span>))</code></pre>
 <p>like this one is focused on some number, and the values to the left and right are modifications defined by some transformation function (in this case, adding or subtracting 1).</p>
 <p>So a <code>Zipper</code> of <code>Zipper</code>s is focused on one zipper and the left and right neighbors are other zippers. How we want to transform the focus should really just be left up to the user. Hence:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell">iterate<span class="ot"> ::</span> (a <span class="ot">-&gt;</span> a)
@@ -203,7 +204,7 @@ evaluate <span class="fu">=</span> extend wfix</code></pre>
 <p>So let's create a <code>Zipper</code> of functions that evaluate <code>Zipper</code>s:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">zipper_1 ::</span> <span class="dt">Zipper</span> (<span class="dt">Zipper</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>)
 zipper_1 <span class="fu">=</span> <span class="dt">Zipper</span> (repeat ((<span class="fu">*</span><span class="dv">2</span>) <span class="fu">.</span> extract <span class="fu">.</span> moveR))
-            <span class="dv">1</span> (repeat ((<span class="fu">+</span><span class="dv">1</span>) <span class="fu">.</span> extract <span class="fu">.</span> moveL))</code></pre>
+            (const <span class="dv">1</span>) (repeat ((<span class="fu">+</span><span class="dv">1</span>) <span class="fu">.</span> extract <span class="fu">.</span> moveL))</code></pre>
 <p>The initial focus is <code>1</code>; as you move left, you double; as you move right, you add 1.</p>
 <p>For convenience let's write a function to extract a subsection of a <code>Zipper</code> into a list for viewing:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">toList ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Zipper</span> a <span class="ot">-&gt;</span> [a]
@@ -251,7 +252,7 @@ makeCursor def grid <span class="fu">=</span> <span class="dt">Cursor</span> <sp
     line l <span class="fu">=</span> <span class="dt">Zipper</span> dl def (l <span class="fu">++</span> dl)</code></pre>
 <p>Armed and ready, let's create a spreadsheet with default cell values of <code>0</code> and two functions in the same column:</p>
 <pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">sheet1 ::</span> <span class="dt">Cursor</span> (<span class="dt">Cursor</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>)
-sheet1 <span class="fu">=</span> makeCursor <span class="dv">0</span>
+sheet1 <span class="fu">=</span> makeCursor (const <span class="dv">0</span>)
     [ [ (\c <span class="ot">-&gt;</span> <span class="dv">15</span> <span class="fu">+</span> <span class="dv">2</span> <span class="fu">*</span> (extract (left c)))   ]
     , [ (\c <span class="ot">-&gt;</span> <span class="dv">1</span> <span class="fu">+</span> (extract (up c)))          ] ]</code></pre>
 <p>It would be nice if we could view some subset of our <code>Cursor</code> as a list of lists, analogously to our <code>toList</code> function.</p>
