@@ -32,8 +32,10 @@ How could this be useful? Recalling that the type `[a]` is a functor,
 
 > test_loeb_1 = [ length , \x -> x !! 0 ]
 
-    ghci> loeb test_loeb_1
-    [2,2]
+```haskell
+ghci> loeb test_loeb_1
+[2,2]
+```
 
 wat?
 
@@ -47,23 +49,24 @@ list is 2 so `length` is 2, and thus `x !! 0` is 2.
 
 Here's a more elaborate example:
 
-> test_loeb_2 = [ (!! 5), 3, (!! 0) + (!! 1), (!! 2) * 2, sum . take 3, 17 ]
+```haskell
+test_loeb_2_bad = [ (!! 5), 3, (!! 0) + (!! 1), (!! 2) * 2, sum . take 3, 17 ]
+```
 
-For this to work though I must be able to add and multiply functions that
-return numbers, not just numbers. So let me define that behavior real fast:
+However, this is bad because `3` and `17` aren't functions. Haskell has a
+standard function, `const :: a -> b -> a`, which we can use to turn ordinary
+values into functions:
 
-> instance (Num a, Eq a) => Num (x -> a) where
->     fromInteger = const . fromInteger
->     f + g = \x -> f x + g x
->     f * g = \x -> f x * g x
->     negate = (negate .)
->     abs    = (abs .)
->     signum = (signum .)
+> test_loeb_2 :: [[Int] -> Int]
+> test_loeb_2 = [ (!! 5), (const 3), (\l -> (l !! 0) + (l !! 1))
+>               , \l -> (l !! 2) * 2, sum . take 3 , (const 17 )]
 
 So now I run `test_loeb_2` ...
 
-    ghci> loeb test_loeb_2
-    [17,3,20,40,40,17]
+```haskell
+ghci> loeb test_loeb_2
+[17,3,20,40,40,17]
+```
 
 I took the fix point of a value that didn't exist yet and tied a very strange
 temporal knot. Thanks, Löb!
