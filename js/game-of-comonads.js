@@ -108,7 +108,7 @@
         return new IO(function() {
             setTimeout(function() {
                 io.unsafePerformIO();
-            }, 0);
+            }, 100);
         });
     };
 
@@ -162,15 +162,36 @@
         });
     }
 
+    function pulsar() {
+        return new IO(function() {
+            var board = makeBoard(
+    [ [ false, false, true, true, true, false, false, false, true, true, true, false, false ]
+    , [ false, false, false, false, false, false, false, false, false, false, false, false, false ]
+    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
+    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
+    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
+    , [ false, false, true, true, true, false, false, false, true, true, true, false, false ]
+    , [ false, false, false, false, false, false, false, false, false, false, false, false, false ]
+    , [ false, false, true, true, true, false, false, false, true, true, true, false, false ]
+    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
+    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
+    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
+    , [ false, false, false, false, false, false, false, false, false, false, false, false, false ]
+    , [ false, false, true, true, true, false, false, false, true, true, true, false, false ] ],
+                     13, 13, 44, 44);
+            return board;
+        });
+    }
+
     function drawBoard(board) {
         return new IO(function() {
             var x, y;
             for(x = 0; x < board.length; x++) {
                 for(y = 0; y < board[x].length; y++) {
                     if(board[x][y]) {
-                        canvas.fillRect(x, y, 1, 1);
+                        canvas.fillRect(x, y, 5, 5);
                     } else {
-                        canvas.clearRect(x, y, 1, 1);
+                        canvas.clearRect(x, y, 5, 5);
                     }
                 }
             }
