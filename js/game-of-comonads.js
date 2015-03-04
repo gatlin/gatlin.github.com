@@ -6,6 +6,7 @@
         scale = 8,
         setup,
         main;
+    var currentTimeout = null;
 
     // Helpers
     function identity(x) {
@@ -106,9 +107,10 @@
     IO.prototype.fork = function() {
         var io = this;
         return new IO(function() {
-            setTimeout(function() {
-                io.unsafePerformIO();
-            }, 100);
+            currentTimeout =
+                setTimeout(function() {
+                    io.unsafePerformIO();
+                }, 100);
         });
     };
 
@@ -131,7 +133,11 @@
         });
     }
 
-    function makeBoard(arry, x, y, dx, dy) {
+    function makeBoard(arry) {
+        var x = arry[0].length;
+        var y = arry.length;
+        var dx = (size/2) - x;
+        var dy = (size/2) - y;
         var i, j;
         var board = [];
         for (i = 0; i < size; i++) {
@@ -141,47 +147,317 @@
             }
         }
 
+        var int2bool = function(i) {
+            return i == 1;
+        }
+
         for (j = 0; j < y; j++) {
             for (i = 0; i < x; i++) {
-                board[i+dx][j+dy] = arry[j][i];
+                board[i+dx][j+dy] = int2bool(arry[j][i]);
             }
         }
 
         return board;
     }
 
-    function wutBoard() {
-        return new IO(function() {
-            var board = makeBoard(
-                    [[true, true, true],
-                     [false, false, true],
-                     [true, false, false],
-                     [true, false, true]],
-                     3, 4, 70, 50);
-            return board;
-        });
-    }
+    var experiments = [
 
-    function pulsar() {
-        return new IO(function() {
-            var board = makeBoard(
-    [ [ false, false, true, true, true, false, false, false, true, true, true, false, false ]
-    , [ false, false, false, false, false, false, false, false, false, false, false, false, false ]
-    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
-    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
-    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
-    , [ false, false, true, true, true, false, false, false, true, true, true, false, false ]
-    , [ false, false, false, false, false, false, false, false, false, false, false, false, false ]
-    , [ false, false, true, true, true, false, false, false, true, true, true, false, false ]
-    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
-    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
-    , [ true, false, false, false, false, true, false, true, false, false, false, false, true ]
-    , [ false, false, false, false, false, false, false, false, false, false, false, false, false ]
-    , [ false, false, true, true, true, false, false, false, true, true, true, false, false ] ],
-                     13, 13, 44, 44);
-            return board;
-        });
-    }
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                        [[1, 1, 1],
+                         [0, 0, 1],
+                         [1, 0, 0],
+                         [1, 0, 1]]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 0, 0, 0, 0, 1, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 1, 0, 0, 0 ]
+                    , [ 0, 1, 1, 1, 0, 0, 1, 1, 1, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 1, 1, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 1, 1, 1, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 1, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 1, 1, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 1, 1, 1, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 1, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 1, 1, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 1, 1, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 1, 1, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 1, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 1, 0, 0, 0, 1, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 1, 0, 0, 0, 1, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 1, 0, 0, 0, 1, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 1, 0, 0, 0, 1, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 1, 0, 0, 0, 1, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 1, 0, 0, 0, 1, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 1, 1, 1 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 1, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 1, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 1, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 1, 1, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 1, 1, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 1, 0, 0, 0, 1, 1, 1, 0, 0 ]
+                    , [ 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+                    [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 1, 0, 0, 0, 0, 1, 1, 1, 0, 0 ]
+                    , [ 1, 1, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ]
+                    , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ]);
+                return board;
+            });
+        },
+
+        function () {
+            return new IO(function() {
+                var board = makeBoard(
+        [ [ 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0 ]
+        , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+        , [ 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1 ]
+        , [ 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1 ]
+        , [ 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1 ]
+        , [ 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0 ]
+        , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+        , [ 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0 ]
+        , [ 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1 ]
+        , [ 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1 ]
+        , [ 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1 ]
+        , [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+        , [ 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0 ] ]);
+                return board;
+            });
+        }
+    ];
 
     function drawBoard(board) {
         return new IO(function() {
@@ -204,8 +480,23 @@
         });
     }
 
-    main = setup.chain(wutBoard).chain(loop);
+    var main;
 
-    // Perform effects!
-    main.unsafePerformIO();
+    function start(n) {
+        main = setup.chain(experiments[n]).chain(loop);
+        main.unsafePerformIO();
+    }
+
+    $('select[name=picker]').on('change',function() {
+        var picked = $(this).val();
+        console.log(picked);
+        if (picked == "Choose an experiment") {
+            return;
+        }
+        if (currentTimeout) {
+            clearTimeout(currentTimeout);
+        }
+        start(parseInt(picked));
+    });
+
 })();
