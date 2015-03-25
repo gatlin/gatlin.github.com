@@ -17,7 +17,8 @@ if hash pandoc 2>/dev/null; then
         ###
         # If the extension is Literate Haskell, process as such
         if [ $extension = "lhs" ]; then
-            pandoc -s -t html5 -f markdown+lhs+yaml_metadata_block \
+            pandoc -s -t html5 -f \
+            markdown+lhs+yaml_metadata_block+auto_identifiers \
             --template templates/template.lhs.html \
             --number-sections \
             --toc   \
@@ -26,7 +27,7 @@ if hash pandoc 2>/dev/null; then
         # If the extension is plain markdown, process plain markdown
         elif [ $extension = "md" ]; then
             pandoc -s -t html5 -f \
-            markdown+yaml_metadata_block+fenced_code_blocks+fenced_code_attributes \
+            markdown+yaml_metadata_block+fenced_code_blocks+fenced_code_attributes+auto_identifiers \
             --template templates/template.md.html \
             --number-sections \
             --toc \
