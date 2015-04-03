@@ -196,6 +196,14 @@ Let's write a syntax-extension to do just this **warning: you can ignore this
 next snippet; I'm only providing it to prove it is possible**:
 
 ```scheme
+
+; these libraries both ship by default with Racket
+(require (for-syntax racket/syntax))
+(require racket/stxparam)
+
+(define-syntax-parameter bind (syntax-rules ()))
+(define-syntax-parameter return (syntax-rules ()))
+
 (define-syntax do^
   (syntax-rules (:= let)
     ((_ (:= v e) e2 es ...)

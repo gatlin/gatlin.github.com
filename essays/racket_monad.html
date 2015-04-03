@@ -156,7 +156,15 @@ Or: drinking alone isn’t healthy
   (box-return answer))))))</code></pre>
 <p>If you squint, this sort of looks like we are binding <code>(return (- n 10))</code> to the variable <code>x</code> like in an imperative language.</p>
 <p>Let’s write a syntax-extension to do just this <strong>warning: you can ignore this next snippet; I’m only providing it to prove it is possible</strong>:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define-syntax</span><span class="fu"> do</span>^
+<pre class="sourceCode scheme"><code class="sourceCode scheme">
+<span class="co">; these libraries both ship by default with Racket</span>
+(require (for-syntax racket/syntax))
+(require racket/stxparam)
+
+(define-syntax-parameter bind (<span class="kw">syntax-rules</span> ()))
+(define-syntax-parameter return (<span class="kw">syntax-rules</span> ()))
+
+(<span class="kw">define-syntax</span><span class="fu"> do</span>^
   (<span class="kw">syntax-rules</span> (:= <span class="kw">let</span>)
     ((_ (:= v e) e2 es ...)
      (bind e (<span class="kw">lambda</span> (v) (<span class="kw">do</span>^ e2 es ...))))
