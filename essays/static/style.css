@@ -59,6 +59,10 @@ div#content img {
     font-size: 24pt;
 }
 
+span.header-section-number {
+    font-size: 24pt;
+}
+
 figure {
     display: inline;
     text-align: center;
@@ -69,3 +73,9 @@ blockquote, blockquote cite {
     text-align: center;
     font-style: italic;
 }
+
+/* Use Merriweather by default for p tags */
+p {
+  font-feature-settings: "liga", "onum", "kern";
+  font-family: "Merriweather",serif;
+  }
