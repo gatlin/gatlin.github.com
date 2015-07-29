@@ -23,6 +23,7 @@ set ignorecase
 set smartcase
 set hlsearch
 set incsearch
+set nohlsearch
 
 " Key mappings
 set pastetoggle=<F3>
@@ -41,7 +42,7 @@ set scrolloff=5
 set backspace=indent,eol,start
 
 " Window title
-if $TERM=='screen'
+if $TERM=='tmux'
 	exe 'set title titlestring=vim:%t%(\ %m%)'
 	exe 'set title t_ts=]2;%t\\'
 endif
@@ -78,6 +79,21 @@ set textwidth=79
 set winminwidth=10
 set winwidth=80
 set nowrap
+set nohlsearch
+
+if has("gui_running")
+    " GUI is running or is about to start
+    set lines=999 columns=100
+    set guifont=Droid\ Sans\ Mono\ 10
+else
+    " This is console vim
+    if exists("+lines")
+        set lines=50
+    endif
+    if exists("+columns")
+        set columns=100
+    endif
+endif
 
 " Status line
 set laststatus=2
@@ -92,11 +108,6 @@ set vb t_vb=
 " mutt
 au BufRead /tmp/mutt-* set tw=72
 
-" vala
-autocmd BufRead *.vala set efm=%f:%l.%c-%[%^:]%#:\ %t%[%^:]%#:\ %m
-autocmd BufRead *.vapi set efm=%f:%l.%c-%[%^:]%#:\ %t%[%^:]%#:\ %m
-au BufRead,BufNewFile *.vala            setfiletype vala
-au BufRead,BufNewFile *.vapi            setfiletype vala
 
 let vala_comment_strings = 1
 let vala_space_errors = 1
