@@ -80,89 +80,176 @@ Or: drinking alone isn’t healthy
 <div id="toc-wrapper">
 <h2>Contents</h2>
 <ul>
-<li><a href="#take-me-to-functor-town"><span class="toc-section-number">1</span> Take me to functor town</a></li>
+<li><a href="#overview-monads-in-effect"><span class="toc-section-number">1</span> Overview: monads, in effect</a></li>
 <li><a href="#what-the-functor"><span class="toc-section-number">2</span> What the functor … ?</a></li>
-<li><a href="#were-in-a-bind"><span class="toc-section-number">3</span> We’re in a bind …</a></li>
-<li><a href="#monad-for-nothing"><span class="toc-section-number">4</span> Monad for nothing</a></li>
-<li><a href="#conclusion"><span class="toc-section-number">5</span> Conclusion</a></li>
+<li><a href="#universal-unitarianism"><span class="toc-section-number">3</span> Universal unitarianism</a></li>
+<li><a href="#join-me-and-together-we-can-bring-boredom-to-the-force"><span class="toc-section-number">4</span> Join me, and together we can bring boredom to the Force</a></li>
+<li><a href="#were-in-a-bind"><span class="toc-section-number">5</span> We’re in a bind …</a></li>
+<li><a href="#other-monads"><span class="toc-section-number">6</span> Other monads</a></li>
+<li><a href="#conclusion-and-further-points-of-interest"><span class="toc-section-number">7</span> Conclusion and further points of interest</a></li>
 </ul>
 </div>
         </div>
 
       <div class="row">
         <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
-<p>Monads are difficult to explain without sounding either patronizing or condescending: I would sound patronizing if I came up with some facile analogy and I would be condescending to describe it categorically.</p>
+<p><em>This post was updated from the original; feel free to send me feedback at <script type="text/javascript">
+<!--
+h='&#110;&#x69;&#108;&#116;&#x61;&#x67;&#46;&#110;&#x65;&#116;';a='&#64;';n='&#x67;&#x61;&#116;&#108;&#x69;&#110;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#x67;&#x61;&#116;&#108;&#x69;&#110;&#32;&#x61;&#116;&#32;&#110;&#x69;&#108;&#116;&#x61;&#x67;&#32;&#100;&#x6f;&#116;&#32;&#110;&#x65;&#116;</noscript> !</em></p>
+<p>Monads are difficult to explain without sounding condescending. There’s a lot of anxiety around the topic which compounds the already-significant barriers to entry: namely abstraction, vocabulary, and dependence on other ideas ideas you didn’t ask about.</p>
 <p>Instead, I’ll frame a problem and piece-by-piece solve the problem with what will turn out to be a monad.</p>
 <p>This post is written in <a href="http://docs.racket-lang.org/ts-guide/index.html">Typed Racket</a> which you can download for free at <a href="http://racket-lang.org">the Racket website</a>.</p>
-<h1 id="take-me-to-functor-town"><span class="header-section-number">1</span> Take me to functor town</h1>
+<h1 id="overview-monads-in-effect"><span class="header-section-number">1</span> Overview: monads, in effect</h1>
 <p>Typed Racket is a functional programming language which heavily discourages imperative programming styles. Like, for instance, programs of this sort:</p>
-<pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> doSomething():
-  x = <span class="dv">5</span>
-  y = foo()
-  x = bar(<span class="dv">10</span>, y)
-  <span class="kw">return</span> x</code></pre>
-<p>Here we have three imperative statements modifying some state. Functional languages would prefer that state didn’t exist. At least, not the Wild West, anything-goes, no-guarantees-whatsoever-about-who-is-accessing-what-free-love-festival that is the typical understanding.</p>
-<p>Imperative programming makes use of <em>side-effects</em>: I may write code which alters a database, or reads the time, or has some other side-effect on the state of the machine or surrounding world. Every time I query a network time server I get a different response, meaning that the result is dependent on mutation of state.</p>
-<p>Hell, even just storing the result of a pure computation in a value for use at a later time is relying on the side effect of storing values in memory.</p>
-<p>On the other hand, pure functional programming requires you to sequence actions through function composition:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: square-then-double (-&gt; Real Real))
-(<span class="kw">define</span><span class="fu"> </span>(square-then-double n) (* <span class="dv">2</span> (*n n)))</code></pre>
-<p>This is great and all, but how can I recapture the (admitted) simplicity of that python snippet? Maybe this way:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">let</span> ((x <span class="dv">5</span>)
-      (y (foo)))
-  (<span class="kw">let</span> ((x (bar <span class="dv">10</span> y)))
-    x))</code></pre>
-<p>But that becomes unwieldly after a while.</p>
-<p>Correct imperative programs are written every day so there must be some way of representing them in a principled manner which can catch type and other logic errors.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> get_customer_referrals(customers):
+    responses <span class="op">=</span> []
+    <span class="cf">for</span> customer <span class="op">in</span> customers:
+        referrals <span class="op">=</span> get_referrals(customer)
+        responses.append(referrals)
+    <span class="cf">return</span> responses</code></pre></div>
+<p>While in Python a definition such as this is called a “function” I prefer instead the term <em>procedure</em>. Functions are like this:</p>
+<pre><code>f (x) = x + 1</code></pre>
+<p>If I give <code>f</code> a <code>1</code> I will always get back a <code>2</code>. No discussion. If I ever did get something else back, may the gods have mercy on all of us. <code>procedures</code> do not afford us this sort of guarantee, but they also don’t require special blog posts in order to understand and use them to get shit done. So there’s that.</p>
+<p>Imperative programming makes use of <em>side-effects</em>: I may write code which alters a database, or reads the time, or has some other side-effect on the state of the machine or surrounding world. In our example above, the procedure takes a list of people (of size <code>N</code>) and returns a list of responses (of size <code>M</code>, which may or may not be <code>N</code>).</p>
+<p>How can we model side-effects such as this? And while we’re at it, can we get rid of the boilerplate list-building code as well? Monads supply an answer for both.</p>
 <h1 id="what-the-functor"><span class="header-section-number">2</span> What the functor … ?</h1>
-<p>Let’s take a side-step to introduce a fundamental concept in type theory. It’s called the <em>Functor</em>. A functor is a <em>higher-order</em> type; it depends on some <em>base</em> type for its full meaning. For instance, in Typed Racket <code>Listof</code> is a higher-order type: you can have <code>Listof Number</code> or <code>Listof String</code> or <code>Listof Boolean</code>.</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: list<span class="dv">-1</span> (Listof Number))
-(<span class="kw">define</span><span class="fu"> list-1 </span>&#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>))</code></pre>
-<p>Not just every higher-order type is a functor, though. A functor must also implement some way to <em>map</em> pure transformations inside the functor. As a specific example, I can map the function <code>(lambda (x) (* x x))</code> inside a <code>Listof Number</code>s and the result will be a new list with the squares of the items of the old list.</p>
-<p>Perhaps I have a function to determine if a real number is greater than zero:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: gt-zero? (-&gt; Real Boolean))
-(<span class="kw">define</span><span class="fu"> </span>(gt-zero? n) (<span class="kw">&gt;</span> n <span class="dv">0</span>))
+<p>To start our journey toward monads, we must first define functors. For our purposes, a <em>functor</em> is a container type <code>T</code> which wraps any arbitrary type <code>a</code>, and allows functions of type <code>a -&gt; b</code> to be mapped inside the container.</p>
+<p>Concrete example: lists are functors, where <code>T</code> is <code>List</code> and <code>a</code> is whatever you have a list of - numbers, strings, booleans, etc.</p>
+<p>In fact, in Racket lists also already have a function called <code>map</code> which given a function <code>a -&gt; b</code> transforms a <code>List a</code> into a <code>List b</code>:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: <span class="kw">even?</span> (-&gt; Integer Boolean))
+(<span class="kw">define</span><span class="fu"> </span>(<span class="kw">even?</span> n) (<span class="kw">eq?</span> (<span class="kw">modulo</span> n <span class="dv">2</span>) <span class="dv">0</span>))
 
-(map gt-zero? list<span class="dv">-1</span>)
-<span class="co">; =&gt; &#39;(#t #t #t)</span></code></pre>
-<p>This is a function from <code>Real</code> numbers to <code>Boolean</code> values. Mapping <code>gt-zero?</code> over a <code>Listof Number</code>s yields a <code>Listof Boolean</code>s. Lists are definitely functors since their map function is actually called <code>map</code>.</p>
-<p>There are other kinds of functors. The simplest functor is what I like to call <code>Box</code>. It may be defined in Typed Racket as follows:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(struct: (a) Box ((open : a)))</code></pre>
-<p>A <code>Box</code> just contains some base value and lets you retrieve it later, like so:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> boxed-two </span>(Box <span class="dv">2</span>))
-(<span class="kw">define</span><span class="fu"> two </span>(Box-open boxed-two))</code></pre>
-<p>It doesn’t do anything interesting to your value. You can write a simple map function for <code>Box</code> quite easily:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: box-map (All (a b) (-&gt; (-&gt; a b) (Box a) (Box b))))
+(map <span class="kw">even?</span> &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>))</code></pre></div>
+<p>What happens is like this:</p>
+<pre><code>[ 1        2        3  ]
+  |        |        |
+even?    even?    even?
+  |        |        |
+  v        v        v
+[ #f       #t       #f ]</code></pre>
+<p>Here we converted a <code>List Integer</code> into a <code>List Boolean</code>.</p>
+<h1 id="universal-unitarianism"><span class="header-section-number">3</span> Universal unitarianism</h1>
+<p>So now we know what functors are: higher-order container types which permit arbitrary functions to be mapped inside of them.</p>
+<p>There is one limitation, though. Say you’re using the list functor; if you map a function over a list of 5 elements, you’ll get back a list of 5 elements.</p>
+<p>But what if you can’t or shouldn’t assume that your result list will have the same length as your argument list? That is the case for the motivating example at the start of this essay. An even simpler example would be filtering a list of numbers: the result may be shorter than the argument list.</p>
+<p>There are many ways to skin this cat but one is to return a list of lists. For filtering, this entails mapping each value of the list into an empty list (failure) or a list of one item (success). A function of type <code>a -&gt; T a</code>, where <code>T</code> is a functor, is called <em>unit</em>. Here is the list unit:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: list-unit (All (a) (-&gt; a (Listof a))))
+(<span class="kw">define</span><span class="fu"> </span>(list-unit x) (<span class="kw">cons</span> x &#39;()))</code></pre></div>
+<p>Using it, let’s write a function which checks if a number is even and instead of returning <code>#t</code> or <code>#f</code> returns a singleton list or an empty list:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: list-even? (-&gt; Integer (Listof Integer)))
+(<span class="kw">define</span><span class="fu"> </span>(list-even? n)
+  (<span class="kw">if</span> (<span class="kw">eq?</span> (<span class="kw">modulo</span> n <span class="dv">2</span>) <span class="dv">0</span>)
+      (list-unit n)
+      &#39;()))
+
+(: my-filter (All (a) (-&gt; (-&gt; a (Listof a))
+                          (Listof a)
+                          (Listof (Listof a)))))
+(<span class="kw">define</span><span class="fu"> </span>(my-filter predicate lst) (map predicate lst))
+
+(my-filter list-even? &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>))</code></pre></div>
+<p>The computation proceeds like this:</p>
+<pre><code>[ 1            2            3  ]
+  |            |            |
+list-even?   list-even?   list-even?
+  |            |            |
+  v            v            v
+[ []          [2]          []  ]</code></pre>
+<p>So the result list <em>is the same length</em> as the input list, but all the values are even.</p>
+<h1 id="join-me-and-together-we-can-bring-boredom-to-the-force"><span class="header-section-number">4</span> Join me, and together we can bring boredom to the Force</h1>
+<p>Getting back a list of lists is cool and all, but when I filter items out of a list I expect to get back a list of values, not a list of lists. The reason is I might want to process this list further, and I don’t want to have to write brittle, specialized procedures dealing with increasingly-nested layers of lists.</p>
+<p>No, when I filter a <code>List a</code> I want to get back a <code>List a</code>. We already have a <code>List (List a)</code>; can we write a routine to flatten out a list of lists?</p>
+<p>Absolutely! If you have a function of type <code>T (T a) -&gt; T a</code> for some functor <code>T</code>, it is often called <em>join</em>. Here is the list join:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: list-join (All (a) (-&gt; (Listof (Listof a)) (Listof a))))
+(<span class="kw">define</span><span class="fu"> </span>(list-join xss)
+  (foldr (λ: ([ y  : (Listof a)]
+              [ ys : (Listof a)]) (<span class="kw">append</span> y ys))
+    empty xss))
+
+(list-join &#39;( () (<span class="dv">2</span>) () ))</code></pre></div>
+<p>This executes like so:</p>
+<pre><code>[ []          [2]          []  ]
+
+              ---
+              | |
+             \   /
+              \ /
+               v
+
+[              2               ]</code></pre>
+<p>We did it! We wrote a function which maps over a list and changes the structure of the list itself. In this case, a list’s “structure” is its length. Different types will allow for different transformations.</p>
+<h1 id="were-in-a-bind"><span class="header-section-number">5</span> We’re in a bind …</h1>
+<p>Actually, this pattern of <code>join</code>ing the result of a <code>map</code> and <code>unit</code> is so common it has its own name: <em>bind</em>.</p>
+<p><em>bind</em> is a map which can alter structure as it goes from element to element. Regardless of what <code>T</code> is, bind always has the same definition:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: bind (All (a b) (-&gt; (T a)
+                       (-&gt; a (T b))
+                       (T b))))
+(<span class="kw">define</span><span class="fu"> </span>(bind container f) (join (map f container)))</code></pre></div>
+<p>Of course that won’t work in Typed Racket; you must substitute specific <code>join</code> and <code>map</code> functions. But here is the <code>list-bind</code>:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: list-bind (All (a b) (-&gt; (Listof a) (-&gt; a (Listof b)) (Listof b))))
+(<span class="kw">define</span><span class="fu"> </span>(list-bind lst f) (list-join (map f ma)))</code></pre></div>
+<p>Now we can write our code much more elegantly:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(list-bind &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>) list-even?)</code></pre></div>
+<p>Note that <code>list-even?</code> accepts a single scalar number as an argument, yet using <code>list-bind</code> it is run over the whole list, resulting in a list of a different length.</p>
+<p>The whole computation looks like this:</p>
+<pre><code>[ 1            2            3 ]
+  |            |            |
+list-even?   list-even?   list-even? -- map / unit
+  |            |            |
+  v            v            v
+[ []          [2]          [] ]      -- join
+  |            |            |
+  v            v            v
+[              2              ]</code></pre>
+<p>This is, in essence, what a monad is: a structure that lets you map a function into the structure which may, as a side-effect, change the structure. Different monads allow for different side-effects.</p>
+<p>I want to demonstrate another functor (more succinctly than I did for lists, to be certain) but first, let’s tackle the example from the beginning of this post.</p>
+<p>As in that snippet, assume here that <code>get-referrals</code> is defined meaningfully. So that this example will compile, I’ll write a dummy version that spits out three referrals for each customer given:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: get-referrals (-&gt; String (Listof String)))
+(<span class="kw">define</span><span class="fu"> </span>(get-referrals customer)
+  (map (λ: ([n : String])
+    (<span class="kw">string-append</span> customer <span class="st">&quot; referral: &quot;</span> n))
+    &#39;(<span class="st">&quot;1&quot;</span> <span class="st">&quot;2&quot;</span> <span class="st">&quot;3&quot;</span>)))</code></pre></div>
+<p>Finally, then, we can recreate the Python code:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: get-customer-referrals (-&gt; (Listof String) (Listof String)))
+(<span class="kw">define</span><span class="fu"> </span>(get-customer-referrals customers)
+  (list-bind customers get-referrals))</code></pre></div>
+<p>The result is a list of referrals which may be empty, shorter than, longer than, or equal to the input list of customers.</p>
+<h1 id="other-monads"><span class="header-section-number">6</span> Other monads</h1>
+<p>An even simpler monad is what I call the <code>Box</code>: it’s like a list that has exactly one item. On its own, this doesn’t do much for us. But as a monad, it is pretty interesting.</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(struct: (a) Box ([open : a]))
+
+(: box-map (All (a b) (-&gt; (-&gt; a b) (Box a) (Box b))))
 (<span class="kw">define</span><span class="fu"> </span>(box-map f bx)
-  (Box (f (Box-open bx))))</code></pre>
-<p>Thus:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> b1 </span>(Box <span class="dv">2</span>))
-(<span class="kw">define</span><span class="fu"> b2 </span>(box-map gt-zero? b1))</code></pre>
-<p>produces <code>Box 2</code> and <code>Box #t</code>.</p>
-<h1 id="were-in-a-bind"><span class="header-section-number">3</span> We’re in a bind …</h1>
-<p>A <code>Box</code> is a simple context around a base value. A function expecting a <code>Number</code> argument won’t accept a <code>Box Number</code> argument, however we can project or map functions with <code>Number</code> arguments into a <code>Box Number</code>. And after we map that operation we can retrieve the resulting pure value.</p>
-<p>An imperative, side-effect-ful function is one in which we have some kind of workspace or context in which we may do crazy shit and then, at the end, retrieve a pure value. We know how to take values out of a context, and we also know how to put them in (at least, when that context is <code>Box</code>):</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: box-return (All (a) (-&gt; a (Box a))))
-(<span class="kw">define</span><span class="fu"> </span>(box-return x) (Box x))</code></pre>
-<p>Why did we call this function <code>return</code>? Think about its use in Python. That’s a clue. In the meantime, let’s write a box-y version of <code>gt-zero?</code>:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: gt-zero-box? (-&gt; Real (Box Boolean)))
-(<span class="kw">define</span><span class="fu"> </span>(gt-zero-box? n) (return (gt-zero? n)))</code></pre>
-<p>The base type changed <em>and</em> the value was put inside a <code>Box</code>. Given arguments of a pure value I can perform some operation inside a <code>Box</code> context and return to you that context, and you would be free to extract the pure value at any time. And when I say <code>Box</code> I really mean any <code>monad</code> but shh we’re getting there.</p>
-<p>But normal functions, like <code>filter</code> or <code>sum</code> on lists, compose. I can write <code>(f (g x))</code> provided that <code>g</code>’s output matches <code>f</code>’s input. Can I compose these <code>monadic</code> functions of type <code>(All (a b) (-&gt; a (Box b)))</code>?</p>
-<p>Sure you can! First let’s think about the type. The result of some monadic function from <code>a</code> to <code>b</code> would have the above type, and then another function might have <code>(All (b c) (-&gt; b (Box c)))</code>. So ultimately we want to extract values from one context, feed them into a monadic continuation, and get the resulting monadic value.</p>
-<p>It’s called <code>bind</code>:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: box-bind (All (a b) (-&gt; (Box a) (-&gt; a (Box b)) (Box b))))
-(<span class="kw">define</span><span class="fu"> </span>(box-bind ma f) (f (Box-open ma)))</code></pre>
-<p>Have we solved our problem yet? Let’s write a monadic function which subtracts 10 from a number, and then determines if the result is greater than zero:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: sub<span class="dv">-10</span>-gt-zero? (-&gt; Real (Box Boolean)))
-(<span class="kw">define</span><span class="fu"> </span>(sub<span class="dv">-10</span>-gt-zero? n)
-  (box-bind (box-return (<span class="kw">-</span> n <span class="dv">10</span>)) (λ: ((x : Number))
-  (box-bind (gt-zero-box? x) (λ: ((answer : Boolean))
-  (box-return answer))))))</code></pre>
-<p>If you squint, this sort of looks like we are binding <code>(return (- n 10))</code> to the variable <code>x</code> like in an imperative language.</p>
-<p>Let’s write a syntax-extension to do just this <strong>warning: you can ignore this next snippet; I’m only providing it to prove it is possible</strong>:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">
-<span class="co">; these libraries both ship by default with Racket</span>
+  (Box (f (Box-open bx))))
+
+(: box-unit (All (a) (-&gt; a (Box a))))
+(<span class="kw">define</span><span class="fu"> </span>(box-unit x) (Box x))
+
+(: box-join (All (a) (-&gt; (Box (Box a)) (Box a))))
+(<span class="kw">define</span><span class="fu"> </span>(box-join bx) (Box-open bx))
+
+(: box-bind (All (a b) (-&gt; (Box a) (-&gt; a (Box b)) (Box b))))
+(<span class="kw">define</span><span class="fu"> </span>(box-bind ma f) (box-join (box-map f ma)))</code></pre></div>
+<p>And for shits and giggles here are two innocuous functions:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: box-even? (-&gt; Integer (Box Boolean)))
+(<span class="kw">define</span><span class="fu"> </span>(box-even? n)
+  (<span class="kw">if</span> (<span class="kw">eq?</span> (<span class="kw">modulo</span> n <span class="dv">2</span>) <span class="dv">0</span>)
+    (Box <span class="dv">#t</span>)
+    (Box <span class="dv">#f</span>)))
+
+(: imperative<span class="dv">-1</span> (-&gt; Integer (Box String)))
+(<span class="kw">define</span><span class="fu"> </span>(imperative<span class="dv">-1</span> n)
+  (box-bind (box-even? n) (λ: ([b : Boolean])
+  (box-return (<span class="kw">if</span> b <span class="st">&quot;Even&quot;</span> <span class="st">&quot;Odd&quot;</span>)))))
+
+(Box-open (imperative<span class="dv">-1</span> <span class="dv">10</span>))
+(Box-open (imperative<span class="dv">-1</span> <span class="dv">11</span>))</code></pre></div>
+<p>If you squint, this <em>sort of</em> looks like an imperative program where you assign the results of function calls to temporary variables. That’s what the <code>Box</code> monad gives us: simple imperative programming.</p>
+<p>Also: this is lisp! You don’t have to pretend! For the sake of completion, below is a macro that gives us an imperative syntax for monads. You don’t need to understand but it might be interesting nonetheless.</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme"><span class="co">; these libraries both ship by default with Racket</span>
 (require (for-syntax racket/syntax))
 (require racket/stxparam)
 
@@ -183,56 +270,35 @@ Or: drinking alone isn’t healthy
   (syntax-case stx ()
     ((_ prefix e1 e2 ...)
      (with-syntax ((prefix-bind (format-id #&#39;prefix <span class="st">&quot;~a-bind&quot;</span> #&#39;prefix))
-                   (prefix-return (format-id #&#39;return <span class="st">&quot;~a-return&quot;</span> #&#39;prefix)))
+                   (prefix-return (format-id #&#39;return <span class="st">&quot;~a-unit&quot;</span> #&#39;prefix)))
        #&#39;(syntax-parameterize ((bind (make-rename-transformer #&#39;prefix-bind))
                                (return (make-rename-transformer #&#39;prefix-return)))
-                              (<span class="kw">do</span>^ e1 e2 ...))))))</code></pre>
+                              (<span class="kw">do</span>^ e1 e2 ...))))))</code></pre></div>
 <p><em>Thanks to user chandler on the #racket IRC room for teaching me how to do this.</em></p>
-<p>So now this is legal:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: sub<span class="dv">-10</span>-gt-zero? (-&gt; Real (Box Boolean)))
-(<span class="kw">define</span><span class="fu"> </span>(sub<span class="dv">-10</span>-gt-zero? n)
+<p>We can rewrite <code>imperative-1</code>:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(: imperative<span class="dv">-2</span> (-&gt; Integer (Box String)))
+(<span class="kw">define</span><span class="fu"> </span>(imperative<span class="dv">-2</span> n)
   (<span class="kw">do</span> box
-    (<span class="kw">let</span> [n (<span class="kw">-</span> n <span class="dv">10</span>)])
-    (:= answer (gt-zero-box? n))
-    (return answer)))</code></pre>
-<p>HOLY GODBALLS we just recreated imperative programming. Except it’s typesafe, and all those intermediate local variables are guaranteed not to leak out of their enclosing scope. Any side-effects created or observed as a result are safely quarantined inside the monadic function.</p>
-<p><strong>Aside</strong>: Why did I use <code>let</code> in one place and <code>:=</code> in another? Think about what type <code>gt-zero-box?</code> returns and what type <code>-</code> returns.</p>
-<h1 id="monad-for-nothing"><span class="header-section-number">4</span> Monad for nothing</h1>
-<p><code>Box</code>, together with its <code>return</code> and <code>bind</code> functions, form what is called a <em>monad</em>. <code>Box</code> recreates the imperative programming style we miss from other languages, but it is literally the simplest functor to base a monad on. Using other functors we can go beyond merely being able to write sequential actions to other more advanced forms of flow control - and still write it imperatively.</p>
-<p>Say I have a function which transforms a number and I want to run this transformation over a list of numbers. I can base a monad off of the <code>List</code> functor like so:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: list-return (All (a) (-&gt; a (Listof a))))
-(<span class="kw">define</span><span class="fu"> </span>(list-return x) (<span class="kw">cons</span> x &#39;()))
-
-<span class="co">; this is the same as (list x), but I wanted to show what it is doing</span>
-
-(: flatten (All (a) (-&gt; (Listof (Listof a)) (Listof a))))
-(<span class="kw">define</span><span class="fu"> </span>(flatten xss)
-  (foldr (λ: ((y : (Listof a)) (ys : (Listof a))) (<span class="kw">append</span> y ys))
-           empty xss))
-
-(: list-bind (All (a b) (-&gt; (Listof a) (-&gt; a (Listof b)) (Listof b))))
-(<span class="kw">define</span><span class="fu"> </span>(list-bind ma f)
-  (flatten (map f ma)))</code></pre>
-<p>With this in hand, I can write a nice procedural function which multiplies a single number by 5:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: times<span class="dv">-5</span> (-&gt; Number (Listof Number)))
-(<span class="kw">define</span><span class="fu"> </span>(times<span class="dv">-5</span> n)
+    (b := (box-even? n))
+    (return (<span class="kw">if</span> b <span class="st">&quot;Even&quot;</span> <span class="st">&quot;Odd&quot;</span>))))</code></pre></div>
+<p>For that matter, we can use this slick notation on list computations as well:</p>
+<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme"><span class="co">; Function written to process one item of a list</span>
+(: list-times<span class="dv">-5</span>-if-even (-&gt; Integer (Listof Integer)))
+(<span class="kw">define</span><span class="fu"> </span>(list-times<span class="dv">-5</span>-if-even n)
   (<span class="kw">do</span> <span class="kw">list</span>
-    (<span class="kw">let</span> [n (* n <span class="dv">5</span>)])
-    (return n)))</code></pre>
-<p>And yet, when I run it on a list, it iterates over the entire list for me:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(list-bind &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span>) times<span class="dv">-5</span>)
-<span class="co">; =&gt; &#39;(5 10 15 20 25)</span></code></pre>
-<p>While this may seem a bit overwhelming, remember this only needs to be done once .. and it was just done.</p>
-<p>Note that <code>list-bind</code> makes use of <code>map</code>. In fact, while you can write <code>bind</code> functions without directly using <code>map</code>, the classical definition of a monad was a triple of functions called <code>map</code>, <code>return</code>, and <em>join</em>.</p>
-<p><code>join</code> has the type (when dealing with <code>Box</code>es) of <code>(All (a) (-&gt; (Box (Box a)) (Box a)))</code>. We have already seen a function with this signature: <code>flatten</code>, for <code>List</code>s.</p>
-<p><code>join</code> is really just <code>flatten</code> for monads which aren’t <code>List</code>s. Given a suitable definition of <code>join</code>, <code>bind</code> may always be defined as such:</p>
-<pre class="sourceCode scheme"><code class="sourceCode scheme">(: bind (All (a) (-&gt; (M a) (-&gt; a (M b)) (M b))))
-(<span class="kw">define</span><span class="fu"> </span>(bind mma) (join (map f mma)))</code></pre>
-<p>This is exactly how we defined <code>list-bind</code> above. However, anecdotally, most of the time <code>join</code>’s only purpose is to define <code>bind</code> so I started with that. So shoot me.</p>
-<h1 id="conclusion"><span class="header-section-number">5</span> Conclusion</h1>
-<p>Monads are not a difficult concept: they are contexts inside of which pure values may create and react to side-effects in the course of computing some final value.</p>
-<p>Depending on the implementation of two functions - called <code>return</code> and <code>bind</code> - the same imperative style of programming can take on different operational meanings.</p>
-<p>How could you create a monad which terminates early if an error value is returned at any point? You can figure it out.</p>
+    (is-even := (return (<span class="kw">even?</span> n)))
+    (return (<span class="kw">if</span> is-even (* n <span class="dv">5</span>) n))))
+
+<span class="co">; that very same function automatically applied to the whole list</span>
+(list-bind &#39;(<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span>) list-times<span class="dv">-5</span>-if-even)
+<span class="co">; =&gt; &#39;(1 10 3 20 5)</span></code></pre></div>
+<p>You get the idea.</p>
+<h1 id="conclusion-and-further-points-of-interest"><span class="header-section-number">7</span> Conclusion and further points of interest</h1>
+<p>Monads aren’t hard: they are containers of other values which not only allow the values to be transformed, but the container itself. The structural change is called a <em>side-effect</em> and different monads allow for the controlled propagation of different side effects.</p>
+<p>Where all this nonsense really becomes interesting is when you write generic “monadic” functions - not specific to any particular monad - and are able to get different behaviors depending on the monad you choose.</p>
+<p>For instance, I could write a simple monadic function to multiply a number by two. Fed into a <code>Box</code> monad, this simply lets me use it in an imperative function. Fed into a <code>List</code> monad, this function is automatically applied to a list of values.</p>
+<p>The <code>list-times-5-if-even</code> function doesn’t have anything in it specific to lists; unfortunately, Typed Racket’s type inference engine is still a bit lacking.</p>
+<p>But that’s just the tip of the iceberg; now that you have the fundamentals, go read more!</p>
         </div>
 </div><!-- row -->
 <hr>

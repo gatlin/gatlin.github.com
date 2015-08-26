@@ -96,46 +96,46 @@ Or, charming the Python
 <p>I'm here to tell you that not only does Haskell make imperative programming a cinch, but safe and correct as well. Follow along! This post is written in Literate Haskell, so its source code can be compiled and run as a program. The source is <a href="https://gist.github.com/gatlin/9696088">here</a>.</p>
 <h1 id="part-the-first-the-boilerplate"><span class="header-section-number">1</span> Part the First: The boilerplate</h1>
 <p>Surprisingly, you won't need much boilerplate for this exercise:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE DeriveFunctor #-}</span>
-<span class="ot">{-# LANGUAGE StandaloneDeriving #-}</span></code></pre>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad.Free</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE DeriveFunctor #-}</span>
+<span class="ot">{-# LANGUAGE StandaloneDeriving #-}</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad.Free</span></code></pre></div>
 <p>Haskell already has built in notions of Functors, Monads, and other mathematical substrate that we'll need as typeclasses.</p>
 <p>I'm going to assume you've at least seen the words <code>Functor</code> and <code>Monad</code> before, and if you haven't, you should Google around for any one of the thousands of existing explanations.</p>
 <p>Importing <code>Control.Monad.Free</code> brings in what has been my favorite feature of late: the Free monad.</p>
 <p>The Free monad is what it sounds like: it is a generic instance of the <code>Monad</code> typeclass. All you have to do is supply a <code>Functor</code> type and the <code>Free</code> type constructor spits out a <code>Monad</code>.</p>
 <h1 id="part-the-second-show-me-already"><span class="header-section-number">2</span> Part the Second: SHOW ME ALREADY</h1>
 <p><em>Voici</em>:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">Then</span> k <span class="fu">=</span> <span class="dt">Then</span> k
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">Then</span> k <span class="fu">=</span> <span class="dt">Then</span> k
 <span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">Then</span>
-<span class="kw">type</span> <span class="dt">Imperative</span> <span class="fu">=</span> <span class="dt">Free</span> <span class="dt">Then</span></code></pre>
+<span class="kw">type</span> <span class="dt">Imperative</span> <span class="fu">=</span> <span class="dt">Free</span> <span class="dt">Then</span></code></pre></div>
 <p>That's it. <code>Imperative</code> is now a monad. But what does it <em>do</em>? Good question - that's the part we must fill in. In our case we wish to be able to write imperative, this-then-this-then-this style programs.</p>
 <h1 id="part-the-third-give-my-creation-...-life"><span class="header-section-number">3</span> Part the Third: Give my creation ... LIFE!</h1>
 <figure>
 <img src="http://i.imgur.com/afH9ODT.jpg" alt="Dr Frankenstein has been a very naughty boy" /><figcaption>Dr Frankenstein has been a very naughty boy</figcaption>
 </figure>
 <p>So now we should specify the behavior of our newly minted monad. We will define a function that evaluates programs in our little monad.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">imperative ::</span> <span class="dt">Imperative</span> a <span class="ot">-&gt;</span> a
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">imperative ::</span> <span class="dt">Imperative</span> a <span class="ot">-&gt;</span> a
 imperative (<span class="dt">Free</span> (<span class="dt">Then</span> next)) <span class="fu">=</span> imperative next
-imperative (<span class="dt">Pure</span> v)           <span class="fu">=</span> v</code></pre>
+imperative (<span class="dt">Pure</span> v)           <span class="fu">=</span> v</code></pre></div>
 <p>We did it. Really. This code says that if we get a value of <code>Free</code> we should unpack the value inside of it and loop; otherwise, we have broken the program down as far as we can and should evaluate the expression we have uncovered.</p>
 <h1 id="part-the-fourth-examples"><span class="header-section-number">4</span> Part the Fourth: Examples</h1>
 <p>We'll write some simple arithmetic functions, including the types for pedagogical thoroughness:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">mySquare ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Imperative</span> <span class="dt">Int</span>
-mySquare n <span class="fu">=</span> return <span class="fu">$</span> n <span class="fu">*</span> n</code></pre>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">myAdd1 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Imperative</span> <span class="dt">Int</span>
-myAdd1 n <span class="fu">=</span> return <span class="fu">$</span> n <span class="fu">+</span> <span class="dv">1</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">mySquare ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Imperative</span> <span class="dt">Int</span>
+mySquare n <span class="fu">=</span> return <span class="fu">$</span> n <span class="fu">*</span> n</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">myAdd1 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Imperative</span> <span class="dt">Int</span>
+myAdd1 n <span class="fu">=</span> return <span class="fu">$</span> n <span class="fu">+</span> <span class="dv">1</span></code></pre></div>
 <p>And for legibility later, I'll define this stupid thing:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">set ::</span> a <span class="ot">-&gt;</span> <span class="dt">Imperative</span> a
-set <span class="fu">=</span> return</code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">set ::</span> a <span class="ot">-&gt;</span> <span class="dt">Imperative</span> a
+set <span class="fu">=</span> return</code></pre></div>
 <p>You get the idea. And now for an example usage. Remember, in Haskell you get fancy &quot;do-notation&quot; when you're doing work inside a monad.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">ex1 ::</span> <span class="dt">Int</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">ex1 ::</span> <span class="dt">Int</span>
 ex1 <span class="fu">=</span> imperative <span class="fu">$</span> <span class="kw">do</span>
     a <span class="ot">&lt;-</span> set <span class="dv">5</span>
     b <span class="ot">&lt;-</span> mySquare a
     c <span class="ot">&lt;-</span> myAdd1 b
-    return c</code></pre>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
-main <span class="fu">=</span> <span class="kw">let</span> v <span class="fu">=</span> ex1 <span class="kw">in</span> putStrLn <span class="fu">.</span> show <span class="fu">$</span> v</code></pre>
+    return c</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">let</span> v <span class="fu">=</span> ex1 <span class="kw">in</span> putStrLn <span class="fu">.</span> show <span class="fu">$</span> v</code></pre></div>
 <p>Running this, I get <code>26</code> in my terminal as expected.</p>
 <p>Obviously, the mere existence of such notation indicates the folks who make Haskell are keenly aware of what I'm saying; the whole reason we're talking about monads right now is because Philip Wadler thought of this first.</p>
 <p>But I hope I showed you how <em>easy</em> this is. Monads are programmable semicolons. (NB: Python has semicolons, too, but you probably never use them.) The <code>Free</code> monad makes it ridiculously easy to create monads. I've defined arguably the most trivial monad one can define, in like 15 lines of real code, and already this code is as easy to write as something like Python but with static type safety.</p>

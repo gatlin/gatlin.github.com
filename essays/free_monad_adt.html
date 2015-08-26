@@ -97,46 +97,46 @@ Or, I have finally cured insomnia. Call CNN.
 </ol>
 <p>This post is a simple exploration of implementing the <code>Functor</code> typeclass as an algebraic data type, and then deriving a free monad from it.</p>
 <h1 id="functors-and-free-monads"><span class="header-section-number">1</span> Functors and Free Monads</h1>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RankNTypes #-}</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RankNTypes #-}</span>
 
 <span class="kw">data</span> <span class="dt">F</span> f <span class="fu">=</span> <span class="dt">F</span> {
     _<span class="ot">map ::</span> forall a b<span class="fu">.</span> (a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> f a <span class="ot">-&gt;</span> f b
-}</code></pre>
+}</code></pre></div>
 <p>An instance of <strong>F</strong> should contain a function called <code>_map</code> constrained by whichever base type is being functor-ized.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Mu</span> f a
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Mu</span> f a
     <span class="fu">=</span> <span class="dt">Term</span> {<span class="ot"> retract ::</span> a }
-    <span class="fu">|</span> <span class="dt">Cont</span> (f (<span class="dt">Mu</span> f a))</code></pre>
+    <span class="fu">|</span> <span class="dt">Cont</span> (f (<span class="dt">Mu</span> f a))</code></pre></div>
 <p><code>Mu</code> is the free monad. I like calling it <code>Mu</code> for two reasons: because calling it &quot;free&quot; is confusing and not informative; and because <code>Mu</code> behaves like the type-level analog to the Y-combinator, called Mu.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">unit ::</span> a <span class="ot">-&gt;</span> <span class="dt">Mu</span> f a
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">unit ::</span> a <span class="ot">-&gt;</span> <span class="dt">Mu</span> f a
 unit <span class="fu">=</span> <span class="dt">Term</span>
 
 <span class="ot">yield ::</span> a <span class="ot">-&gt;</span> <span class="dt">Mu</span> f a
-yield <span class="fu">=</span> <span class="dt">Term</span></code></pre>
+yield <span class="fu">=</span> <span class="dt">Term</span></code></pre></div>
 <p>These two are different names for the same thing, mostly for aesthetic reasons. You'll see.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">bind ::</span> <span class="dt">F</span> f <span class="ot">-&gt;</span> <span class="dt">Mu</span> f a <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> <span class="dt">Mu</span> f b) <span class="ot">-&gt;</span> <span class="dt">Mu</span> f b
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">bind ::</span> <span class="dt">F</span> f <span class="ot">-&gt;</span> <span class="dt">Mu</span> f a <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> <span class="dt">Mu</span> f b) <span class="ot">-&gt;</span> <span class="dt">Mu</span> f b
 bind i arg fn <span class="fu">=</span> <span class="kw">case</span> arg <span class="kw">of</span>
    <span class="dt">Term</span> t      <span class="ot">-&gt;</span> fn t
    <span class="dt">Cont</span> k      <span class="ot">-&gt;</span> <span class="dt">Cont</span> (map (bind&#39; fn) k)
 
    <span class="kw">where</span> map   <span class="fu">=</span> _map i
-         bind&#39; <span class="fu">=</span> flip (bind i)</code></pre>
+         bind&#39; <span class="fu">=</span> flip (bind i)</code></pre></div>
 <p>This is the cool part. <code>bind</code> is defined for any type which is wrapped by <code>Mu</code>, and for a type to be wrapped by <code>Mu</code> it must instantiate our <code>F</code> type. Thus we can ask for an &quot;instance&quot; argument, called <code>i</code> here.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">sequence&#39; i x   <span class="fu">=</span> <span class="kw">case</span> x <span class="kw">of</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">sequence&#39; i x   <span class="fu">=</span> <span class="kw">case</span> x <span class="kw">of</span>
     []      <span class="ot">-&gt;</span> unit []
     m<span class="fu">:</span>ms    <span class="ot">-&gt;</span> m              <span class="fu">&gt;&gt;=</span> \x  <span class="ot">-&gt;</span>
                sequence&#39; i ms <span class="fu">&gt;&gt;=</span> \xs <span class="ot">-&gt;</span>
                unit (x<span class="fu">:</span>xs)
     <span class="kw">where</span>
-        (<span class="fu">&gt;&gt;=</span>) <span class="fu">=</span> bind i</code></pre>
+        (<span class="fu">&gt;&gt;=</span>) <span class="fu">=</span> bind i</code></pre></div>
 <p>For kicks I have re-written the <code>sequence</code> function available in Haskell. psilo will essentially use this or an equivalent function to implement <code>do</code> notation under the covers.</p>
 <h1 id="an-example-re-creating-the-maybe-monad."><span class="header-section-number">2</span> An example: re-creating the <code>Maybe</code> monad.</h1>
 <p>Apple's Swift programming language seems to have ignited more widespread interest in optional types. So, just to show there is nothing up my sleeves, I am re-creating the <code>Maybe</code> monad with the name <code>Optional</code>.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Optional</span> s
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Optional</span> s
     <span class="fu">=</span> <span class="dt">Nil</span>
     <span class="fu">|</span> <span class="dt">Some</span> s
-    <span class="kw">deriving</span> (<span class="dt">Show</span>)</code></pre>
+    <span class="kw">deriving</span> (<span class="dt">Show</span>)</code></pre></div>
 <p>Now for the fun part. I will create an <code>F</code> instance for <code>Optional</code> along with some convenience functions to use in monadic computations. While I don't do it here, this could be <a href="http://www.haskell.org/pipermail/haskell-prime/2007-March/002137.html">derived automatically</a>.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">fOptional ::</span> <span class="dt">F</span> <span class="dt">Optional</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">fOptional ::</span> <span class="dt">F</span> <span class="dt">Optional</span>
 fOptional <span class="fu">=</span> <span class="dt">F</span> {
     _map <span class="fu">=</span> \f x <span class="ot">-&gt;</span> <span class="kw">case</span> x <span class="kw">of</span>
         <span class="dt">Nil</span>     <span class="ot">-&gt;</span> <span class="dt">Nil</span>
@@ -144,17 +144,17 @@ fOptional <span class="fu">=</span> <span class="dt">F</span> {
 }
 
 nil <span class="fu">=</span> <span class="dt">Cont</span> <span class="dt">Nil</span>
-some <span class="fu">=</span> <span class="dt">Term</span></code></pre>
+some <span class="fu">=</span> <span class="dt">Term</span></code></pre></div>
 <p>In ~12 lines of real code, I have created a <code>Maybe</code> clone and proven it is a functor. As a result all the remaining code necessary to compose a monad has been derived automatically.</p>
 <p>Since this was a free monad, the only remaining code is that to &quot;run&quot; the monadic computation built up using <code>unit</code> and <code>bind</code>.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">runOptional ::</span> <span class="dt">Mu</span> <span class="dt">Optional</span> a <span class="ot">-&gt;</span> <span class="dt">Optional</span> a
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">runOptional ::</span> <span class="dt">Mu</span> <span class="dt">Optional</span> a <span class="ot">-&gt;</span> <span class="dt">Optional</span> a
 runOptional (<span class="dt">Term</span> t) <span class="fu">=</span> <span class="dt">Some</span> t
 runOptional (<span class="dt">Cont</span> k) <span class="fu">=</span> <span class="kw">case</span> k <span class="kw">of</span>
     <span class="dt">Nil</span>     <span class="ot">-&gt;</span> <span class="dt">Nil</span>
-    <span class="dt">Some</span> v  <span class="ot">-&gt;</span> runOptional v</code></pre>
+    <span class="dt">Some</span> v  <span class="ot">-&gt;</span> runOptional v</code></pre></div>
 <h1 id="tests"><span class="header-section-number">3</span> Tests!</h1>
 <p>Without further ado, here is some example code written in our <code>Optional</code> monad.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">testOptional1 <span class="fu">=</span> some <span class="dv">5</span> <span class="fu">&gt;&gt;=</span> \a <span class="ot">-&gt;</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">testOptional1 <span class="fu">=</span> some <span class="dv">5</span> <span class="fu">&gt;&gt;=</span> \a <span class="ot">-&gt;</span>
                 some <span class="dv">6</span> <span class="fu">&gt;&gt;=</span> \b <span class="ot">-&gt;</span>
                 yield <span class="fu">$</span> a <span class="fu">*</span> b
     <span class="kw">where</span> (<span class="fu">&gt;&gt;=</span>) <span class="fu">=</span> bind fOptional
@@ -163,7 +163,7 @@ testOptional2 <span class="fu">=</span> some <span class="dv">5</span> <span cla
                 nil    <span class="fu">&gt;&gt;=</span> \b <span class="ot">-&gt;</span>
                 some <span class="dv">6</span> <span class="fu">&gt;&gt;=</span> \c <span class="ot">-&gt;</span>
                 yield <span class="fu">$</span> a <span class="fu">*</span> c
-    <span class="kw">where</span> (<span class="fu">&gt;&gt;=</span>) <span class="fu">=</span> bind fOptional</code></pre>
+    <span class="kw">where</span> (<span class="fu">&gt;&gt;=</span>) <span class="fu">=</span> bind fOptional</code></pre></div>
 <p>Try it out for yourself to see the results.</p>
         </div>
 </div><!-- row -->

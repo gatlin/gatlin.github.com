@@ -82,54 +82,54 @@ Or, How you too can be alone and stay that way.
         <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
 <p>It's said that all Haskell programmers eventually write a blog post explaining Monads. Today I fulfill my destiny. The basic format is ripped from &quot;Learn You A Haskell For Great Good,&quot; but these are my own crappy examples.</p>
 <p>This blog post is literate Haskell; you can get it <a href="https://gist.github.com/4145341">here</a>. You can import it into ghci and type the functions to see their output (<code>ghci monads.lhs</code>). For this to work, we'll need to import one module for use later:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Applicative</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Applicative</span></code></pre></div>
 <p>A <em>functor</em> generalizes the notion of types to a type with context. For example, the Maybe type is literally this:</p>
 <pre><code>Maybe a = Just a | Nothing</code></pre>
 <p>It wraps a simple type into the notion of uncertainty, so Maybe is a functor. The list type is really <code>List a</code> is a list, but you can think of lists as functors generalizing types into the notion of non-determinism. To be a functor, a type must implement <code>fmap</code> which has a type signature of <code>(a -&gt; b) -&gt; f a -&gt; f b</code>. Or concretely:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example1 <span class="fu">=</span> fmap (<span class="fu">*</span><span class="dv">2</span>) (<span class="dt">Just</span> <span class="dv">4</span>)</code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example1 <span class="fu">=</span> fmap (<span class="fu">*</span><span class="dv">2</span>) (<span class="dt">Just</span> <span class="dv">4</span>)</code></pre></div>
 <pre><code>Just 8</code></pre>
 <p>An <em>applicative functor</em> takes this further and generalizes the notion of function application inside a context. In addition to <code>fmap</code>, a type that wants to be an applicative functor must implement <code>&lt;*&gt; :: (a -&gt; b) -&gt; f a -&gt; f b</code>. The only difference between it and <code>fmap</code> is that the first argument, the function to be applied, must be inside the context already. Take a breath and read this example:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">even<span class="fu">?</span> x
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">even<span class="fu">?</span> x
   <span class="fu">|</span> x <span class="ot">`mod`</span> <span class="dv">2</span> <span class="fu">==</span> <span class="dv">0</span> <span class="fu">=</span> <span class="dt">True</span>
-  <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="dt">False</span></code></pre>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example2 <span class="fu">=</span> (even<span class="fu">?</span>) <span class="fu">&lt;$&gt;</span> [<span class="dv">1</span><span class="fu">..</span><span class="dv">12</span>] <span class="co">-- &lt;$&gt; is just fmap, but sexier to go with &lt;*&gt;</span></code></pre>
+  <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="dt">False</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example2 <span class="fu">=</span> (even<span class="fu">?</span>) <span class="fu">&lt;$&gt;</span> [<span class="dv">1</span><span class="fu">..</span><span class="dv">12</span>] <span class="co">-- &lt;$&gt; is just fmap, but sexier to go with &lt;*&gt;</span></code></pre></div>
 <pre><code>[False,True,False,True,False,True,False,True,False,True,False,True]</code></pre>
 <p>Note that Haskell gives Lists special treatment because they're so fundamental. So we write <code>[a]</code> instead of <code>List a</code> and, though we didn't show it here, <code>fmap</code> is just the normal <code>map</code> function you expect.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example3 <span class="fu">=</span> (<span class="fu">*</span>) <span class="fu">&lt;$&gt;</span> [<span class="dv">1</span>,<span class="dv">2</span>] <span class="fu">&lt;*&gt;</span> [<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>]</code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example3 <span class="fu">=</span> (<span class="fu">*</span>) <span class="fu">&lt;$&gt;</span> [<span class="dv">1</span>,<span class="dv">2</span>] <span class="fu">&lt;*&gt;</span> [<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>]</code></pre></div>
 <pre><code>[4,5,6,5,6,7]</code></pre>
 <p>The result of applying <code>(*)</code> to <code>1</code> is a function that accepts one argument and returns the product. <code>&lt;$&gt;</code> will return this new function wrapped in the List context and <code>&lt;*&gt;</code> can then apply this contextualized function to <code>[3,4,5]</code>, in order.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example4 <span class="fu">=</span> [  (<span class="fu">*</span><span class="dv">1</span>),  (<span class="fu">*</span><span class="dv">2</span>)  ] <span class="fu">&lt;*&gt;</span> [<span class="dv">1</span><span class="fu">..</span><span class="dv">4</span>]</code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example4 <span class="fu">=</span> [  (<span class="fu">*</span><span class="dv">1</span>),  (<span class="fu">*</span><span class="dv">2</span>)  ] <span class="fu">&lt;*&gt;</span> [<span class="dv">1</span><span class="fu">..</span><span class="dv">4</span>]</code></pre></div>
 <pre><code>[1,2,3,4,2,4,6,8]</code></pre>
 <p>Note the length of the resulting lists is the product of the length of each list. One more to drive that point home:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example5 <span class="fu">=</span> [ (<span class="fu">*</span>x) <span class="fu">|</span> x <span class="ot">&lt;-</span> [<span class="dv">1</span><span class="fu">..</span><span class="dv">3</span>] ] <span class="fu">&lt;*&gt;</span> [<span class="dv">1</span><span class="fu">..</span><span class="dv">4</span>]</code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example5 <span class="fu">=</span> [ (<span class="fu">*</span>x) <span class="fu">|</span> x <span class="ot">&lt;-</span> [<span class="dv">1</span><span class="fu">..</span><span class="dv">3</span>] ] <span class="fu">&lt;*&gt;</span> [<span class="dv">1</span><span class="fu">..</span><span class="dv">4</span>]</code></pre></div>
 <pre><code>[1,2,3,4,2,4,6,8,3,6,9,12]</code></pre>
 <p>Where functors generalize types inside contexts, and applicative functors generalize application inside contexts, <em>monads</em> generalize <strong>composition</strong> inside contexts.</p>
 <p>A monad must implement <code>&gt;&gt;= :: m a -&gt; (a -&gt; mb) -&gt; m b</code>, which you pronounce as &quot;bind.&quot; It takes a value wrapped in a monad context (<code>m</code>) and a function from a non-monadic value to a monadic value, and applies them. The result is something that can be used all over again in the same way. Example!</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example6 <span class="fu">=</span> ((take <span class="dv">5</span>) <span class="fu">.</span> repeat) <span class="dv">2</span> <span class="co">-- signature is just a -&gt; [a]</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example6 <span class="fu">=</span> ((take <span class="dv">5</span>) <span class="fu">.</span> repeat) <span class="dv">2</span> <span class="co">-- signature is just a -&gt; [a]</span></code></pre></div>
 <pre><code>[2,2,2,2,2]</code></pre>
 <p><code>example6</code> returns a List of values, so it returns a monad.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example7 <span class="fu">=</span> [<span class="dv">2</span>,<span class="dv">3</span>] <span class="fu">&gt;&gt;=</span> ((take <span class="dv">5</span>) <span class="fu">.</span> repeat)</code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example7 <span class="fu">=</span> [<span class="dv">2</span>,<span class="dv">3</span>] <span class="fu">&gt;&gt;=</span> ((take <span class="dv">5</span>) <span class="fu">.</span> repeat)</code></pre></div>
 <pre><code>[2,2,2,2,2,3,3,3,3,3]</code></pre>
 <p>Haskell has a special notation for monad computations called do-notation. It should illuminate the relationship between imperative programming and monads:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example8 <span class="fu">=</span> <span class="kw">do</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example8 <span class="fu">=</span> <span class="kw">do</span>
     l <span class="ot">&lt;-</span> [<span class="dv">2</span>,<span class="dv">3</span>]
-    ((take <span class="dv">5</span>) <span class="fu">.</span> repeat) l</code></pre>
+    ((take <span class="dv">5</span>) <span class="fu">.</span> repeat) l</code></pre></div>
 <pre><code>[2,2,2,2,2,3,3,3,3,3]</code></pre>
 <p>But let's focus on what just happened: I took a list of values and a function to act on a single value and applied it to the entire list <em>without explicit iteration.</em></p>
 <p>wtfbbqomg.</p>
 <p>That's the magic of monads, really. A monad is a polymorphic type that generalizes the notion of function composition, and because of this you can do interesting things <em>during</em> composition. The Maybe monad does similar things:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">ensureEven x
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">ensureEven x
     <span class="fu">|</span> x <span class="ot">`mod`</span> <span class="dv">2</span> <span class="fu">==</span> <span class="dv">0</span> <span class="fu">=</span> <span class="dt">Just</span> x
-    <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="dt">Nothing</span></code></pre>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example9 <span class="fu">=</span> <span class="kw">do</span>
+    <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example9 <span class="fu">=</span> <span class="kw">do</span>
    a <span class="ot">&lt;-</span> ensureEven <span class="dv">2</span>
    b <span class="ot">&lt;-</span> ensureEven <span class="fu">$</span> a <span class="fu">*</span> <span class="dv">2</span>;
-   return b</code></pre>
+   return b</code></pre></div>
 <pre><code>Just 4</code></pre>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example10 <span class="fu">=</span> <span class="kw">do</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example10 <span class="fu">=</span> <span class="kw">do</span>
    a <span class="ot">&lt;-</span> ensureEven <span class="dv">2</span>
    b <span class="ot">&lt;-</span> ensureEven <span class="fu">$</span> a <span class="fu">+</span> <span class="dv">1</span>
-   return b</code></pre>
+   return b</code></pre></div>
 <pre><code>Nothing</code></pre>
 <p>So, a summary:</p>
 <ul>
@@ -139,14 +139,14 @@ Or, How you too can be alone and stay that way.
 </ul>
 <p>The point of generalization is to let you assign some interesting or novel meaning to these abstract ideas. List models non-determinism; Maybe models simple uncertainty; IO models, uh, IO actions.</p>
 <p>That's why it kind of misses the point to say &quot;monads model state.&quot; Certainly they can, but what they really do is so much more powerful. Here is <code>example10</code> without the do-notation:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example11 <span class="fu">=</span> (ensureEven <span class="dv">2</span>) <span class="fu">&gt;&gt;=</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example11 <span class="fu">=</span> (ensureEven <span class="dv">2</span>) <span class="fu">&gt;&gt;=</span>
    (\a <span class="ot">-&gt;</span> ensureEven (a <span class="fu">+</span> <span class="dv">1</span>) <span class="fu">&gt;&gt;=</span>
-       (\b <span class="ot">-&gt;</span> return b))</code></pre>
+       (\b <span class="ot">-&gt;</span> return b))</code></pre></div>
 <p>The result of <code>ensureEven 2</code> is fed into a single function: an anonymous function with a free variable <code>a</code>. It in turn contains an inner anonymous function <code>(\b -&gt; return b)</code>, which, thanks to the magic of lexical scope, can see <code>a</code>. And that's why</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">example12 <span class="fu">=</span> <span class="kw">do</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">example12 <span class="fu">=</span> <span class="kw">do</span>
    putStrLn <span class="st">&quot;Enter some text:&quot;</span>
    input <span class="ot">&lt;-</span> getLine
-   return input</code></pre>
+   return input</code></pre></div>
 <p>can safely perform IO: the IO monad generalizes composition such that functions are called in the order they need to be in the real world (ie, asking for text before listening for it) and the &quot;variables&quot; can't be shared or mutated without you knowing.</p>
 <p>Hope this made some sense.</p>
         </div>

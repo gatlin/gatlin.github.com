@@ -105,7 +105,7 @@ Or, [insert a Ghostbuster's joke]
 <p>We will be building this in Haskell, and this post is literate haskell which you can run in ghci by grabbing the <a href="http://niltag.net/essays/src/arith.lhs">source</a>.</p>
 <h1 id="prelude"><span class="header-section-number">1</span> Prelude</h1>
 <p>This being Haskell, useful programs have like a billion imports and what-nots.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RankNTypes #-}</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RankNTypes #-}</span>
 
 <span class="kw">import </span><span class="dt">Prelude</span> <span class="kw">hiding</span> ( drop
                       , take
@@ -120,7 +120,7 @@ Or, [insert a Ghostbuster's joke]
                       , iterate
                       )
 <span class="kw">import </span><span class="dt">FreeStream</span>
-<span class="kw">import </span><span class="dt">Control.Monad.Trans.Free</span></code></pre>
+<span class="kw">import </span><span class="dt">Control.Monad.Trans.Free</span></code></pre></div>
 <p>You can get <a href="https://github.com/gatlin/FreeStream">FreeStream here</a>.</p>
 <h1 id="polish-stacks"><span class="header-section-number">2</span> Polish stacks</h1>
 <p>Nerds who do a lot of serial arithmetic - finance types, land appraisers, business goons - swear by what is called <a href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">reverse Polish notation</a>. When using a calculator to evaluate some complicated arithmetic, instead of writing this:</p>
@@ -152,30 +152,30 @@ H. 25                       (pop 5, pop 25, add them, push 25)</code></pre>
 <p>At each step you either <strong>push</strong> an item on the stack, or <strong>pop</strong> an item off the stack. Reverse Polish notation is really just a way to describe what to do to a stack.</p>
 <h1 id="what-does-arithmetic-look-like"><span class="header-section-number">3</span> What does arithmetic look like?</h1>
 <p>To parse arithmetic expressions, we will need some model of arithmetic which we can manipulate in our program. In our case, we will support addition, multiplication, subtraction, and division. These each take two numbers as operands.</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Arithmetic</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Arithmetic</span>
     <span class="fu">=</span> <span class="dt">Value</span> <span class="dt">Int</span>
     <span class="fu">|</span> <span class="dt">Add</span> <span class="dt">Arithmetic</span> <span class="dt">Arithmetic</span>
     <span class="fu">|</span> <span class="dt">Mul</span> <span class="dt">Arithmetic</span> <span class="dt">Arithmetic</span>
     <span class="fu">|</span> <span class="dt">Sub</span> <span class="dt">Arithmetic</span> <span class="dt">Arithmetic</span>
     <span class="fu">|</span> <span class="dt">Div</span> <span class="dt">Arithmetic</span> <span class="dt">Arithmetic</span>
-    <span class="kw">deriving</span> <span class="dt">Show</span></code></pre>
+    <span class="kw">deriving</span> <span class="dt">Show</span></code></pre></div>
 <p>An <code>Arithmetic</code> value is either an integer value, or any of four binary operations.</p>
 <p>So our example of <code>2 3 + 4 * 5 +</code> might look something like this:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">exp1 <span class="fu">=</span> (<span class="dt">Add</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">exp1 <span class="fu">=</span> (<span class="dt">Add</span>
          (<span class="dt">Mul</span>
            (<span class="dt">Add</span> (<span class="dt">Value</span> <span class="dv">2</span>)
                 (<span class="dt">Value</span> <span class="dv">3</span>))
            <span class="dv">4</span>)
-         <span class="dv">5</span>)</code></pre>
+         <span class="dv">5</span>)</code></pre></div>
 <p>But how should we get a result out of that? Put another way, we must figure out how to write a function with this signature:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">doArith ::</span> <span class="dt">Arithmetic</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">doArith ::</span> <span class="dt">Arithmetic</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></code></pre></div>
 <p>If our expression is just a <code>Value</code>, pull out the number and be done:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">doArith (<span class="dt">Value</span> v) <span class="fu">=</span> v</code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">doArith (<span class="dt">Value</span> v) <span class="fu">=</span> v</code></pre></div>
 <p>Otherwise, we are going to have some operation and then two <code>Arithmetic</code> values, which we should evaluate:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">doArith (<span class="dt">Add</span> l r) <span class="fu">=</span> (doArith l) <span class="fu">+</span> (doArith r)
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">doArith (<span class="dt">Add</span> l r) <span class="fu">=</span> (doArith l) <span class="fu">+</span> (doArith r)
 doArith (<span class="dt">Mul</span> l r) <span class="fu">=</span> (doArith l) <span class="fu">*</span> (doArith r)
 doArith (<span class="dt">Sub</span> l r) <span class="fu">=</span> (doArith l) <span class="fu">-</span> (doArith r)
-doArith (<span class="dt">Div</span> l r) <span class="fu">=</span> (doArith l) <span class="ot">`div`</span> (doArith r)</code></pre>
+doArith (<span class="dt">Div</span> l r) <span class="fu">=</span> (doArith l) <span class="ot">`div`</span> (doArith r)</code></pre></div>
 <p>This makes sense: either the expression has an immediate value, or it is some operation applied to two sub-expressions.</p>
 <p>Now we have a model representation of arithmetic problems and a way to evaluate them. But how do we create these models from strings like <code>2 3 + 4 * 5 +</code>?</p>
 <h1 id="sweet-streams-are-made-of-these"><span class="header-section-number">4</span> &quot;Sweet streams are made of these&quot;</h1>
@@ -191,12 +191,12 @@ doArith (<span class="dt">Div</span> l r) <span class="fu">=</span> (doArith l) 
 <p>Stream processors must sit on top of a monad, like <code>IO</code> or <code>Maybe</code> or <code>State</code> or whatever. The way I have constructed them, they allow you to pipeline <em>effectful</em>, <em>impure</em> monadic computations.</p>
 <h1 id="parsing-a-stream-into-a-stack"><span class="header-section-number">6</span> Parsing a stream into a stack</h1>
 <p>So, we want to parse streams of string tokens into an <code>Arithmetic</code> value. The signature for this function, using FreeStream, is this:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">parseArith ::</span> <span class="dt">Sink</span> (<span class="dt">Stream</span> <span class="dt">String</span>) <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">Arithmetic</span>)</code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">parseArith ::</span> <span class="dt">Sink</span> (<span class="dt">Stream</span> <span class="dt">String</span>) <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">Arithmetic</span>)</code></pre></div>
 <p>This says the sink accepts a stream of <code>String</code> values, sits on top of the <code>IO</code> monad, and <code>Maybe</code> it will have an <code>Arithmetic</code> value. After all, if the expression is malformed you can't promise a meaningful result.</p>
 <p>We are going to model a stack using Haskell lists: &quot;pushing&quot; is adding something to the front and &quot;popping&quot; is taking an item off the front. We are going to loop until the input is exhausted and we are going to need an empty stack, so let's get going:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">parseArith <span class="fu">=</span> loop [] <span class="kw">where</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">parseArith <span class="fu">=</span> loop [] <span class="kw">where</span></code></pre></div>
 <p>So far so good! But what is this enigmatic <code>loop</code> function? It's this:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">    loop stack <span class="fu">=</span> <span class="kw">do</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">    loop stack <span class="fu">=</span> <span class="kw">do</span>
         d <span class="ot">&lt;-</span> await
         <span class="kw">case</span> recv d <span class="kw">of</span>
             <span class="dt">Just</span> token <span class="ot">-&gt;</span> <span class="kw">case</span> token <span class="kw">of</span>
@@ -208,17 +208,17 @@ doArith (<span class="dt">Div</span> l r) <span class="fu">=</span> (doArith l) 
                 _   <span class="ot">-&gt;</span> <span class="kw">do</span>
                     v <span class="ot">&lt;-</span> return token
                     loop <span class="fu">$</span> (<span class="dt">Value</span> (read v))<span class="fu">:</span>stack
-            <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="fu">.</span> <span class="dt">Just</span> <span class="fu">.</span> head <span class="fu">$</span> stack</code></pre>
+            <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="fu">.</span> <span class="dt">Just</span> <span class="fu">.</span> head <span class="fu">$</span> stack</code></pre></div>
 <p><code>loop</code> is a function which, given an initial stack, awaits a stream value and receives its data. If the value is <code>Just</code> something, then we will continue with our processing. If it is <code>Nothing</code>, though, we pop an item off the stack and return it (because there will only be one).</p>
 <p>The token is just a string being carried along the stream. If the token is any one of our 4 operations, we will call a soon-to-be-defined <code>buildBranch</code> function with the correct operation and the current contents of the stack, and return whatever it does. If the token is anything else, it is presumed to be a number, and a <code>Value</code> is pushed on the stack (and then <code>loop</code> is called with this new stack).</p>
 <p><code>buildBranch</code> looks like this:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell">   buildBranch con stack <span class="fu">=</span> <span class="kw">do</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">   buildBranch con stack <span class="fu">=</span> <span class="kw">do</span>
        <span class="kw">if</span> length stack <span class="fu">&lt;</span> <span class="dv">2</span>
            <span class="kw">then</span> return <span class="dt">Nothing</span>
            <span class="kw">else</span> <span class="kw">do</span>
                (r<span class="fu">:</span>l<span class="fu">:</span>rest) <span class="ot">&lt;-</span> return stack
                r          <span class="ot">&lt;-</span> return <span class="fu">$</span> con l r
-               loop <span class="fu">$</span> r<span class="fu">:</span>rest</code></pre>
+               loop <span class="fu">$</span> r<span class="fu">:</span>rest</code></pre></div>
 <p><code>con</code> refers to the &quot;constructor&quot; we are using for our <code>Arithmetic</code> value. Basically, if the stack doesn't have two elements then there has been some mistake and we return Nothing. Otherwise, we break the left (<code>l</code>) and right (<code>r</code>) items off, build the appropriate <code>Arithmetic</code> value, push it on the stack, and <code>loop</code> with our new stack.</p>
 <p>But how do we generate these tokens?</p>
 <h1 id="a-token-joke"><span class="header-section-number">7</span> A token joke (?)</h1>
@@ -231,7 +231,7 @@ doArith (<span class="dt">Div</span> l r) <span class="fu">=</span> (doArith l) 
 <p>But we want a stream of <code>String</code> values, not <code>Char</code> values. It is easy to convert a <code>Char</code> into a <code>String</code> (just make it a singleton list, ie <code>'c' -&gt; ['c'] == &quot;c&quot;</code>) and it is easy to ignore spaces. But what if a number is two digits? What if we have a lot of unnecessary spaces?</p>
 <p>Since we are going to have to transform the stream anyway, this is a good opportunity to also make sure that we ignore the correct characters and don't split apart the wrong ones.</p>
 <p>Enter <code>tokenize</code>:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">tokenize ::</span> <span class="dt">Process</span> (<span class="dt">Stream</span> <span class="dt">Char</span>) (<span class="dt">Stream</span> <span class="dt">String</span>) <span class="dt">IO</span> ()
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">tokenize ::</span> <span class="dt">Process</span> (<span class="dt">Stream</span> <span class="dt">Char</span>) (<span class="dt">Stream</span> <span class="dt">String</span>) <span class="dt">IO</span> ()
 tokenize <span class="fu">=</span> loop <span class="st">&quot;&quot;</span> <span class="kw">where</span>
     loop acc <span class="fu">=</span> <span class="kw">do</span>
         d <span class="ot">&lt;-</span> await
@@ -248,7 +248,7 @@ tokenize <span class="fu">=</span> loop <span class="st">&quot;&quot;</span> <sp
         <span class="st">&quot; &quot;</span> <span class="ot">-&gt;</span> return ()
         _ <span class="ot">-&gt;</span> send acc
 
-    send <span class="fu">=</span> yield <span class="fu">.</span> message</code></pre>
+    send <span class="fu">=</span> yield <span class="fu">.</span> message</code></pre></div>
 <p>Following the other sink pattern from before, we are going to loop over the stream values, collecting them into a buffer, and yield that buffer whenever we encounter a space.</p>
 <p>We get the value by calling <code>await</code>, and then <code>recv</code> it. If it is <code>Nothing</code>, the stream has ended so we should flush our buffer and return.</p>
 <p>If there is a character, we have two options:</p>
@@ -259,12 +259,12 @@ tokenize <span class="fu">=</span> loop <span class="st">&quot;&quot;</span> <sp
 <p>We must exercise discretion when flushing, too: if the buffer consists of a space already, or an empty string, let's just ignore it. If, however, there is meaningful content, let's send our value down the stream.</p>
 <h1 id="victory"><span class="header-section-number">8</span> Victory!</h1>
 <p>FreeStream allows you to join generators and processes using the <code>+&gt;</code> operator. So, our pipeline of breaking apart a string into characters, streaming them, tokenizing them to produce a new stream of strings, and aggregating them into a builder of <code>Arithmetic</code> values looks a little something like this:</p>
-<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">rpn ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">Int</span>)
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">rpn ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">Int</span>)
 rpn str <span class="fu">=</span> <span class="kw">do</span>
     parsed <span class="ot">&lt;-</span> stream (each str) <span class="fu">+&gt;</span> tokenize <span class="fu">|&gt;</span> parseArith
     <span class="kw">case</span> parsed <span class="kw">of</span>
         <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="dt">Nothing</span>
-        <span class="dt">Just</span>  p <span class="ot">-&gt;</span> return <span class="fu">.</span> <span class="dt">Just</span> <span class="fu">$</span> doArith p</code></pre>
+        <span class="dt">Just</span>  p <span class="ot">-&gt;</span> return <span class="fu">.</span> <span class="dt">Just</span> <span class="fu">$</span> doArith p</code></pre></div>
 <p>If the stream parsing step works, we feed the <code>Arithmetic</code> value to our evaluation function and return the result.</p>
 <h1 id="conclusion-and-future-investigation"><span class="header-section-number">9</span> Conclusion and Future Investigation</h1>
 <p>There are actual production-ready, beautifully engineered libraries out there for this, my favorite being <a href="https://hackage.haskell.org/package/pipes">pipes</a>. However, I wanted to not only show how stream processing can be used for useful tasks, but also (if you look at the <a href="https://github.com/gatlin/FreeStream">FreeStream</a> source code) that these stream processing utilities themselves are not difficult conceptually or practically.</p>

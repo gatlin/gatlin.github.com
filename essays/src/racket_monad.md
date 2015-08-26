@@ -3,9 +3,13 @@ title: What the fuck is a monad?
 lead: "Or: drinking alone isn't healthy"
 ...
 
-Monads are difficult to explain without sounding either patronizing or
-condescending: I would sound patronizing if I came up with some facile analogy
-and I would be condescending to describe it categorically.
+*This post was updated from the original; feel free to send me feedback at
+<gatlin@niltag.net> !*
+
+Monads are difficult to explain without sounding condescending. There's a lot
+of anxiety around the topic which compounds the already-significant barriers
+to entry: namely abstraction, vocabulary, and dependence on other ideas 
+ideas you didn't ask about.
 
 Instead, I'll frame a problem and piece-by-piece solve the problem with what
 will turn out to be a monad.
@@ -13,190 +17,289 @@ will turn out to be a monad.
 This post is written in [Typed Racket][typedracket] which you can download for
 free at [the Racket website][racket].
 
-# Take me to functor town
+# Overview: monads, in effect
 
 Typed Racket is a functional programming language which heavily discourages
 imperative programming styles. Like, for instance, programs of this sort:
 
 ```python
-def doSomething():
-  x = 5
-  y = foo()
-  x = bar(10, y)
-  return x
+def get_customer_referrals(customers):
+    responses = []
+    for customer in customers:
+        referrals = get_referrals(customer)
+        responses.append(referrals)
+    return responses
 ```
 
-Here we have three imperative statements modifying some state. Functional
-languages would prefer that state didn't exist. At least, not the Wild West,
-anything-goes,
-no-guarantees-whatsoever-about-who-is-accessing-what-free-love-festival that is
-the typical understanding.
+While in Python a definition such as this is called a "function" I prefer
+instead the term *procedure*. Functions are like this:
+
+    f (x) = x + 1
+
+If I give `f` a `1` I will always get back a `2`. No discussion. If I ever did
+get something else back, may the gods have mercy on all of us. `procedures` do
+not afford us this sort of guarantee, but they also don't require special blog
+posts in order to understand and use them to get shit done. So there's that.
 
 Imperative programming makes use of *side-effects*: I may write code which
 alters a database, or reads the time, or has some other side-effect on the
-state of the machine or surrounding world. Every time I query a network time
-server I get a different response, meaning that the result is dependent on
-mutation of state.
+state of the machine or surrounding world. In our example above, the procedure
+takes a list of people (of size `N`) and returns a list of responses (of size
+`M`, which may or may not be `N`).
 
-Hell, even just storing the result of a pure computation in a value for use at
-a later time is relying on the side effect of storing values in memory.
-
-On the other hand, pure functional programming requires you to sequence actions
-through function composition:
-
-```scheme
-(: square-then-double (-> Real Real))
-(define (square-then-double n) (* 2 (*n n)))
-```
-
-This is great and all, but how can I recapture the (admitted) simplicity of
-that python snippet? Maybe this way:
-
-```scheme
-(let ((x 5)
-      (y (foo)))
-  (let ((x (bar 10 y)))
-    x))
-```
-
-But that becomes unwieldly after a while.
- 
-Correct imperative programs are written every day so there must be some way of
-representing them in a principled manner which can catch type and other logic
-errors.
+How can we model side-effects such as this? And while we're at it, can we get
+rid of the boilerplate list-building code as well? Monads supply an answer for
+both.
 
 # What the functor ... ?
 
-Let's take a side-step to introduce a fundamental concept in type theory. It's
-called the *Functor*. A functor is a *higher-order* type; it depends on some
-*base* type for its full meaning. For instance, in Typed Racket `Listof` is a
-higher-order type: you can have `Listof Number` or `Listof String` or `Listof
-Boolean`.
+To start our journey toward monads, we must first define functors. For our
+purposes, a *functor* is a container type `T` which wraps any arbitrary type
+`a`, and allows functions of type `a -> b` to be mapped inside the container.
+
+Concrete example: lists are functors, where `T` is `List` and `a` is whatever
+you have a list of - numbers, strings, booleans, etc.
+
+In fact, in Racket lists also already have a function called `map` which given
+a function `a -> b` transforms a `List a` into a `List b`:
 
 ```scheme
-(: list-1 (Listof Number))
-(define list-1 '(1 2 3))
+(: even? (-> Integer Boolean))
+(define (even? n) (eq? (modulo n 2) 0))
+
+(map even? '(1 2 3))
 ```
 
-Not just every higher-order type is a functor, though. A functor must also
-implement some way to *map* pure transformations inside the functor. As a
-specific example, I can map the function `(lambda (x) (* x x))` inside a
-`Listof Number`s and the result will be a new list with the squares of the
-items of the old list.
+What happens is like this:
 
-Perhaps I have a function to determine if a real number is greater than zero:
+    [ 1        2        3  ]
+      |        |        |
+    even?    even?    even?
+      |        |        |
+      v        v        v
+    [ #f       #t       #f ]
+
+Here we converted a `List Integer` into a `List Boolean`.
+
+# Universal unitarianism
+
+So now we know what functors are: higher-order container types which permit
+arbitrary functions to be mapped inside of them.
+
+There is one limitation, though. Say you're using the list functor; if you map
+a function over a list of 5 elements, you'll get back a list of 5 elements.
+
+But what if you can't or shouldn't assume that your result list will have the
+same length as your argument list? That is the case for the motivating example
+at the start of this essay. An even simpler example would be filtering a list
+of numbers: the result may be shorter than the argument list.
+
+There are many ways to skin this cat but one is to return a list of lists. For
+filtering, this entails mapping each value of the list into an empty list
+(failure) or a list of one item (success). A function of type `a -> T a`, where
+`T` is a functor, is called *unit*. Here is the list unit:
 
 ```scheme
-(: gt-zero? (-> Real Boolean))
-(define (gt-zero? n) (> n 0))
-
-(map gt-zero? list-1)
-; => '(#t #t #t)
+(: list-unit (All (a) (-> a (Listof a))))
+(define (list-unit x) (cons x '()))
 ```
 
-This is a function from `Real` numbers to `Boolean` values. Mapping `gt-zero?`
-over a `Listof Number`s yields a `Listof Boolean`s. Lists are definitely
-functors since their map function is actually called `map`.
-
-There are other kinds of functors. The simplest functor is what I like to call
-`Box`. It may be defined in Typed Racket as follows:
+Using it, let's write a function which checks if a number is even and instead
+of returning `#t` or `#f` returns a singleton list or an empty list:
 
 ```scheme
-(struct: (a) Box ((open : a)))
+(: list-even? (-> Integer (Listof Integer)))
+(define (list-even? n)
+  (if (eq? (modulo n 2) 0)
+      (list-unit n)
+      '()))
+
+(: my-filter (All (a) (-> (-> a (Listof a))
+                          (Listof a)
+                          (Listof (Listof a)))))
+(define (my-filter predicate lst) (map predicate lst))
+
+(my-filter list-even? '(1 2 3))
 ```
 
-A `Box` just contains some base value and lets you retrieve it later, like so:
+The computation proceeds like this:
+
+    [ 1            2            3  ]
+      |            |            |
+    list-even?   list-even?   list-even?
+      |            |            |
+      v            v            v
+    [ []          [2]          []  ]
+
+So the result list *is the same length* as the input list, but all the values
+are even.
+
+# Join me, and together we can bring boredom to the Force
+
+Getting back a list of lists is cool and all, but when I filter items out of a
+list I expect to get back a list of values, not a list of lists. The reason is
+I might want to process this list further, and I don't want to have to write
+brittle, specialized procedures dealing with increasingly-nested layers of
+lists.
+
+No, when I filter a `List a` I want to get back a `List a`. We already have a
+`List (List a)`; can we write a routine to flatten out a list of lists?
+
+Absolutely! If you have a function of type `T (T a) -> T a` for some functor
+`T`, it is often called *join*. Here is the list join:
 
 ```scheme
-(define boxed-two (Box 2))
-(define two (Box-open boxed-two))
+(: list-join (All (a) (-> (Listof (Listof a)) (Listof a))))
+(define (list-join xss)
+  (foldr (λ: ([ y  : (Listof a)]
+              [ ys : (Listof a)]) (append y ys))
+    empty xss))
+
+(list-join '( () (2) () ))
 ```
 
-It doesn't do anything interesting to your value. You can write a simple map
-function for `Box` quite easily:
+This executes like so:
 
-```scheme
-(: box-map (All (a b) (-> (-> a b) (Box a) (Box b))))
-(define (box-map f bx)
-  (Box (f (Box-open bx))))
-```
+    [ []          [2]          []  ]
 
-Thus:
+                  ---
+                  | |
+                 \   /
+                  \ /
+                   v
 
-```scheme
-(define b1 (Box 2))
-(define b2 (box-map gt-zero? b1))
-```
+    [              2               ]
 
-produces `Box 2` and `Box #t`.
+We did it! We wrote a function which maps over a list and changes the structure
+of the list itself. In this case, a list's "structure" is its length. Different
+types will allow for different transformations.
 
 # We're in a bind ...
 
-A `Box` is a simple context around a base value. A function expecting a
-`Number` argument won't accept a `Box Number` argument, however we can project
-or map functions with `Number` arguments into a `Box Number`. And after we map
-that operation we can retrieve the resulting pure value.
+Actually, this pattern of `join`ing the result of a `map` and `unit` is so
+common it has its own name: *bind*.
 
-An imperative, side-effect-ful function is one in which we have some kind of
-workspace or context in which we may do crazy shit and then, at the end,
-retrieve a pure value. We know how to take values out of a context, and we also
-know how to put them in (at least, when that context is `Box`):
+*bind* is a map which can alter structure as it goes from element to element.
+Regardless of what `T` is, bind always has the same definition:
 
 ```scheme
-(: box-return (All (a) (-> a (Box a))))
-(define (box-return x) (Box x))
+(: bind (All (a b) (-> (T a)
+                       (-> a (T b))
+                       (T b))))
+(define (bind container f) (join (map f container)))
 ```
 
-Why did we call this function `return`? Think about its use in Python. That's a
-clue. In the meantime, let's write a box-y version of `gt-zero?`:
+Of course that won't work in Typed Racket; you must substitute specific `join`
+and `map` functions. But here is the `list-bind`:
 
 ```scheme
-(: gt-zero-box? (-> Real (Box Boolean)))
-(define (gt-zero-box? n) (return (gt-zero? n)))
+(: list-bind (All (a b) (-> (Listof a) (-> a (Listof b)) (Listof b))))
+(define (list-bind lst f) (list-join (map f ma)))
 ```
 
-The base type changed *and* the value was put inside a `Box`. Given arguments
-of a pure value I can perform some operation inside a `Box` context and return
-to you that context, and you would be free to extract the pure value at any
-time. And when I say `Box` I really mean any `monad` but shh we're getting
-there.
-
-But normal functions, like `filter` or `sum` on lists, compose. I can write `(f
-(g x))` provided that `g`'s output matches `f`'s input. Can I compose these
-`monadic` functions of type `(All (a b) (-> a (Box b)))`?
-
-Sure you can! First let's think about the type. The result of some monadic
-function from `a` to `b` would have the above type, and then another function
-might have `(All (b c) (-> b (Box c)))`. So ultimately we want to extract
-values from one context, feed them into a monadic continuation, and get the
-resulting monadic value.
-
-It's called `bind`:
+Now we can write our code much more elegantly:
 
 ```scheme
+(list-bind '(1 2 3) list-even?)
+```
+
+Note that `list-even?` accepts a single scalar number as an argument, yet using
+`list-bind` it is run over the whole list, resulting in a list of a different
+length.
+
+The whole computation looks like this:
+
+    [ 1            2            3 ]
+      |            |            |
+    list-even?   list-even?   list-even? -- map / unit
+      |            |            |
+      v            v            v
+    [ []          [2]          [] ]      -- join
+      |            |            |
+      v            v            v
+    [              2              ]
+
+This is, in essence, what a monad is: a structure that lets you map a function
+into the structure which may, as a side-effect, change the structure. Different
+monads allow for different side-effects.
+
+I want to demonstrate another functor (more succinctly than I did for lists, to
+be certain) but first, let's tackle the example from the beginning of this
+post.
+
+As in that snippet, assume here that `get-referrals` is defined meaningfully.
+So that this example will compile, I'll write a dummy version that spits out
+three referrals for each customer given:
+
+```scheme
+(: get-referrals (-> String (Listof String)))
+(define (get-referrals customer)
+  (map (λ: ([n : String])
+    (string-append customer " referral: " n))
+    '("1" "2" "3")))
+```
+
+Finally, then, we can recreate the Python code:
+
+```scheme
+(: get-customer-referrals (-> (Listof String) (Listof String)))
+(define (get-customer-referrals customers)
+  (list-bind customers get-referrals))
+```
+
+The result is a list of referrals which may be empty, shorter than, longer
+than, or equal to the input list of customers.
+
+# Other monads
+
+An even simpler monad is what I call the `Box`: it's like a list that has
+exactly one item. On its own, this doesn't do much for us. But as a monad, it
+is pretty interesting.
+
+```scheme
+(struct: (a) Box ([open : a]))
+
+(: box-map (All (a b) (-> (-> a b) (Box a) (Box b))))
+(define (box-map f bx)
+  (Box (f (Box-open bx))))
+
+(: box-unit (All (a) (-> a (Box a))))
+(define (box-unit x) (Box x))
+
+(: box-join (All (a) (-> (Box (Box a)) (Box a))))
+(define (box-join bx) (Box-open bx))
+
 (: box-bind (All (a b) (-> (Box a) (-> a (Box b)) (Box b))))
-(define (box-bind ma f) (f (Box-open ma)))
+(define (box-bind ma f) (box-join (box-map f ma)))
 ```
 
-Have we solved our problem yet? Let's write a monadic function which subtracts
-10 from a number, and then determines if the result is greater than zero:
+And for shits and giggles here are two innocuous functions:
 
 ```scheme
-(: sub-10-gt-zero? (-> Real (Box Boolean)))
-(define (sub-10-gt-zero? n)
-  (box-bind (box-return (- n 10)) (λ: ((x : Number))
-  (box-bind (gt-zero-box? x) (λ: ((answer : Boolean))
-  (box-return answer))))))
+(: box-even? (-> Integer (Box Boolean)))
+(define (box-even? n)
+  (if (eq? (modulo n 2) 0)
+    (Box #t)
+    (Box #f)))
+
+(: imperative-1 (-> Integer (Box String)))
+(define (imperative-1 n)
+  (box-bind (box-even? n) (λ: ([b : Boolean])
+  (box-return (if b "Even" "Odd")))))
+
+(Box-open (imperative-1 10))
+(Box-open (imperative-1 11))
 ```
 
-If you squint, this sort of looks like we are binding `(return (- n 10))` to
-the variable `x` like in an imperative language.
+If you squint, this *sort of* looks like an imperative program where you assign
+the results of function calls to temporary variables. That's what the `Box`
+monad gives us: simple imperative programming.
 
-Let's write a syntax-extension to do just this **warning: you can ignore this
-next snippet; I'm only providing it to prove it is possible**:
+Also: this is lisp! You don't have to pretend! For the sake of completion,
+below is a macro that gives us an imperative syntax for monads. You don't need
+to understand but it might be interesting nonetheless.
 
 ```scheme
-
 ; these libraries both ship by default with Racket
 (require (for-syntax racket/syntax))
 (require racket/stxparam)
@@ -218,7 +321,7 @@ next snippet; I'm only providing it to prove it is possible**:
   (syntax-case stx ()
     ((_ prefix e1 e2 ...)
      (with-syntax ((prefix-bind (format-id #'prefix "~a-bind" #'prefix))
-                   (prefix-return (format-id #'return "~a-return" #'prefix)))
+                   (prefix-return (format-id #'return "~a-unit" #'prefix)))
        #'(syntax-parameterize ((bind (make-rename-transformer #'prefix-bind))
                                (return (make-rename-transformer #'prefix-return)))
                               (do^ e1 e2 ...))))))
@@ -226,106 +329,55 @@ next snippet; I'm only providing it to prove it is possible**:
 
 *Thanks to user chandler on the #racket IRC room for teaching me how to do this.*
 
-So now this is legal:
+We can rewrite `imperative-1`:
 
 ```scheme
-(: sub-10-gt-zero? (-> Real (Box Boolean)))
-(define (sub-10-gt-zero? n)
+(: imperative-2 (-> Integer (Box String)))
+(define (imperative-2 n)
   (do box
-    (let [n (- n 10)])
-    (:= answer (gt-zero-box? n))
-    (return answer)))
+    (b := (box-even? n))
+    (return (if b "Even" "Odd"))))
 ```
 
-HOLY GODBALLS we just recreated imperative programming. Except it's typesafe,
-and all those intermediate local variables are guaranteed not to leak out of
-their enclosing scope. Any side-effects created or observed as a result are
-safely quarantined inside the monadic function.
-
-**Aside**: Why did I use `let` in one place and `:=` in another? Think about
-what type `gt-zero-box?` returns and what type `-` returns.
-
-# Monad for nothing
-
-`Box`, together with its `return` and `bind` functions, form what is called a
-*monad*. `Box` recreates the imperative programming style we miss from other
-languages, but it is literally the simplest functor to base a monad on. Using
-other functors we can go beyond merely being able to write sequential actions
-to other more advanced forms of flow control - and still write it imperatively.
-
-Say I have a function which transforms a number and I want to run this
-transformation over a list of numbers. I can base a monad off of the `List`
-functor like so:
+For that matter, we can use this slick notation on list computations as well:
 
 ```scheme
-(: list-return (All (a) (-> a (Listof a))))
-(define (list-return x) (cons x '()))
-
-; this is the same as (list x), but I wanted to show what it is doing
-
-(: flatten (All (a) (-> (Listof (Listof a)) (Listof a))))
-(define (flatten xss)
-  (foldr (λ: ((y : (Listof a)) (ys : (Listof a))) (append y ys))
-           empty xss))
-
-(: list-bind (All (a b) (-> (Listof a) (-> a (Listof b)) (Listof b))))
-(define (list-bind ma f)
-  (flatten (map f ma)))
-```
-
-With this in hand, I can write a nice procedural function which multiplies a
-single number by 5:
-
-```scheme
-(: times-5 (-> Number (Listof Number)))
-(define (times-5 n)
+; Function written to process one item of a list
+(: list-times-5-if-even (-> Integer (Listof Integer)))
+(define (list-times-5-if-even n)
   (do list
-    (let [n (* n 5)])
-    (return n)))
+    (is-even := (return (even? n)))
+    (return (if is-even (* n 5) n))))
+
+; that very same function automatically applied to the whole list
+(list-bind '(1 2 3 4 5) list-times-5-if-even)
+; => '(1 10 3 20 5)
 ```
 
-And yet, when I run it on a list, it iterates over the entire list for me:
+You get the idea.
 
-```scheme
-(list-bind '(1 2 3 4 5) times-5)
-; => '(5 10 15 20 25)
-```
+# Conclusion and further points of interest
 
-While this may seem a bit overwhelming, remember this only needs to be done
-once .. and it was just done.
+Monads aren't hard: they are containers of other values which not only allow
+the values to be transformed, but the container itself. The structural change
+is called a *side-effect* and different monads allow for the controlled
+propagation of different side effects.
 
-Note that `list-bind` makes use of `map`. In fact, while you can write `bind`
-functions without directly using `map`, the classical definition of a monad was
-a triple of functions called `map`, `return`, and *join*.
+Where all this nonsense really becomes interesting is when you write generic
+"monadic" functions - not specific to any particular monad - and are able to
+get different behaviors depending on the monad you choose.
 
-`join` has the type (when dealing with `Box`es) of `(All (a) (-> (Box (Box a))
-(Box a)))`. We have already seen a function with this signature: `flatten`, for
-`List`s.
+For instance, I could write a simple monadic function to multiply a number by
+two. Fed into a `Box` monad, this simply lets me use it in an imperative
+function. Fed into a `List` monad, this function is automatically applied to a
+list of values.
 
-`join` is really just `flatten` for monads which aren't `List`s. Given a
-suitable definition of `join`, `bind` may always be defined as such:
+The `list-times-5-if-even` function doesn't have anything in it specific to
+lists; unfortunately, Typed Racket's type inference engine is still a bit
+lacking.
 
-```scheme
-(: bind (All (a) (-> (M a) (-> a (M b)) (M b))))
-(define (bind mma) (join (map f mma)))
-```
-
-This is exactly how we defined `list-bind` above. However, anecdotally, most of
-the time `join`'s only purpose is to define `bind` so I started with that. So
-shoot me.
-
-# Conclusion
-
-Monads are not a difficult concept: they are contexts inside of which pure
-values may create and react to side-effects in the course of computing some
-final value.
-
-Depending on the implementation of two functions - called `return` and `bind` -
-the same imperative style of programming can take on different operational
-meanings.
-
-How could you create a monad which terminates early if an error value is
-returned at any point? You can figure it out.
+But that's just the tip of the iceberg; now that you have the fundamentals, go
+read more!
 
 [typedracket]: http://docs.racket-lang.org/ts-guide/index.html
 [racket]: http://racket-lang.org
