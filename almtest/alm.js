@@ -174,7 +174,7 @@ function runtime() {
     });
 }
 
-function put(newruntime) {
+function save(newruntime) {
     return new App(function(runtime) {
         return {
             value: undefined,
@@ -183,12 +183,12 @@ function put(newruntime) {
     });
 }
 
-Public.put = put;
+Public.save = save;
 
 function modify(f) {
     return runtime().then(function(runtime) {
         var newruntime = f(runtime);
-        return put(newruntime);
+        return save(newruntime);
     });
 }
 
@@ -258,7 +258,7 @@ App.init = function(root) {
         }
     };
 
-    return put(runtime);
+    return save(runtime);
 };
 
 App.prototype = {

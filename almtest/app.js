@@ -149,6 +149,7 @@ function render_list(el, model) {
             desc.id = 'edit-task-'+task.uid;
             desc.className = 'editing';
             desc.value = task.description;
+            desc.focus();
         }
         if (!task.editing) {
             desc = document.createElement('label');
@@ -176,10 +177,18 @@ function render_list(el, model) {
 // Set up the application runtime state
 var app = App.init('the_app')
 
-// for shits let's extend the application runtime!
+// for shits / example, let's extend the runtime as a client
+// to accommodate localStorage
 .runtime(function(runtime) {
+    // make localStorage available via utils
     runtime.utils.storage = window.localStorage;
-    return put(runtime);
+
+    // start listening on storage-related events
+    runtime.events.storage = Signal.make();
+    runtime.addListener([runtime.events.storage], runtime.dom, 'storage', function(e) {
+        runtime.notify(runtime.events.storage.id, e);
+    });
+    return save(runtime);
 })
 
 // Now we wire our signals together
