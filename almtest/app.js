@@ -176,19 +176,39 @@ function render_list(el, model) {
 // Set up the application runtime state
 var app = App.init('the_app')
 
+// for shits let's extend the application runtime!
+.runtime(function(runtime) {
+    runtime.utils.storage = window.localStorage;
+    return put(runtime);
+})
+
 // Now we wire our signals together
 .main(function(events, dom, utils) {
 
     // When an event happens, an action is sent here.
-    var actions = utils.mailbox({type: Actions.NoOp});
+    var actions = utils.mailbox({
+        type: Actions.NoOp
+    });
 
-    // Update our model based on actions and then render it.
+    // Do we have a saved model? If so, use it. Otherwise create an empty one.
+    var starting_model = (utils.storage.getItem('todos') === null)
+        ? empty_model()
+        : JSON.parse(utils.storage.getItem('todos'));
+
+    // a signal broadcasting updated models
     var model = actions.signal
-        .reduce(empty_model(), update)
-        .recv(function(model) {
-            var wrapper = utils.byId('wrapper');
-            render_list(wrapper, model);
-        });
+        .reduce(starting_model, update);
+
+    // a model listener - renders the model
+    var render = model.recv(function(model) {
+        var wrapper = utils.byId('wrapper');
+        render_list(wrapper, model);
+    });
+
+    // a model listener - saves the model
+    var save = model.recv(function(model) {
+        utils.storage.setItem('todos',JSON.stringify(model));
+    });
 
     // Fires when the 'enter' key is pressed
     var onEnter = events.keyboard.keydown
@@ -257,6 +277,10 @@ var app = App.init('the_app')
             });
         });
 
+    actions.send({
+        type: Actions.Load,
+        content: utils.storage.getItem('todos')
+    });
 })
 
 // and begin the application

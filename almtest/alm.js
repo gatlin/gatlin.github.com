@@ -183,6 +183,8 @@ function put(newruntime) {
     });
 }
 
+Public.put = put;
+
 function modify(f) {
     return runtime().then(function(runtime) {
         var newruntime = f(runtime);
@@ -243,10 +245,18 @@ App.init = function(root) {
         notify: notify,
         setTimeout: setTimeout,
         events: events,
-        async: async
+        async: async,
     };
 
     setupEvents(runtime);
+
+    // Setup runtime utilities
+    runtime.utils = {
+        mailbox: mailbox(runtime),
+        byId: function(_id) {
+            return document.getElementById(_id);
+        }
+    };
 
     return put(runtime);
 };
@@ -291,15 +301,7 @@ App.prototype = {
     },
     main: function(k) {
         return this.runtime(function(runtime) {
-
-            var utils = {
-                mailbox: mailbox(runtime),
-                byId: function(_id) {
-                    return document.getElementById(_id);
-                }
-            };
-
-            return App.of(k(runtime.events,runtime.dom, utils));
+            return App.of(k(runtime.events,runtime.dom, runtime.utils));
         });
     },
 };
