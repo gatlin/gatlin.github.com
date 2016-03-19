@@ -214,7 +214,7 @@ App.init = function(root) {
     }
 
     function addListener(whichInputs, dom, evtName, fn) {
-        dom.addEventListener(evtName, fn);
+        dom.addEventListener(evtName, fn, true);
         var listener = {
             whichInputs: inputs,
             dom: dom,
@@ -320,7 +320,8 @@ function setupEvents(runtime) {
             keypress: Signal.make(),
             keydown: Signal.make(),
             keyup: Signal.make(),
-            blur: Signal.make()
+            blur: Signal.make(),
+            focusout: Signal.make()
         },
         input: Signal.make(),
         change: Signal.make()
@@ -338,6 +339,7 @@ function setupEvents(runtime) {
     setupEvent('keypress', events.keyboard.keypress);
     setupEvent('keydown', events.keyboard.keydown);
     setupEvent('keyup', events.keyboard.keyup);
+    setupEvent('focusout', events.keyboard.focusout);
     setupEvent('blur', events.keyboard.blur);
     setupEvent('input', events.input);
     setupEvent('change', events.change);

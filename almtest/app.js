@@ -196,7 +196,8 @@ var app = App.init('the_app')
 
     // When an event happens, an action is sent here.
     var actions = utils.mailbox({
-        type: Actions.NoOp
+        type: Actions.Load,
+        content: utils.storage.getItem('todos')
     });
 
     // Do we have a saved model? If so, use it. Otherwise create an empty one.
@@ -265,6 +266,7 @@ var app = App.init('the_app')
             });
         });
 
+    // was the checkbox next to a task clicked?
     events.change
         .filter(function(evt) {
             return evt.target.className === 'toggle';
@@ -276,6 +278,7 @@ var app = App.init('the_app')
             });
         });
 
+    // was a task double clicked? Start editing!
     events.mouse.dblclick
         .filter(function(evt) {
             return evt.target.className === 'task_text'; })
@@ -286,10 +289,20 @@ var app = App.init('the_app')
             });
         });
 
-    actions.send({
-        type: Actions.Load,
-        content: utils.storage.getItem('todos')
-    });
+    events.keyboard.blur
+        .filter(function(evt) {
+            return evt.target.className === 'editing';
+        })
+        .recv(function(evt) {
+            console.log(evt);
+            actions.send({
+                type: Actions.UpdateTask,
+                content: {
+                    uid: parseInt(evt.target.id.split('-')[2]),
+                    text: evt.target.value
+                }
+            });
+        });
 })
 
 // and begin the application
