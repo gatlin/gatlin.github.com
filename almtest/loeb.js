@@ -90,10 +90,14 @@ Monad.prototype.flatMap = Monad.prototype.then = function(f) {
 
 Monad.prototype.then = Monad.prototype.flatMap;
 
-// Convenience for mapping
+// Convenient for mapping `flatten`
 var flatten = module.flatten = function(monad) {
     return monad.flatten(); };
 
+/* Functor application. If you have a functor F with base type `(a -> b)`,
+ * and another F with base type `a`, you can apply them and get an `F b`.
+ * All monads support this operation automatically which is super chill.
+ */
 Monad.prototype.ap = function(other) {
     var me = this;
     return me.flatMap(function(f) {

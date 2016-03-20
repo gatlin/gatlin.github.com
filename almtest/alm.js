@@ -96,6 +96,7 @@ Signal.prototype = {
         this.connect(r);
         return r;
     },
+    // an idiomatic way of tapping the output of a stream.
     recv: function(f) {
         var s = new Signal.output(f);
         this.connect(s);
@@ -139,6 +140,59 @@ function mailbox(runtime) {
         return mb;
     };
 }
+
+/**
+ * Virtual DOM
+ *
+ * A simple virtual DOM implementation to allow for programmatic construction
+ * and manipulation of HTML elements.
+ *
+ * This is very simple for now.
+ */
+var vdom = function(runtime) {
+    var vdom = {};
+    /**
+     * A Node is an HTML node, which contains a tag, attributes, and 0 or more
+     * child nodes.
+     */
+    vdom.el = function(tag, attrs, children) {
+        return {
+            tag: tag,
+            attrs: attrs,
+            children: (typeof children !== 'undefined')
+                ? children
+                : []
+        };
+    };
+
+    vdom.makeElement = function(node) {
+        if (typeof node === 'string') {
+            return document.createTextNode(node);
+        }
+        var el = document.createElement(node.tag);
+        for (var key in node.attrs) {
+            el.setAttribute(key, node.attrs[key]);
+        }
+        for (var i = 0; i < node.children.length; i++) {
+            var child = vdom.makeElement(node.children[i]);
+            el.appendChild(child);
+        }
+        return el;
+    };
+
+    vdom.render = function(node, root) {
+        var tree = vdom.makeElement(node);
+        var root = (typeof root !== 'undefined')
+            ? runtime.utils.byId(root)
+            : runtime.domRoot;
+        while (root.firstChild) {
+            root.removeChild(root.firstChild);
+        }
+        root.appendChild(tree);
+    };
+
+    return vdom;
+};
 
 /**
  * App
@@ -194,13 +248,12 @@ function modify(f) {
 
 // Initalize the application runtime
 App.init = function(root) {
-    var dom = (typeof root !== 'undefined')
+    const domRoot = (typeof root !== 'undefined')
         ? document.getElementById(root)
         : document;
     var listeners = [];
     var inputs = [];
-    var updating = false;
-    var timer = {
+    const timer = {
         programStart: Date.now(),
         now: function() { return Date.now(); }
     };
@@ -224,7 +277,12 @@ App.init = function(root) {
         listeners.push(listener);
     }
 
+    var updating = false;
     function notify (inputId, v) {
+        if (updating) {
+            throw new Error("Update already in progress!");
+        }
+        updating = true;
         var timestamp = timer.now();
         for (var i = inputs.length; i--; ) {
             var inp = inputs[i];
@@ -232,13 +290,14 @@ App.init = function(root) {
                 inp.send(timestamp, inputId, v);
             }
         }
+        updating = false;
     }
 
     // Elementary signals have names you can use
     var events = { };
 
-    var runtime = {
-        dom: dom,
+    const runtime = {
+        domRoot: domRoot,
         timer: timer,
         inputs: inputs,
         addListener: addListener,
@@ -246,6 +305,8 @@ App.init = function(root) {
         setTimeout: setTimeout,
         events: events,
         async: async,
+        utils: {},
+        vdom: {}
     };
 
     setupEvents(runtime);
@@ -257,6 +318,9 @@ App.init = function(root) {
             return document.getElementById(_id);
         }
     };
+
+    // Set up the virtual dom
+    runtime.vdom = vdom(runtime);
 
     return save(runtime);
 };
@@ -280,14 +344,7 @@ App.prototype = {
             return inner;
         });
     },
-    evalApp: function(initruntime) {
-        var result = this.start(initruntime);
-        return result.value;
-    },
-    execApp: function(initruntime) {
-        var result = this.start(initruntime);
-        return result.runtime;
-    },
+    // Get access to the application runtime
     runtime: function(k) {
         return this.then(function(_) {
             return new App(function(runtime) {
@@ -299,9 +356,10 @@ App.prototype = {
         })
         .then(k);
     },
+    // The main procedure in which you can create signals and mailboxes
     main: function(k) {
         return this.runtime(function(runtime) {
-            return App.of(k(runtime.events,runtime.dom, runtime.utils));
+            return App.of(k(runtime.events,runtime.utils, runtime.vdom));
         });
     },
 };
@@ -329,7 +387,7 @@ function setupEvents(runtime) {
 
     function setupEvent(evtName, sig) {
         runtime.inputs.push(sig);
-        runtime.addListener([sig], runtime.dom, evtName, function(evt) {
+        runtime.addListener([sig], runtime.domRoot, evtName, function(evt) {
             runtime.notify(sig.id, evt);
         });
     }

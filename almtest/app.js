@@ -110,70 +110,6 @@ function update(action, model) {
     return model;
 }
 
-/**
- * Render the model
- *
- * TODO This is ugly and I know it. I plan on adding a virtual DOM facility
- * where virtual elements listen to mailboxes and update themselves
- * accordingly. Stay tuned.
- */
-function render_list(el, model) {
-    if (el.firstChild) {
-        el.removeChild(el.firstChild);
-    }
-    document.getElementById('field').value = model.field;
-    var ul = document.createElement('ul');
-    ul.className = 'todo_list';
-    for (var i = 0; i < model.tasks.length; i++) {
-        // The list item
-        var task = model.tasks[i];
-        var li = document.createElement('li');
-        li.id = 'task-'+task.uid;
-        li.className = 'task';
-
-        // Checkbox to indicate task completion
-        var checkbox = document.createElement('input');
-        checkbox.className = 'toggle';
-        checkbox.type = 'checkbox';
-        checkbox.id = 'check-task-'+task.uid;
-        if (task.completed) {
-            checkbox.checked = 'checked';
-        }
-        checkbox.value = 1;
-
-        // The content of the task
-        var desc;
-        if (task.editing) {
-            desc = document.createElement('input');
-            desc.type = 'text';
-            desc.id = 'edit-task-'+task.uid;
-            desc.className = 'editing';
-            desc.value = task.description;
-            desc.focus();
-        }
-        if (!task.editing) {
-            desc = document.createElement('label');
-            desc.innerHTML = task.description;
-            desc.className = 'task_text';
-            desc.id = 'text-task-'+task.uid;
-            if (task.completed) {
-                desc.className = 'completed';
-            }
-        }
-
-        // A delete button
-        var del_btn = document.createElement('button');
-        del_btn.id = 'del-task-'+task.uid;
-        del_btn.className = 'delete_button';
-
-        li.appendChild(checkbox);
-        li.appendChild(desc);
-        li.appendChild(del_btn);
-        ul.appendChild(li);
-    }
-    el.appendChild(ul);
-}
-
 // Set up the application runtime state
 var app = App.init('the_app')
 
@@ -185,40 +121,22 @@ var app = App.init('the_app')
 
     // start listening on storage-related events
     runtime.events.storage = Signal.make();
-    runtime.addListener([runtime.events.storage], runtime.dom, 'storage', function(e) {
+    runtime.addListener([runtime.events.storage], runtime.domRoot, 'storage', function(e) {
         runtime.notify(runtime.events.storage.id, e);
     });
     return save(runtime);
 })
 
 // Now we wire our signals together
-.main(function(events, dom, utils) {
+.main(function(events, utils, vdom) {
 
     // When an event happens, an action is sent here.
-    var actions = utils.mailbox({
-        type: Actions.Load,
-        content: utils.storage.getItem('todos')
-    });
+    var actions = utils.mailbox({ type: Actions.NoOp });
 
     // Do we have a saved model? If so, use it. Otherwise create an empty one.
     var starting_model = (utils.storage.getItem('todos') === null)
         ? empty_model()
         : JSON.parse(utils.storage.getItem('todos'));
-
-    // a signal broadcasting updated models
-    var model = actions.signal
-        .reduce(starting_model, update);
-
-    // a model listener - renders the model
-    var render = model.recv(function(model) {
-        var wrapper = utils.byId('wrapper');
-        render_list(wrapper, model);
-    });
-
-    // a model listener - saves the model
-    var save = model.recv(function(model) {
-        utils.storage.setItem('todos',JSON.stringify(model));
-    });
 
     // Fires when the 'enter' key is pressed
     var onEnter = events.keyboard.keydown
@@ -257,8 +175,7 @@ var app = App.init('the_app')
     // Was a delete button clicked?
     events.mouse.click
         .filter(function(evt) {
-            return evt.target.className === 'delete_button';
-        })
+            return evt.target.className === 'delete_button'; })
         .recv(function(evt) {
             actions.send({
                 type: Actions.Delete,
@@ -269,8 +186,7 @@ var app = App.init('the_app')
     // was the checkbox next to a task clicked?
     events.change
         .filter(function(evt) {
-            return evt.target.className === 'toggle';
-        })
+            return evt.target.className === 'toggle'; })
         .recv(function(evt) {
             actions.send({
                 type: Actions.Complete,
@@ -291,10 +207,8 @@ var app = App.init('the_app')
 
     events.keyboard.blur
         .filter(function(evt) {
-            return evt.target.className === 'editing';
-        })
+            return evt.target.className === 'editing'; })
         .recv(function(evt) {
-            console.log(evt);
             actions.send({
                 type: Actions.UpdateTask,
                 content: {
@@ -303,6 +217,56 @@ var app = App.init('the_app')
                 }
             });
         });
+
+    // a signal broadcasting updated models
+    var model = actions.signal
+        .reduce(starting_model, update);
+
+    // a model listener - saves the model
+    var save = model.recv(function(model) {
+        utils.storage.setItem('todos',JSON.stringify(model));
+    });
+
+    var el = vdom.el; // convenience
+    // a model listener - renders the model
+    var render = model.recv(function(model) {
+        utils.byId('field').value = model.field;
+        var task_items = model.tasks.map(function(task) {
+            // do we show the text or the edit field?
+            var content = (task.editing)
+                ? el('input', {
+                    type: 'text',
+                    class: 'editing',
+                    id: 'edit-task-'+task.uid,
+                    value: task.description  })
+                : el('label', {
+                    class: (task.completed) ? 'completed' : 'task_text',
+                    id: 'text-task-'+task.uid
+                }, [task.description] );
+
+            // Checkbox attributes vary slightly depending on task completion
+            var checkboxAttrs = {
+                type: 'checkbox',
+                class: 'toggle',
+                id: 'check-task-'+task.uid
+            };
+
+            if (task.completed) {
+                checkboxAttrs.checked = 'checked';
+            }
+
+            // return the list item!
+            return el('li', { id: 'task-'+task.uid, class: 'task' }, [
+                el('input', checkboxAttrs),
+                content,
+                el('button', {
+                    class: 'delete_button',
+                    id: 'del-task-'+task.uid })
+            ]);
+        });
+        vdom.render(el('ul', { class: 'todo_list' }, task_items), 'wrapper');
+    });
+
 })
 
 // and begin the application
