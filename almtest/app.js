@@ -38,11 +38,13 @@ var Actions = {
 };
 
 /**
- * How to deal with updates to our model.
+ * Given some action structure and a model compute and return a new model.
  *
- * The first argument is an action type (and possibly some relevant data);
- * the second argument is our current model to update and return.
- *
+ * This function is "pure" in some sense: it has no access to the application
+ * runtime, though obviously this being JavaScript it has access to the browser
+ * the same as any other component. But without intentionally misusing this
+ * library, there is no way to send signals, update the view, or otherwise
+ * change the runtime state.
  */
 function update(action, model) {
 
@@ -113,17 +115,19 @@ function update(action, model) {
 // Set up the application runtime state
 var app = App.init('the_app')
 
-// for shits / example, let's extend the runtime as a client
-// to accommodate localStorage
+// for shits / examples, let's modify the runtime on the client side. This is
+// essentially how plugins and extensions would work.
 .runtime(function(runtime) {
-    // make localStorage available via utils
-    runtime.utils.storage = window.localStorage;
+    runtime.utils.initial_model = function() {
+        var maybe_saved = window.localStorage.getItem('todos');
+        return (maybe_saved === null)
+            ? empty_model()
+            : JSON.parse(maybe_saved);
+    };
 
-    // start listening on storage-related events
-    runtime.events.storage = Signal.make();
-    runtime.addListener([runtime.events.storage], runtime.domRoot, 'storage', function(e) {
-        runtime.notify(runtime.events.storage.id, e);
-    });
+    runtime.utils.save_model = function(model) {
+        window.localStorage.setItem('todos',JSON.stringify(model));
+    };
     return save(runtime);
 })
 
@@ -134,10 +138,6 @@ var app = App.init('the_app')
     var actions = utils.mailbox({ type: Actions.NoOp });
 
     // Do we have a saved model? If so, use it. Otherwise create an empty one.
-    var starting_model = (utils.storage.getItem('todos') === null)
-        ? empty_model()
-        : JSON.parse(utils.storage.getItem('todos'));
-
     // Fires when the 'enter' key is pressed
     var onEnter = events.keyboard.keydown
         .filter(function(evt) { return evt.keyCode === 13; });
@@ -220,11 +220,11 @@ var app = App.init('the_app')
 
     // a signal broadcasting updated models
     var model = actions.signal
-        .reduce(starting_model, update);
+        .reduce(utils.initial_model(), update);
 
     // a model listener - saves the model
     var save = model.recv(function(model) {
-        utils.storage.setItem('todos',JSON.stringify(model));
+        utils.save_model(model);
     });
 
     var el = vdom.el; // convenience
