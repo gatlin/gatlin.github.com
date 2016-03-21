@@ -48,7 +48,7 @@ Signal.output = function(handler) {
 
 Signal.prototype = {
     send: function(timestamp, inputId, value) {
-        var result = this.fn(value);
+        const result = this.fn(value);
         if (result === undefined) { return; }
         if (this.isOutput) { return; }
         for (var i = this.receivers.length; i--; ) {
@@ -142,12 +142,52 @@ function mailbox(runtime) {
 }
 
 /**
+ * Ports
+ *
+ * Clean, structured means of communicating with the surrounding browser
+ * execution environment. An "inbound" port is one feeding data *into* the
+ * application, while an "outbound" port is one sending data *out* of the
+ * application.
+ *
+ * This function initializes the port constructors for a given runtime.
+ */
+function setupPorts(runtime) {
+    runtime.utils.port.inbound = function(name) {
+        var signal = Signal.make();
+        runtime.inputs.push(signal);
+        runtime.ports[name] = {
+            send: function(v) {
+                runtime.notify(signal.id,v);
+            }
+        };
+        return signal;
+    };
+
+    runtime.utils.port.outbound = function(name) {
+        var signal = Signal.make();
+        runtime.ports[name] = {
+            listen: function(k) {
+                signal.recv(k);
+            }
+        };
+        return signal;
+    };
+}
+
+/**
  * Virtual DOM
  *
  * A simple virtual DOM implementation to allow for programmatic construction
  * and manipulation of HTML elements.
  *
  * This is very simple for now.
+ *
+ * How this should work: the VDOM exists inside of a signal reduction. When the
+ * model updates:
+ *
+ * - a new VDOM should be computed
+ * - a diff should be computed
+ * - the DOM should be walked once, applying diffs as necessary.
  */
 var vdom = function(runtime) {
     var vdom = {};
@@ -201,8 +241,8 @@ var vdom = function(runtime) {
  * difficult to screw up too much.
  */
 
-function App(start) {
-    this.start = start;
+function App(runApp) {
+    this.runApp = runApp;
 }
 
 Public.App = App;
@@ -295,6 +335,7 @@ App.init = function(root) {
 
     // Elementary signals have names you can use
     var events = { };
+    var ports = { };
 
     const runtime = {
         domRoot: domRoot,
@@ -306,7 +347,8 @@ App.init = function(root) {
         events: events,
         async: async,
         utils: {},
-        vdom: {}
+        vdom: {},
+        ports: ports
     };
 
     setupEvents(runtime);
@@ -316,12 +358,19 @@ App.init = function(root) {
         mailbox: mailbox(runtime),
         byId: function(_id) {
             return document.getElementById(_id);
+        },
+        port: {
+            inbound: null,
+            outbound: null
         }
     };
 
     // Set up the virtual dom
     runtime.vdom = vdom(runtime);
 
+    setupPorts(runtime);
+
+    console.log(runtime);
     return save(runtime);
 };
 
@@ -329,7 +378,7 @@ App.prototype = {
     map: function(f) {
         var me = this;
         return new App(function(runtime) {
-            var prev = me.start(runtime);
+            var prev = me.runApp(runtime);
             return {
                 value: f(prev.value),
                 runtime: prev.runtime
@@ -339,8 +388,8 @@ App.prototype = {
     flatten: function() {
         var me = this;
         return new App(function(runtime) {
-            var prev = me.start(runtime);
-            var inner = prev.value.start(prev.runtime);
+            var prev = me.runApp(runtime);
+            var inner = prev.value.runApp(prev.runtime);
             return inner;
         });
     },
@@ -359,9 +408,16 @@ App.prototype = {
     // The main procedure in which you can create signals and mailboxes
     main: function(k) {
         return this.runtime(function(runtime) {
-            return App.of(k(runtime.events,runtime.utils, runtime.vdom));
+            return App.of(k(runtime.events, runtime.utils, runtime.vdom));
         });
     },
+
+    start: function() {
+        const ports = this.runApp().runtime.ports;
+        return {
+            ports: ports
+        };
+    }
 };
 
 instance(App,Functor);

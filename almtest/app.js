@@ -134,6 +134,7 @@ var app = App.init('the_app')
 // Now we wire our signals together
 .main(function(events, utils, vdom) {
 
+
     // When an event happens, an action is sent here.
     var actions = utils.mailbox({ type: Actions.NoOp });
 
@@ -227,10 +228,14 @@ var app = App.init('the_app')
         utils.save_model(model);
     });
 
+    // When the model changes, update the input element with id `field`
+    var field_value = utils.port.outbound('field_value');
+    model.map(function(m) { return m.field; }).connect(field_value);
+
     var el = vdom.el; // convenience
     // a model listener - renders the model
     var render = model.recv(function(model) {
-        utils.byId('field').value = model.field;
+        //utils.byId('field').value = model.field;
         var task_items = model.tasks.map(function(task) {
             // do we show the text or the edit field?
             var content = (task.editing)
@@ -272,3 +277,8 @@ var app = App.init('the_app')
 // and begin the application
 .start();
 
+app.ports['field_value'].listen(function(v) {
+    document.getElementById('field').value = v;
+});
+
+console.log(app);
