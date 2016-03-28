@@ -39,16 +39,6 @@ var Actions = {
     UpdateTask: 6
 };
 
-/**
- * Given some action structure and a model compute and return a new model.
- *
- * This function is "pure" in some sense: it has no access to the application
- * runtime, though obviously this being JavaScript it has access to the browser
- * the same as any other component. But without intentionally misusing this
- * library, there is no way to send signals, update the view, or otherwise
- * change the runtime state.
- */
-
 var guid = guid_factory();
 
 // Set up the application runtime state
