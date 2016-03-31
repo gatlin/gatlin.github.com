@@ -143,6 +143,15 @@ var extract = module.extract = function(comonad) {
 var duplicate = module.duplicate = function(comonad) {
     return comonad.duplicate(); };
 
+/**
+ * Evaluator
+ *
+ * Takes an object of unary functions and, using comonadic fixpoints, allows
+ * you to compute inter-dependent values quickly and easily.
+ *
+ * Think of it as allowing any object of functions to be treated as a
+ * spreadsheet.
+ */
 function Evaluator(focus, values) {
     this.focus = focus;
     this.values = values;
@@ -150,10 +159,9 @@ function Evaluator(focus, values) {
 
 Evaluator.prototype = {
     map: function(f) {
-        var me = this;
         var newValues = {};
-        for (var key in me.values) {
-            newValues[key] = f(me.values[key]);
+        for (var key in this.values) {
+            newValues[key] = f(this.values[key]);
         }
         return new Evaluator(this.focus, newValues);
     },
@@ -169,17 +177,19 @@ Evaluator.prototype = {
         return this.values[this.focus];
     },
     duplicate: function() {
-        var me = this;
         var newValues = {};
         for (var key in this.values) {
-            var new_me = new Evaluator(key, me.values);
+            var new_me = new Evaluator(key, this.values);
             newValues[key] = new_me;
         }
         return new Evaluator(this.focus, newValues);
     },
     at: function(k) {
-        var me = this;
-        return me.values[k](me);
+        return this.values[k](this);
+    },
+    set: function(k,v) {
+        this.values[k] = v;
+        return this;
     }
 };
 
@@ -189,8 +199,11 @@ instance(Evaluator, Evaluate);
 
 module.Evaluator = Evaluator;
 
+/**
+ * Arrays are monads
+ */
 Array.prototype.flatten = function() {
-    return this.reduce(function(a,b) { return a.concat(b); });
+    return this.reduce(function(a,b) { return a.concat(b); }, []);
 };
 
 if (!Array.of) {
@@ -199,9 +212,48 @@ if (!Array.of) {
     };
 }
 
+instance(Array, Functor);
+instance(Array, Monad);
+
+/**
+ * Log
+ *
+ * A write-only logging utility.
+ */
+function Log(initialLog, value) {
+    this.open = memothunk(function() { return initialLog; });
+    this.value = memothunk(function() { return value; });
+}
+
+module.Log = Log;
+
+Log.of = function(v) {
+    return new Log([], v);
+};
+
+Log.prototype = {
+    map: function(f) {
+        return new Log(this.open(), f(this.value()));
+    },
+    flatten: function() {
+        var me = this;
+        var other = this.value();
+        return new Log(me.open().concat(other.open()), other.value());
+    },
+    log: function(msg) {
+        var me = this;
+        return this.flatMap(function(x) {
+            return new Log(msg(x), x); });
+    }
+};
+
+instance(Log, Functor);
+instance(Log, Monad);
+
 /////
 // MODULE END
 /////
 
 return module;
 }));
+

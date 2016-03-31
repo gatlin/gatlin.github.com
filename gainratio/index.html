@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang='en_US'>
-    <head>
-        <meta charset='utf-8'>
-        <meta name='viewport' content="width=device-width, initial-scale=1">
-        <title>Gain Ratio Calculator</title>
+<html lang='en-US'>
+<head>
+<meta charset='utf-8'></meta>
+<title>Gain Ratio Calculator</title>
+<meta name='viewport' content="width=device-width, initial-scale=1">
 <style type='text/css'>
 html,body {
     margin: 0;
@@ -33,7 +33,7 @@ body {
     }
 }
 
-ul#datum {
+ul#items {
     list-style: none;
     padding: 15px;
     border: 1px solid #4d4d4d;
@@ -43,27 +43,27 @@ ul#datum {
     background-color: #ffffff;
 }
 
-ul#datum:after {
+ul#items:after {
     clear: both;
 }
 
 
-li.datum-group {
+li.item-group {
     line-height: 2.0em;
     height: 50px;
     margin-top: 10px;
 }
 
-li.datum-group:last-child {
+li.item-group:last-child {
     margin-bottom: 0;
 }
 
-li.datum-group label {
+li.item-group label {
     padding-top: 10px;
     vertical-align: middle;
 }
 
-li.datum-group input {
+li.item-group input {
     box-shadow: none;
     display: inline-block;
     border: 0;
@@ -81,7 +81,7 @@ li.datum-group input {
     width: 150px;
 }
 
-li.datum-group:hover input {
+li.item-group:hover input {
     border-bottom: 10px solid #81B3D5;
     border-left: 1px solid #81B3D5;
     border-right: 1px solid #81B3D5;
@@ -89,7 +89,7 @@ li.datum-group:hover input {
     font-weight: bold;
 }
 
-.datum-group {
+.item-group {
     display: block;
     margin-bottom: 5px;
 }
@@ -107,12 +107,88 @@ div#output {
 }
 
 </style>
-    </head>
-    <body>
-        <div id='app_container'>
-        </div>
-        <script src='loeb.js'></script>
-        <script src='alm.js'></script>
-        <script src='bike.js'></script>
-    </body>
+</head>
+<body>
+<div id='app_container'></div>
+<script src='loeb.js'></script>
+<script src='alm.js'></script>
+<script type='text/javascript'>
+window.onload = function() {
+'use strict';
+
+App.init('app_container')
+.runtime(function(runtime) {
+
+    runtime.utils.bikedata = new Evaluator('gainRatio', {
+        // inputs
+        wheelRadius: constant(340.0),
+        crankLength: constant(175.0),
+        teethFront: constant(36),
+        teethRear: constant(24),
+
+        // derived values
+        radiusRatio: (bd) => bd.at('wheelRadius') / bd.at('crankLength'),
+        gearRatio: (bd) => bd.at('teethFront') / bd.at('teethRear'),
+        gainRatio: (bd) => bd.at('gearRatio') * bd.at('radiusRatio')
+    });
+
+    return save(runtime);
+})
+.main(function(alm) {
+    console.log(alm.utils.bikedata);
+    let el = alm.el
+      , events = alm.events;
+
+    let updates = alm.mailbox(null);
+
+    let model = updates.signal
+    .reduce(alm.utils.bikedata,
+        (update, bd) => (update)
+            ? bd.set(update.field, constant(update.value))
+            : bd);
+
+    events.input
+        .filter((evt) => evt.target.className === 'bike_input')
+        .filter((evt) => evt.target.value % 1 === 0)
+        .recv((evt) => updates.send({
+            field: evt.target.id,
+            value: parseFloat(evt.target.value)
+        }));
+
+    return model.map(function(bd) {
+        let data = bd.evaluate();
+
+        let fields = {
+            'wheelRadius': 'Wheel radius (mm)',
+            'crankLength': 'Crank length (mm)',
+            'teethFront': 'Number of front gear teeth',
+            'teethRear': 'Number of rear gear teeth'
+        };
+
+        let items = [
+            el('li', { 'id': 'gainRatio', 'class': 'output' },
+            [ 'Gain Ratio: ' + data.extract().toFixed(2) ]),
+        ];
+
+        for (var key in fields) {
+            let label = fields[key];
+            items.push(el('li', { 'class': 'item-group' }, [
+                el('label', { 'for': key, 'id': 'label-'+key },
+                    [ label ]),
+                el('input', {
+                    'id': key,
+                    'class': 'bike_input',
+                    'type': 'text',
+                    'value': data.values[key]
+                })
+            ]));
+        }
+
+        return el('ul', { id: 'items' }, items);
+    });
+})
+.start();
+};
+</script>
+</body>
 </html>
