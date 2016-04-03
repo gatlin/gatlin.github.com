@@ -23,7 +23,6 @@ var guid = Public.guid = guid_factory(); // from loeb.js
 
 // perhaps I should just store a value and let methods handle transformations?
 function Signal(fn, receivers) {
-    this.id = guid();
     this.fn = fn;
     this.receivers = (typeof receivers !== 'undefined')
         ? receivers
@@ -32,7 +31,9 @@ function Signal(fn, receivers) {
 
 // A signal which just repeats what it has been given.
 Signal.make = function() {
-    return new Signal(id, []);
+    return new Signal(function(x) {
+        return x;
+    }, []);
 };
 
 Signal.constant = function(x) {
@@ -40,18 +41,20 @@ Signal.constant = function(x) {
 };
 
 Signal.output = function(handler) {
-    return new Signal(function(v) {
+    var sig = new Signal(function(v) {
         handler(v);
     }, []);
+    sig.isOutput = true;
+    return sig;
 };
 
 Signal.prototype = {
-    send: function(timestamp, inputId, value) {
-        const result = this.fn(value);
+    send: function(timestamp, value) {
+        var result = this.fn(value);
         if (result === undefined) { return; }
         if (this.isOutput) { return; }
         for (var i = this.receivers.length; i--; ) {
-            this.receivers[i].send(timestamp, this.id, result);
+            this.receivers[i].send(timestamp, result);
         }
     },
     connect: function(receiver) {
@@ -69,9 +72,8 @@ Signal.prototype = {
     filter: function(cond) {
         var sig = this;
         var r = new Signal(function(v) {
-            var result = sig.fn(v);
-            if (cond(result)) {
-                return result;
+            if (cond(v)) {
+                return v;
             }
         });
         this.connect(r);
@@ -79,9 +81,9 @@ Signal.prototype = {
     },
     reduce: function(initial, reducer) {
         var sig = this;
-        var state = initial;
+        let state = initial;
         var r = new Signal(function(v) {
-            state = reducer(sig.fn(v), state);
+            state = reducer(v, state);
             return state;
         });
         this.connect(r);
@@ -90,7 +92,7 @@ Signal.prototype = {
     map: function(f) {
         var sig = this;
         var r = new Signal(function(v) {
-            return f(sig.fn(v));
+            return f(v);
         });
         this.connect(r);
         return r;
@@ -100,6 +102,9 @@ Signal.prototype = {
         var s = new Signal.output(f);
         this.connect(s);
         return s;
+    },
+    done: function() {
+        return this;
     }
 };
 
@@ -125,13 +130,13 @@ Public.Signal = {
  */
 function setupMailboxes(runtime) {
     return function (base) {
-        var signal = Signal.make();
-        runtime.inputs.push(signal);
-        var mb = {
+        let signal = Signal.make();
+        let sig_id = runtime.addInput(signal);
+        let mb = {
             signal: signal,
             send: function(v) {
                 runtime.async(function() {
-                    runtime.notify(signal.id, v);
+                    runtime.notify(sig_id, v);
                 });
             }
         };
@@ -152,18 +157,18 @@ function setupMailboxes(runtime) {
  */
 function setupPorts(runtime) {
     var inbound = function(name) {
-        var signal = Signal.make();
-        runtime.inputs.push(signal);
+        let signal = Signal.make();
+        let sig_id = runtime.addInput(signal);
         runtime.ports[name] = {
             send: function(v) {
-                runtime.notify(signal.id,v);
+                runtime.notify(sig_id,v);
             }
         };
         return signal;
     };
 
     var outbound = function(name) {
-        var signal = Signal.make();
+        let signal = Signal.make();
         runtime.ports[name] = {
             listen: function(k) {
                 signal.recv(k);
@@ -183,56 +188,187 @@ function setupPorts(runtime) {
  *
  * A simple virtual DOM implementation to allow for programmatic construction
  * and manipulation of HTML elements.
- *
- * This is very simple for now.
- *
- * How this should work: the VDOM exists inside of a signal reduction. When the
- * model updates:
- *
- * - a new VDOM should be computed
- * - a diff should be computed
- * - the DOM should be walked once, applying diffs as necessary.
  */
-function setupVdom(runtime) {
+function setupVdom(alm) {
     var vdom = {};
+
+    /* A virtual DOM is a rose tree. */
+    function VTree(content, children, type) {
+        this.content = content;
+        this.children = children;
+        this.type = type;
+        if (this.type === VTree.Text) {
+            this.key = this.content;
+        } else {
+            if (typeof this.content.attrs.id !== 'undefined') {
+                this.key = this.content.attrs.id;
+            } else {
+                this.key = null;
+            }
+        }
+    }
+
+    VTree.prototype = {
+        keyEq: function(other) {
+            var me = this;
+            if (me.key == null || other.key == null) {
+                return false;
+            }
+            return (me.key === other.key);
+        }
+    }
+
+    VTree.Text = 0;
+    VTree.Node = 1;
+
     /**
-     * A Node is an HTML node, which contains a tag, attributes, and 0 or more
-     * child nodes.
+     * Convenience constructor for VTree.
      */
     vdom.el = function(tag, attrs, children) {
-        return {
+        var children_trees = (typeof children === 'undefined')
+            ? []
+            : children.map(function(kid) {
+                return (typeof kid === 'string')
+                    ? new VTree(kid, [], VTree.Text)
+                    : kid; });
+        return new VTree({
             tag: tag,
-            attrs: attrs,
-            children: (typeof children !== 'undefined')
-                ? children
-                : []
-        };
+            attrs: attrs
+        }, children_trees, VTree.Node);
     };
 
-    vdom.makeElement = function(node) {
-        if (typeof node === 'string') {
-            return document.createTextNode(node);
+    function makeDOMNode(tree) {
+        if (tree === null) { return null; }
+        if (tree.type === VTree.Text) {
+            return document.createTextNode(tree.content);
         }
-        var el = document.createElement(node.tag);
-        for (var key in node.attrs) {
-            el.setAttribute(key, node.attrs[key]);
+        var el = document.createElement(tree.content.tag);
+
+        for (var key in tree.content.attrs) {
+            el.setAttribute(key, tree.content.attrs[key]);
         }
-        for (var i = 0; i < node.children.length; i++) {
-            var child = vdom.makeElement(node.children[i]);
+        for (var i = 0; i < tree.children.length; i++) {
+            var child = makeDOMNode(tree.children[i]);
             el.appendChild(child);
         }
         return el;
-    };
+    }
 
-    vdom.render = function(node, root) {
-        var tree = vdom.makeElement(node);
-        var root = (typeof root !== 'undefined')
-            ? runtime.byId(root)
-            : runtime.domRoot;
+    function initialDOM(tree) {
+        var root = alm.domRoot;
+        var domTree = makeDOMNode(tree);
         while (root.firstChild) {
             root.removeChild(root.firstChild);
         }
-        root.appendChild(tree);
+        root.appendChild(domTree);
+    }
+
+    function makeIndex(tree) {
+        var index = {};
+        for (var i = 0; i < tree.children.length; i++) {
+            var kid = tree.children[i];
+            if (kid.key != null) {
+                index[kid.key] = i;
+            }
+        }
+        return index;
+    }
+
+    /* Computes the differences between two trees, and modifies the DOM
+     * accordingly.
+     *
+     * The algorithm traverses the two trees as well as the DOM. In lieu of
+     * computing patches to be applied at a later time, for now this simply
+     * modifies the DOM in place.
+     */
+    function diff(a, b, dom) {
+        if (typeof b === 'undefined' || b == null) {
+            dom.parentNode.removeChild(dom);
+            return;
+        }
+        if (typeof a === 'undefined' || a == null) {
+            // `dom` will be the parent of `a`
+            dom.appendChild(makeDOMNode(b));
+            return;
+        }
+        if (b.type === VTree.Node) {
+            if (a.type === VTree.Node) {
+                if (a.content.tag === b.content.tag) {
+                    // reconcile element attributes
+                    for (var attr in b.content.attrs) {
+                        dom[attr] = b.content.attrs[attr];
+                        dom.setAttribute(attr,b.content.attrs[attr]);
+                    }
+                    for (var attr in a.content.attrs) {
+                        if (!(attr in b.content.attrs)) {
+                            dom.removeAttribute(attr);
+                        }
+                    }
+
+                    // Naively compare children. Works but is un-optimized.
+                    var aLen = a.children.length;
+                    var bLen = b.children.length;
+                    var len = aLen > bLen ? aLen : bLen;
+
+                    for (let i = 0; i < len; i++) {
+                        let kidA = a.children[i];
+                        let kidB = b.children[i];
+                        if (kidA) {
+                            diff(kidA, kidB, dom.childNodes[i]);
+                        } else {
+                            diff(null, kidB, dom);
+                        }
+                    }
+                } else {
+                    // tags are not the same
+                    var p = dom.parentNode;
+                    p.insertBefore(makeDOMNode(b), dom);
+                    p.removeChild(dom);
+                }
+            } else {
+                // b is a node, a is text
+                var p = dom.parentNode;
+                p.insertBefore(makeDOMNode(b), dom);
+                p.removeChild(dom);
+            }
+        } else {
+            // both are text
+            var p = dom.parentNode;
+            p.insertBefore(makeDOMNode(b), dom);
+            p.removeChild(dom);
+        }
+    }
+
+    /**
+     * Rendering the virtual DOM
+     *
+     * App.main returns a signal emitting DOM trees. Building them is cheap
+     * enough.
+     *
+     * However, re-renderig the actual DOM each time is problematic for the
+     * following reasons:
+     *
+     *   1. It's slow, so dreadfully, miserably slow.
+     *   2. Were you typing somewhere? Well, you just lost focus.
+     *
+     * Thus a virtual DOM is used. The new tree is compared to the old tree and
+     * a set of patches are produced, which are then applied to the actual DOM.
+     *
+     */
+    vdom.render = function(view_signal) {
+        view_signal.reduce(null,function(update, tree) {
+            var root = alm.domRoot;
+            // Construct a new tree and save it
+            if (tree === null) {
+                initialDOM(update);
+            }
+            else {
+                // for now, we do the same thing in both cases
+                diff(tree, update, root.firstChild);
+            }
+            return update;
+        })
+        .done();
     };
 
     return vdom;
@@ -294,7 +430,7 @@ function modify(f) {
 App.init = function(root) {
     const domRoot = (typeof root !== 'undefined')
         ? document.getElementById(root)
-        : document;
+        : document.body;
     var listeners = [];
     var inputs = [];
     var ports = {};
@@ -329,13 +465,14 @@ App.init = function(root) {
         }
         updating = true;
         var timestamp = timer.now();
-        for (var i = inputs.length; i--; ) {
-            var inp = inputs[i];
-            if (inp.id === inputId) {
-                inp.send(timestamp, inputId, v);
-            }
-        }
+        inputs[inputId].send(timestamp, v);
         updating = false;
+    }
+
+    function addInput(inp) {
+        var _id = inputs.length;
+        inputs.push(inp);
+        return _id;
     }
 
     // convenience because I dislike typing out document.getElementById
@@ -351,27 +488,29 @@ App.init = function(root) {
     /////
 
     // Initialize the mailbox system
-    var mailbox = setupMailboxes({ inputs: inputs, async: async, notify: notify });
+    var mailbox = setupMailboxes({ addInput: addInput, async: async, notify: notify });
 
     // Set up the virtual dom
-    var vdom = setupVdom({ byId: byId, domRoot: domRoot });
+    var vdom = setupVdom({ byId: byId, domRoot: domRoot, mailbox: mailbox });
 
     // Set up ports (inbound and outbound constructors)
-    var port = setupPorts({ inputs: inputs, ports: ports, notify: notify });
+    var port = setupPorts({ addInput: addInput, ports: ports, notify: notify, mailbox: mailbox });
 
     // Initialize top-level event signals
     var events = setupEvents({
-        inputs: inputs,
+        addInput: addInput,
         domRoot: domRoot,
         addListener: addListener,
         notify: notify
     });
 
+    const utils = {};
+
     // The final runtime object
     const runtime = {
         domRoot: domRoot,
         timer: timer,
-        inputs: inputs,
+        addInput: addInput,
         addListener: addListener,
         notify: notify,
         setTimeout: setTimeout,
@@ -385,7 +524,7 @@ App.init = function(root) {
         utils: {} // extensions
     };
 
-    return save(runtime);
+    return save(Object.freeze(runtime));
 };
 
 App.prototype = {
@@ -423,22 +562,24 @@ App.prototype = {
     // The main procedure in which you can create signals and mailboxes
     main: function(k) {
         return this.runtime(function(runtime) {
-            const alm = {
+            let alm = {
                 events: runtime.events,
-                vdom: runtime.vdom,
                 byId: runtime.byId,
                 mailbox: runtime.mailbox,
                 port: runtime.port,
-                utils: runtime.utils
+                utils: runtime.utils,
+                el: runtime.vdom.el
             };
-            return App.of(k(alm));
+            let view = k(alm);
+            runtime.vdom.render(view);
+            return save(runtime);
         });
     },
 
     start: function() {
-        const ports = this.runApp().runtime.ports;
+        var runtime = this.runApp().runtime;
         return {
-            ports: ports
+            ports: runtime.ports
         };
     }
 };
@@ -446,7 +587,7 @@ App.prototype = {
 instance(App,Functor);
 instance(App,Monad);
 
-// Setup signal inputs for the core browser events
+// Setup events for the core browser events
 function setupEvents(runtime) {
     var events = {
         mouse: {
@@ -465,9 +606,9 @@ function setupEvents(runtime) {
     };
 
     function setupEvent(evtName, sig) {
-        runtime.inputs.push(sig);
+        var sig_id = runtime.addInput(sig);
         runtime.addListener([sig], runtime.domRoot, evtName, function(evt) {
-            runtime.notify(sig.id, evt);
+            runtime.notify(sig_id, evt);
         });
     }
 
