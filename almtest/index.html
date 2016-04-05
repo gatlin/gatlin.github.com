@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang='en-US'>
+<html lang='en_US'>
 <head>
     <meta charset='utf-8'></meta>
     <title>Alm example</title>
@@ -43,13 +43,7 @@ var app = App.init()
         let incr_btn = el('button', { id: 'incr_button' }, [ "Increment!" ]);
         let reset_btn = el('button', { id: 'reset_button' }, [ "Reset" ]);
         let total = el('p', { id: 'total' }, [ 'Clicked ' + n + ' times']);
-        let project_link = el('a', { href: '//github.com/gatlin/Alm' }, [
-            "Learn more about this amazing project! Alm!" ]);
-        return el('div', { id: 'main' },
-            [ incr_btn,
-              reset_btn,
-              total,
-              project_link]);
+        return el('div', { id: 'main' }, [ incr_btn, reset_btn, total ]);
     });
 })
 
