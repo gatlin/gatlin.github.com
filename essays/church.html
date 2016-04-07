@@ -86,6 +86,7 @@ Or, DIY arithmetic
 <li><a href="#additionally"><span class="toc-section-number">4</span> Additionally …</a></li>
 <li><a href="#do-you-have-the-times"><span class="toc-section-number">5</span> Do you have the times?</a></li>
 <li><a href="#dont-be-listless-this-is-where-it-gets-good"><span class="toc-section-number">6</span> Don’t be listless, this is where it gets good</a></li>
+<li><a href="#the-big-picture"><span class="toc-section-number">7</span> The Big Picture</a></li>
 </ul>
 </div>
         </div>
@@ -198,8 +199,13 @@ actualNumber(_2)    = 2</code></pre>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> actualList <span class="op">=</span> (lst) <span class="op">=&gt;</span> <span class="at">lst</span>(prepend)([])<span class="op">;</span></code></pre></div>
 <p>Let’s try again:</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">console</span>.<span class="at">log</span>(<span class="at">actualList</span>(example_list))<span class="op">;</span> <span class="co">// outputs: &quot;[ 1, 2, 3 ]&quot;</span></code></pre></div>
-<p>HOLY MOLY. So we can represent lists, too! We just made a data structure out of lambda functions! Sure, it would be inefficient, but abstractly we can now represent lists using lambda calculus and perform computations with them.</p>
-<p>THIS IS BANANAS.</p>
+<p>HOLY MOLY. So we can represent lists, too! We just made a data structure out of lambda functions.</p>
+<h1 id="the-big-picture"><span class="header-section-number">7</span> The Big Picture</h1>
+<p>I think it’s very profound that we are able to construct data out of functions, blurring the line between the two. This turns out to give lambda calculus sufficient expressive power to compute anything which can be computed.</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis">Church-Turing thesis</a> showed that Turing machines are equivalent to the lambda calculus and thus are also powerful enough to express any computation.</p>
+<p>And, notably, in a Turing machine there is no distinction between code and data.</p>
+<p>In practice programming languages assume the ability to perform arithmetic, create and iterate through lists, perform side effects, and other sophisticated operations for readability and efficiency.</p>
+<p>But ultimately, they all reduce to the lambda calculus, and I hope this essay was able to hint at how and why.</p>
 <section class="footnotes">
 <hr />
 <ol>

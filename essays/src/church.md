@@ -278,12 +278,30 @@ console.log(actualList(example_list)); // outputs: "[ 1, 2, 3 ]"
 ```
 
 HOLY MOLY. So we can represent lists, too! We just made a data structure out of
-lambda functions! Sure, it would be inefficient, but abstractly we can now
-represent lists using lambda calculus and perform computations with them.
+lambda functions.
 
-THIS IS BANANAS.
+The Big Picture
+===
+
+I think it's very profound that we are able to construct data out of functions,
+blurring the line between the two. This turns out to give lambda calculus
+sufficient expressive power to compute anything which can be computed.
+
+The [Church-Turing thesis][ctthesis] showed that Turing machines are equivalent
+to the lambda calculus and thus are also powerful enough to express any
+computation.
+
+And, notably, in a Turing machine there is no distinction between code and data.
+
+In practice programming languages assume the ability to perform arithmetic,
+create and iterate through lists, perform side effects, and other sophisticated
+operations for readability and efficiency.
+
+But ultimately, they all reduce to the lambda calculus, and I hope this essay
+was able to hint at how and why.
 
 [nodejs]: https://nodejs.org/en/
 [church]: https://en.wikipedia.org/wiki/Alonzo_Church
+[ctthesis]: https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis
 [^1]: The little "λ" is the Greek lower-case letter *lambda*, by the way.
 [^2]: Well, *I* think so.
