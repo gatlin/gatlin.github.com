@@ -200,6 +200,13 @@ actualNumber(_2)    = 2</code></pre>
 <p>Let’s try again:</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">console</span>.<span class="at">log</span>(<span class="at">actualList</span>(example_list))<span class="op">;</span> <span class="co">// outputs: &quot;[ 1, 2, 3 ]&quot;</span></code></pre></div>
 <p>HOLY MOLY. So we can represent lists, too! We just made a data structure out of lambda functions.</p>
+<p>Note, though, that we could actually use any two-argument function and any base starting value. Let’s write a function I’ll call <code>foldr</code>:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> foldr <span class="op">=</span> (lst) <span class="op">=&gt;</span> (step) <span class="op">=&gt;</span> (initial) <span class="op">=&gt;</span> <span class="at">lst</span>(step)(initial)<span class="op">;</span></code></pre></div>
+<p>What’s the big deal here?</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">console</span>.<span class="at">log</span>(<span class="at">foldr</span>(example_list)( (a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> a<span class="op">+</span>b )( <span class="dv">0</span> ))<span class="op">;</span>
+<span class="co">// outputs: &quot;6&quot;</span></code></pre></div>
+<p>Holy crap. <code>foldr</code> is a right fold - what a lucky coincidence I gave it that name, huh?</p>
+<p>I could go on about <a href="https://en.wikipedia.org/wiki/Catamorphism">folds</a> and how you can define data structures by the way in which you destroy them, and then subsequently wax romantic about how this really is the nature of existence, but I’ll stop here.</p>
 <h1 id="the-big-picture"><span class="header-section-number">7</span> The Big Picture</h1>
 <p>I think it’s very profound that we are able to construct data out of functions, blurring the line between the two. This turns out to give lambda calculus sufficient expressive power to compute anything which can be computed.</p>
 <p>The <a href="https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis">Church-Turing thesis</a> showed that Turing machines are equivalent to the lambda calculus and thus are also powerful enough to express any computation.</p>

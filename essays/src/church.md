@@ -280,6 +280,27 @@ console.log(actualList(example_list)); // outputs: "[ 1, 2, 3 ]"
 HOLY MOLY. So we can represent lists, too! We just made a data structure out of
 lambda functions.
 
+Note, though, that we could actually use any two-argument function and any base
+starting value. Let's write a function I'll call `foldr`:
+
+```javascript
+let foldr = (lst) => (step) => (initial) => lst(step)(initial);
+```
+
+What's the big deal here?
+
+```javascript
+console.log(foldr(example_list)( (a) => (b) => a+b )( 0 ));
+// outputs: "6"
+```
+
+Holy crap. `foldr` is a right fold - what a lucky coincidence I gave it that
+name, huh?
+
+I could go on about [folds][cata] and how you can define data structures by the
+way in which you destroy them, and then subsequently wax romantic about how
+this really is the nature of existence, but I'll stop here.
+
 The Big Picture
 ===
 
@@ -301,6 +322,7 @@ But ultimately, they all reduce to the lambda calculus, and I hope this essay
 was able to hint at how and why.
 
 [nodejs]: https://nodejs.org/en/
+[cata]: https://en.wikipedia.org/wiki/Catamorphism
 [church]: https://en.wikipedia.org/wiki/Alonzo_Church
 [ctthesis]: https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis
 [^1]: The little "λ" is the Greek lower-case letter *lambda*, by the way.
