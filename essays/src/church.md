@@ -3,7 +3,7 @@ title: Lambda calculus and Church numerals
 lead: Or, DIY arithmetic
 ...
 
-This post will contain JavaScript code which you can run using [node][nodejs].
+This post will contain JavaScript code which you can run using [node][1].
 
 From zero to zero
 ===
@@ -283,7 +283,7 @@ represent lists using lambda calculus and perform computations with them.
 
 THIS IS BANANAS.
 
-[^1]: The little "λ" is the Greek lower-case letter *lambda*, by the way.
-[^2]: Well, *I* think so.
 [nodejs]: https://nodejs.org/en/
 [church]: https://en.wikipedia.org/wiki/Alonzo_Church
+[^1]: The little "λ" is the Greek lower-case letter *lambda*, by the way.
+[^2]: Well, *I* think so.
