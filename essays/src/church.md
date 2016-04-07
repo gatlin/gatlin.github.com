@@ -3,7 +3,7 @@ title: Lambda calculus and Church numerals
 lead: Or, DIY arithmetic
 ...
 
-This post will contain JavaScript code which you can run using [node][1].
+This post will contain JavaScript code which you can run using [node][nodejs].
 
 From zero to zero
 ===
