@@ -3,227 +3,287 @@ title: Lambda calculus and Church numerals
 lead: Or, DIY arithmetic
 ...
 
-Lambda calculus is a system for expressing computation. It is a formal language
-with a few simple constructs capable of expressing any computation that can be
-expressed.
+This post will contain JavaScript code which you can run using [node][nodejs].
 
-This post will introduce the lambda calculus and motivate why it is so powerful.
-
-We will use the [Racket](http://racket-lang.org) programming language for some
-code snippets. Racket is a friendly yet powerful language which closely
-resembles lambda calculus; and the [download](http://racket-lang.org/download/)
-comes with the friendly yet powerful Dr Racket environment for programming.
-
-You can copy the code snippets into Dr Racket and play around with them. Try it!
-
-Abstraction and application
+From zero to zero
 ===
 
-Lambda calculus is a language for expressing computation. In math notation, a
-function which takes some argument `x` and returns `x + 1` looks like this:
+Just for kicks - in no way premeditatively or anything - I'm going write a
+silly little function called `_0`:
 
-```scheme
-λ x . x + 1
+```javascript
+let _0 = (f) => (x) => x;
 ```
 
-This is called *abstraction*: we have created a function which abstracts some
-operation. If we named this function `f`, for example, we could *apply* it like
-so:
+This function takes an argument `f`, returns a new function accepting an
+argument `x`, and just returns `x`. It forgets about `f`.
 
-```scheme
-    (f 1)
+Of what use could this possibly be, you ask? I have a different question: why
+did I name it `_0`? The underscore is simply because I can't start variable
+names in JavaScript with numbers.
+
+What about this function relates to the number 0? Maybe it'll be clearer if I
+show the next silly little function:
+
+```javascript
+let _1 = (f) => (x) => f(x);
 ```
 
-Which would yield 2. There's one problem with this, though: in lambda calculus
-**everything is a function.**
+Both functions took two arguments; `_0` used the first one 0 times, and `_1`
+used it 1 time. And I bet you'll never guess what the name of this function is:
 
-DROP THE BASS
+```javascript
+let mystery = (f) => (x) => f(f(x));
+```
 
-So, strictly speaking, in the pure lambda calculus you wouldn't be able to
-write `x + 1` without first defining what plus and 1 are. However, if you
-*could* define arithmetic using only the lambda calculus, you'd be able to
-define literally anything.
+If you guessed `_2` I want you to know I'm very proud of you. These silly
+little functions correspond to positive integers (and 0). To drive this point
+home I'll write a function which converts them into JavaScript integers:
 
-Let's give it a shot.
+```javascript
+let actualNumber = (n) => n((x) => x + 1)(0);
+```
 
-Baby's first arithmetic isomorphism
+Indeed, if you play with it you'll see that
+
+    actualNumber(_0)    = 0
+    actualNumber(_1)    = 1
+    actualNumber(_2)    = 2
+
+and so on. We might be on to something here!
+
+A trip to Church
 ===
 
-Here's Racket code for defining a function `zero` and a function `succ` (for successor):
+A long time ago a fellow named [Alonzo Church][church] started fooling around
+with these. They're now called *Church numerals*. But why?
 
-```scheme
-; zero is a function
-(define zero (λ (f)
-  (λ (x)
-    x)))
+He was studying a subject called *lambda calculus.* Lambda calculus is really
+quite simple: it is the study and application of so-called *lambda functions.*
+Lambda functions are traditionally written like this[^1] :
 
-; succ ("successor") is also a function
-(define succ (λ (n)
-  (λ (f)
-    (λ (x)
-      (f ((n f) x))))))
-```
+    λf. λx. f x
 
-How the hell do I read this? Let's break it down:
+You may notice this bears striking resemblance to our friend `_1` and that's
+because, well, *it is `_1`*.
 
-We define `zero` to be a function which accepts an argument `f` which returns
-... a function which accepts an argument `x` which returns `x`, untouched.
+In lambda calculus, the *only* thing you work with are lambda functions. At its
+foundation there are no numbers, no addition or multiplication, no nothing.
+Functions take functions as arguments, and produce functions as results.
 
-`succ` is defined as a function with an argument `n` which returns ... a
-function with an argument `f` which returns ... a function with an argument `x`
-which returns (`f` applied to (`n` applied to `f`)) applied to `x`.
+**And yet** lambda calculus forms the theoretical underpinnings of computer
+science and can serve as the foundation for mathematics. How?! Easy: he simply
+constructed numbers and arithmetic out of lambda functions.
 
-It's all confusing, I know. I'll try to type more slowly.
+The purpose of this post is to retrace those steps.
 
-How are these functions equivalent to zero and "plus 1?" Perhaps if we can
-define some translation between them something more intuitive then it will make
-more sense.
-
-Okay:
-
-```scheme
-(define (church->number n) ((n add1) 0))
-```
-
-This defines `church->number` to be a function which accepts an argument `n`
-(in this case, our function-number-thing), applies it to a real-world function
-called `add1`, and then applies the resulting function to 0. `add1` is a
-function in Racket which adds 1 to its argument.
-
-Why do I call it `church->number`? Because the lambda calculus was conceived by
-a fellow named Alonzo Church. He's awesome.
-
-Let's be sure `church->number` does what we think it will and apply it to `zero`:
-
-```scheme
-(church->number zero) => ((zero add1) 0) => (((λ (f) (λ (x) x)) add1) 0) => 
-((λ (x) x) 0) => 0
-```
-
-Okay, it works for zero. Let's create a `one` and test it. Here are both an
-explicit definition of `one` and a `one` created from `(succ zero)`:
-
-```scheme
-; These two definitions of `one` are equivalent
-(define one-manual (λ (f)
-  (λ (x)
-    (f x))))
-
-(define one-computed (succ zero))
-```
-
-`one` is a function which accepts an argument `f` and returns ... a function
-which accepts an argument `x` and returns ... `f` applied to `x`. Let's verify
-this is 1 with our `church->number` function:
-
-```scheme
-(church->number one-manual) => ((one-manual add1) 0) => (((λ (f) (λ (x) (f x))) add1) 0) =>
-((λ (x) (add1 x)) 0) => (add1 0) => 1.
-```
-
-Indeed, applying `church->number` to both `one-manual` and `one-computed` yields 1, as expected.
-
-The structure of our Church numbers becomes more clear: Inside the body of the
-function, `f` is the `add1` function; for `zero` it is applied to `x` 0 times,
-and for `one` it is applied 1 time. And `x` is just 0.
-
-![I see what you did there.](http://zanyjaney.com/wp-content/uploads/2012/09/1656-462x600.jpg)
-
-Addition and multiplication
+One more time!
 ===
 
-Now that we have `zero`, a successor function, and a means of converting the
-lambda calculus value to more friendly representations of numbers, we can
-define addition and multiplication:
+Church numerals are are just functions. They ask for two parameters and then
+apply the first one to the second some number of times and in this way they
+encode real data.
 
-```scheme
-(define add (λ (n)
-  (λ (m)
-    (λ (f)
-      (λ (x)
-        ((n f) ((m f) x)))))))
+But if they're *really* numbers, then I should be able to add them, right?
+Adding `_1` and `_2` should give me `_3` and multiplying `_2` and `_3` should
+give `_6`. Can we do that?
 
-(define mult (λ (n)
-  (λ (m)
-    (λ (f)
-      (n (m f))))))
+Let's start small. Let's write a function which, given a Church numeral,
+increments it by 1. We know that this function's argument is going to be some
+numeral - say, `n` - so let's not overthink this too much:
+
+```javascript
+let incr = (n) => ???
 ```
 
-Basically, giving two church numbers to `add` yields a function which accepts
-an argument `f` returning a function accepting an argument `x` returning the
-Church sum of the first two arguments. But how?
+The result of the function is going to be a Church numeral, right? Thus the
+beginning of the result is going to take an `f` and an `x`. We may proceed
+pretty mindlessly:
 
-Let's play it out:
-
-```scheme
-(add one-manual one-computed)
-
-;=>
-
-(((λ (n) (λ (m) (λ (f) (λ (x) ((n f) ((m f) x)))))) ; add
- (λ (f) (λ (x) (f x)))) ; one-manual
- (λ (f) (λ (x) (f x)))) ; one-computed
-
-;=>
-
-(λ (f)
-  (λ (x)
-    (((λ (f) (λ (x) (f x))) f)
-     (((λ (f) (λ (x) (f x))) f) x))))
-
-;=> all `f`s are the same
-
-(λ (f)
-  (λ (x)
-    ((λ (x) (f x))
-     ((λ (x) (f x)) x))))
-
-;=>
-
-(λ (f)
-  (λ (x)
-    (f ((λ (x) (f x)) x))))
-
-;=>
-
-(λ (f)
-  (λ (x)
-    (f (f x))))
+```javascript
+let incr = (n) => (f) => (x) => ???
 ```
 
-What does this equal?
+Now here's the tricky part. `n` is a function taking `f` and `x`, too, and it
+will apply `f` to `x` some number of times. So we know we need to give `n` its
+arguments:
 
-```scheme
-(church->number (λ (f) (λ (x) (f (f x))))) => ((λ (f) (λ (x) (f (f x)))) add1) 0 =>
-(add1 (add1 0)) => 2
+```javascript
+let incr_wrong = (n) => (f) => (x) => n(f)(x);
 ```
 
-HELL YEAH
+This isn't quite right, though. Giving `n` the `f` and `x` will apply `f` to
+`x` a certain number of times, but we want to apply `f` *one more time*.
 
-I'll leave it as an exercise to the reader to figure out how `mult` works :)
+Again, let's not overthink this. We already have `f` so let's ... apply `f`
+*one more time*:
 
-What was the point again?
+```javascript
+let incr = (n) => (f) => (x) => f(n(f)(x));
+// see? ------------------------^
+```
+
+Let's be sure this works:
+
+    incr(_1)
+    =>
+    (λn. λf. λx. f ((n f) x)) (λf. λx. f x)
+    \-------- incr ---------/ \--- _1 ----/
+    =>
+    λf. λx. f ((  (λf. λx. f x) f ) x)
+    =>
+    λf. λx. f ( f x )
+
+Sure enough, that's `_2`! How about `incr(_0)` ?
+
+    incr(_0)
+    =>
+    (λn. λf. λx. f ((n f) x)) (λf. λx. x)
+    \-------- incr ---------/ \-- _0 ---/
+    =>
+    λf. λx. f ((  (λf. λx. x) f ) x)
+    =>
+    λf. λx. f (x)
+
+I don't know about you but I'm convinced.
+
+Additionally ...
 ===
 
-We have provided some intuition for how to define arithmetic in the lambda
-calculus. If I can add, I can subtract; if I can multiply, I can divide; if I
-can add and multiply I can use exponents; if I have exponents, I have
-logarithms; if I have all those things I can compute limits; if I have limits,
-I can compute derivatives ... and we're at regular college calculus.
+Now we are ready to tackle a slightly more complex problem: adding two Church
+numerals. So we have some number `a` which applies `f` some number *a* times and some
+number `b` which applies `f` some number *b* times.
 
-All with lambda abstraction and lambda application.
+As with `incr` we know that we're going to take two numbers and return a third
+so we can get this out of the way:
 
-There are several consequences of this power, however:
+```javascript
+let add = (a) => (b) => (f) => (x) => ???
+```
 
-1. Because lambda calculus is as expressive as arithmetic, it runs afoul of
-both Incompleteness Theorems. Look 'em up, it's fascinating.
+Cool. A Church numeral applies its first argument to its second argument any
+number of times. We're adding `a` and `b` so we know we want `f` applied *at
+least* *a* times:
 
-2. Because of the incompleteness theorem, programs written with the lambda
-calculus have the Halting problem: a program which reads programs and
-determines if they halt, will not be able to read itself and decide if it
-halts. This has very important consequences.
+```javascript
+let add_almost = (a) => (b) => (f) => (x) => a(f)(x);
+```
 
-At this point I could go down a bunch of fascinating rabbit holes but I've
-probably used up more than enough of your time. Hopefully this sheds some
-insight on how computer science actually "works."
+We want to take the result of `a(f)(x)` and then apply `f` `b` more times to
+it. It's *really* easy to over think this!
 
+```javascript
+let add = (a) => (b) => (f) => (x) => b(f)( a(f)(x) );
+```
+
+`b` will do the work of applying `f` *b* times, and `a` will do the work of
+applying `f` *a* times.
+
+Let's test our function by adding `_1` and `_2`:
+
+    add(_1)(_2)
+    =>
+    (λa. λb. λf. λx. (b f)((a f) x)) (λf. λx. f x) (λf. λx. f (f x))
+    \----------- add --------------/ \--- _1 ----/ \----- _2 ------/
+    =>
+    λf. λx. ((λf. λx. f (f x)) f)  (((λf. λx. f x) f) x)
+            \------- _2 --------/  \-------- _1 -------/
+    =>
+    λf. λx. (λx. f (f x))  (((λf. λx. f x) f) x)
+    =>
+    λf. λx. (f (f (((λf. λx. f x) f) x)))
+    =>
+    λf. λx. f (f (f x))
+
+`f` is applied three times so we indeed got `_3`!
+
+Do you have the times?
+===
+
+Triumphant and cocky let's now try our hands at multiplication. This is
+trickier: for each time `a` would normally apply `f`, we want to apply it b
+times instead. You know the drill:
+
+```javascript
+let mul = (a) => (b) => (f) => (x) => ???
+```
+
+`a` will apply its first argument to its second *a* times; `b` will similarly
+apply `f` *b* times.
+
+So what if `(b f)` was the function given as the first argument to `a`? Then
+`a` would apply `(b f)` *a* times and each time `b` would apply `f` *b* times.
+
+```javascript
+let mul = (a) => (b) => (f) => (x) => a(b(f))(x);
+```
+
+I'll leave it as an exercise for the reader to work this one out.
+
+Don't be listless, this is where it gets good
+===
+
+It's pretty interesting[^2] that we can represent numbers and arithmetic using
+lambda calculus, but what else can we do?
+
+I'm going to provocatively rename `_0`.
+
+```javascript
+let nil = (c) => (n) => n;
+```
+
+Imagine if the `f` that we gave our Church numerals required *2* values?
+Something like, I don't know,
+
+```javascript
+let prepend = (hd) => (tl) => [hd].concat(tl);
+```
+
+`prepend` does exactly what it says: takes a value and an array and prepends
+the value to the array.
+
+Our `incr` function would have to look a little bit different: "incrementing"
+isn't just applying `f` to `x` one more time, it means giving `f` another
+value and *then* applying it to `x`.
+
+To ruin the surprise I'll name this modified incrementer `cons`:
+
+```javascript
+let cons = (hd) => (tl) => (c) => (n) => c(x)(xs(c)(n));
+```
+
+Let's see it in action:
+
+```javascript
+let example_list = cons(1) (cons(2) (cons(3) (nil)));
+```
+
+And ...
+
+```javascript
+console.log(example_list); // outputs: "[Function]"
+```
+
+That was anti-climactic. Of course, just like with Church numerals, we have to
+provide a little conversion function:
+
+```javascript
+let actualList = (lst) => lst(prepend)([]);
+```
+
+Let's try again:
+
+```javascript
+console.log(actualList(example_list)); // outputs: "[ 1, 2, 3 ]"
+```
+
+HOLY MOLY. So we can represent lists, too! We just made a data structure out of
+lambda functions! Sure, it would be inefficient, but abstractly we can now
+represent lists using lambda calculus and perform computations with them.
+
+THIS IS BANANAS.
+
+[^1]: The little "λ" is the Greek lower-case letter *lambda*, by the way.
+[^2]: Well, *I* think so.
+[nodejs]: https://nodejs.org/en/
+[church]: https://en.wikipedia.org/wiki/Alonzo_Church
