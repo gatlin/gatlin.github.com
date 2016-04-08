@@ -36,7 +36,7 @@ end we stumbled across these three functions[^1]:
 
 ```javascript
 let nil  = (h) => (t) => n;
-let cons = (h) => (t) => (c) => (n) => h(x)(t(c)(n));
+let cons = (h) => (t) => (c) => (n) => c(h)(t(c)(n));
 let foldr = (list) => (f) => (x) => list(f)(x);
 ```
 
