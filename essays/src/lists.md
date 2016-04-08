@@ -302,9 +302,9 @@ put it in a file, and play around with it in [node][nodejs].
 There are several places to go from here, which I hope to write about soon:
 
 - Creating and processing *infinite* lists;
-- Deriving `flatMap` for other structures and 
+- Deriving `flatMap` and comprehensions for other structures;
 - Splitting a list into its first element ("head") and rest ("tail"), based on
-  Church numeral *subtraction*;
+  Church numeral *subtraction*; and
 - honestly, I shouldn't promise too much just yet.
 
 This is a lot of weird, more-than-likely new stuff. Play with the code. It
