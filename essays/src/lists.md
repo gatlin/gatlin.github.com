@@ -3,6 +3,9 @@ title: Everything you always wanted to know about lists, but were afraid to ask
 lead: Or, how we are ultimately defined by our self-destruction
 ...
 
+If you just want the code from this essay, it's pretty short and [available
+as a gist][thecode].
+
 Last time, on Gatlin's Boring Essays ...
 ===
 
