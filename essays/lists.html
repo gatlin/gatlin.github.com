@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>
+Untitled List Essay
+| Gatlin Johnson</title>
+
+    <!-- Merriweather font -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- glyphicons -->
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+
+    <link href="style.css" rel="stylesheet">
+    <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+
+        div#toc-wrapper ul, div#toc-wrapper ol {
+            list-style: none;
+        }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right clearfix hidden-xs">
+          <li>
+          <a href="mailto:gatlin@niltag.net">
+              <span class="glyphicon glyphicon-envelope"></span>
+              Send me an email!</a></li>
+          <li>
+            <a href="gatlin.gpg">PGP</a>
+          </li>
+          <li>
+              <a href="/">Home</a>
+          </li>
+        </ul>
+        <h3 class="text-muted">
+            <em>Veni veni veni</em>
+        </h3>
+      </div>
+      <hr>
+      <ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+          <li><a href="/essays/">Essays</a></li>
+      </ol>
+      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
+        <h1>
+Untitled List Essay
+        </h1>
+        <p class="lead">
+Or, how we are ultimately defined by our self-destruction
+        </p>
+<div id="toc-wrapper">
+<h2>Contents</h2>
+<ul>
+<li><a href="#last-time-on-gatlins-boring-essays"><span class="toc-section-number">1</span> Last time, on Gatlin’s Boring Essays …</a></li>
+<li><a href="#lists"><span class="toc-section-number">2</span> Lists</a></li>
+<li><a href="#fold-it-right-there"><span class="toc-section-number">3</span> Fold it right there</a></li>
+<li><a href="#yes"><span class="toc-section-number">4</span> Yes</a></li>
+<li><a href="#now-list-en-up"><span class="toc-section-number">5</span> Now LIST-en up</a><ul>
+<li><a href="#length-of-a-list"><span class="toc-section-number">5.1</span> Length of a list</a></li>
+<li><a href="#mapping"><span class="toc-section-number">5.2</span> Mapping</a></li>
+<li><a href="#filtering"><span class="toc-section-number">5.3</span> Filtering</a></li>
+<li><a href="#concatenating-or-appending-one-list-to-another"><span class="toc-section-number">5.4</span> Concatenating (or “appending”) one list to another</a></li>
+<li><a href="#flattening-a-list-of-lists"><span class="toc-section-number">5.5</span> Flattening a list of lists</a></li>
+</ul></li>
+<li><a href="#something-curious-to-comprehend"><span class="toc-section-number">6</span> Something curious to comprehend</a></li>
+<li><a href="#where-to-from-here"><span class="toc-section-number">7</span> Where to from here?</a></li>
+</ul>
+</div>
+        </div>
+
+      <div class="row">
+        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+<h1 id="last-time-on-gatlins-boring-essays"><span class="header-section-number">1</span> Last time, on Gatlin’s Boring Essays …</h1>
+<p>This essay is the followup to a <a href="http://niltag.net/essays/church.html">previous essay on Church numerals and lambda calculus</a>. If you aren’t a little familiar with those topics or just want to know where this essay is picking up I personally wouldn’t mind if you went and read it first.</p>
+<p>Go ahead; I’ll wait. :)</p>
+<h1 id="lists"><span class="header-section-number">2</span> Lists</h1>
+<p>Lists, or something like them, exist in almost every programming language. They are useful and model a lot of problems very well.</p>
+<p>Reading from or writing to a file? You’re dealing with lists of bytes.</p>
+<p>Doing some accounting? A ledger is a list of rows.</p>
+<p>Etc.</p>
+<p>A program consisting of a number of loops over data can be turned inside out into a series of transformations to a list.</p>
+<p>So I don’t know about you but I was shocked when in the last essay toward the end we stumbled across these three functions<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> nil  <span class="op">=</span> (h) <span class="op">=&gt;</span> (t) <span class="op">=&gt;</span> n<span class="op">;</span>
+<span class="kw">let</span> cons <span class="op">=</span> (h) <span class="op">=&gt;</span> (t) <span class="op">=&gt;</span> (c) <span class="op">=&gt;</span> (n) <span class="op">=&gt;</span> <span class="at">h</span>(x)(<span class="at">t</span>(c)(n))<span class="op">;</span>
+<span class="kw">let</span> foldr <span class="op">=</span> (list) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">list</span>(f)(x)<span class="op">;</span></code></pre></div>
+<p>When we use these together we can build simple linked lists …</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> list_1 <span class="op">=</span> <span class="at">cons</span>(<span class="dv">1</span>) (<span class="at">cons</span>(<span class="dv">2</span>) (<span class="at">cons</span>(<span class="dv">3</span>) (nil)))<span class="op">;</span></code></pre></div>
+<p>… and then process them. For example, we can define a function <code>sum</code> to sum the numbers in a list:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> sum <span class="op">=</span> (xs) <span class="op">=&gt;</span> <span class="at">foldr</span>(xs)( (a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> a <span class="op">+</span> b )(<span class="dv">0</span>)<span class="op">;</span>
+<span class="kw">let</span> six <span class="op">=</span> <span class="at">sum</span>(list_1)<span class="op">;</span> <span class="co">// -&gt; 6</span></code></pre></div>
+<p>The purpose of this essay is to explore how lists work, what we can do practically with them, and how thinking in terms of lists makes short work of a large number of problems.</p>
+<h1 id="fold-it-right-there"><span class="header-section-number">3</span> Fold it right there</h1>
+<p>A <em>fold</em> is a reduction or aggregation of the values in a data structure into one final result. You start on one end with an initial value <code>x</code> and a function <code>f</code> and proceed to process each value <code>v</code> in the list in turn by evaluating <code>f(v,x)</code>, which you then use as the next <code>x</code>. When you run out of values in the structure you return <code>x</code>.</p>
+<p>Because there’s no great way to describe that without inducing sleep, here is an illustration of the <code>sum</code> function from above:</p>
+<pre><code>Remaining list      Current result
+--------------      --------------
+[ 1 2 3 ]           0
+      ^---------- + 3
+                  ---
+[ 1 2 ]             3
+    ^------------ + 2
+                  ---
+[ 1 ]               5
+  ^-------------- + 1
+                  ---
+[]                  6</code></pre>
+<p>There are two kinds of folds for lists: <em>left</em> and <em>right</em> folds. On the surface the only difference is if you start at the beginning (the “left”) or the end (the “right”) of the list. We’ll come back to this.</p>
+<p>So that’s what a fold is in the abstract, but how do those three functions lead to this?</p>
+<p>Let’s take another look at <code>cons</code>. We saw that <code>cons</code> is a slightly modified version of <code>incr</code>, which takes a Church numeral and adds 1 to it. Here they are side by side:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr <span class="op">=</span>        (n) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">f</span>   (<span class="at">n</span>(f)(x))<span class="op">;</span>
+<span class="kw">let</span> cons <span class="op">=</span> (h) <span class="op">=&gt;</span> (t) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">h</span>(x)(<span class="at">t</span>(f)(x))<span class="op">;</span></code></pre></div>
+<p>And Church numeral 0 and <code>nil</code> are identical:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> _0  <span class="op">=</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> x<span class="op">;</span>
+<span class="kw">let</span> nil <span class="op">=</span> (h) <span class="op">=&gt;</span> (t) <span class="op">=&gt;</span> t<span class="op">;</span></code></pre></div>
+<p>I’m using <code>h</code> to mean <em>head</em> of the list, and <code>t</code> to mean the <em>tail</em> of the list. That’s intended to reflect how these lists work: a list is either an empty starting point, or a <em>head</em> linked to a remaining <em>tail</em> list.</p>
+<p>Just as Church numerals represent a number by applying <code>f</code> to <code>x</code> a certain number of times, a list is a function whose <code>f</code> takes <em>two</em> arguments, not just one.</p>
+<p>Otherwise, they work the same: a list of length <em>l</em> essentially waits for a function and a value and applies the function <em>l</em> times to the value, along with whatever the contents of the list are.</p>
+<p>Wait. Wait that’s what folds are.</p>
+<p>Wait.</p>
+<p><em>Lists</em> ARE <em>folds???</em></p>
+<h1 id="yes"><span class="header-section-number">4</span> Yes</h1>
+<p>A list is, essentially, a blueprint for how to destroy it. It’s a series of repeated applications of some two-argument function to successive items of the list on the left side, and a continually-changing intermediate result on the right side.</p>
+<p>The idea of Church numerals extended to more complex data structures is called a <em>Church encoding</em>. They’re curious because not only do they lend insight into the nature of and relationships between different structures, but also because they can be efficient, too, if you use them correctly.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<p>These lists are essentially loops turned inside out, waiting for their bodies.</p>
+<h1 id="now-list-en-up"><span class="header-section-number">5</span> Now LIST-en up</h1>
+<p>The following are common list-processing utilities you’d find in other programming languages, implemented for our list representation with example usages.</p>
+<p>The key thing to note here is that they may <em>all</em> be described by <code>foldr</code>. <code>foldr</code> is what defines a list. We are defined by how we are destroyed.</p>
+<h2 id="length-of-a-list"><span class="header-section-number">5.1</span> Length of a list</h2>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> length <span class="op">=</span> (xs) <span class="op">=&gt;</span> <span class="at">foldr</span>(xs)((a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> b <span class="op">+</span> <span class="dv">1</span>)(<span class="dv">0</span>)<span class="op">;</span></code></pre></div>
+<p>You don’t care <em>what</em> the list values are, you just want to add 1 to 0 for each item in the list.</p>
+<h2 id="mapping"><span class="header-section-number">5.2</span> Mapping</h2>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> map <span class="op">=</span> (f) <span class="op">=&gt;</span> (xs) <span class="op">=&gt;</span> <span class="at">foldr</span>(xs)( (y) <span class="op">=&gt;</span> (ys) <span class="op">=&gt;</span> <span class="at">cons</span>(<span class="at">f</span>(y))(ys) )(nil)<span class="op">;</span>
+
+<span class="kw">let</span> isEven <span class="op">=</span> (n) <span class="op">=&gt;</span> n <span class="op">%</span> <span class="dv">2</span> <span class="op">===</span> <span class="dv">0</span><span class="op">;</span>
+<span class="kw">let</span> result <span class="op">=</span> <span class="at">map</span> (isEven) (list_1)<span class="op">;</span>
+<span class="co">//  -&gt; cons (false) (cons (true) (cons (false) (nil)))</span></code></pre></div>
+<p>You have function <code>f</code> which turns values into other values. So, starting with an empty list, you apply <code>f</code> to each value and then <code>cons</code> it to the result.</p>
+<h2 id="filtering"><span class="header-section-number">5.3</span> Filtering</h2>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> filter <span class="op">=</span> (cond) <span class="op">=&gt;</span> (xs) <span class="op">=&gt;</span> foldr
+    (xs)
+    ( (value) <span class="op">=&gt;</span> (already_filtered) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span>
+        <span class="at">cond</span>(value)
+            <span class="op">?</span> <span class="at">f</span>(value)(<span class="at">foldr</span>(already_filtered)(f)(x))
+            : <span class="at">foldr</span>(already_filtered)(f)(x))
+    (nil)<span class="op">;</span></code></pre></div>
+<p>This one is a doozy, no doubt. The function being folded over the list tests the current value of the list. If the result is true, we (manually) <code>cons</code> it to the current result. If not, we continue with the current result unchanged.</p>
+<h2 id="concatenating-or-appending-one-list-to-another"><span class="header-section-number">5.4</span> Concatenating (or “appending”) one list to another</h2>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> concat <span class="op">=</span> (xs) <span class="op">=&gt;</span> (ys) <span class="op">=&gt;</span> <span class="at">foldr</span>(xs)(cons)(ys)<span class="op">;</span></code></pre></div>
+<p>This works because the “initial result” – the right-half of the list – is the second list. Then starting from the end, each element of the first list is appended to the second list.</p>
+<h2 id="flattening-a-list-of-lists"><span class="header-section-number">5.5</span> Flattening a list of lists</h2>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> flatten <span class="op">=</span> (xs) <span class="op">=&gt;</span> <span class="at">foldr</span>(xs)(concat)(nil)<span class="op">;</span>
+<span class="kw">let</span> person_a_groceries <span class="op">=</span> <span class="at">cons</span> (<span class="st">&#39;rice&#39;</span>) (<span class="at">cons</span> (<span class="st">&#39;oranges&#39;</span>) (nil))<span class="op">;</span>
+<span class="kw">let</span> person_b_groceries <span class="op">=</span> <span class="at">cons</span> (<span class="st">&#39;monster&#39;</span>) (<span class="at">cons</span> (<span class="st">&#39;nos&#39;</span>) (<span class="at">cons</span> (<span class="st">&#39;hot cheetos&#39;</span>)
+                              (nil)))<span class="op">;</span>
+<span class="kw">let</span> shopping_list <span class="op">=</span> <span class="at">flatten</span>( <span class="at">cons</span> (person_a_groceries)
+                           ( <span class="at">cons</span> (person_b_groceries)
+                           ( nil )))<span class="op">;</span></code></pre></div>
+<p>You have a way of combining two lists and a starting value (ie, an empty list). This folds <code>concat</code> over a list of lists, which flattens it.</p>
+<h1 id="something-curious-to-comprehend"><span class="header-section-number">6</span> Something curious to comprehend</h1>
+<p>Here’s a weirdo:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> flatMap <span class="op">=</span> (list) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> <span class="at">flatten</span>( <span class="at">map</span> (f) (list) )<span class="op">;</span></code></pre></div>
+<p>This maps a function over a list, turning each element of the list <em>into a list.</em> And then it flattens this list of lists back down.</p>
+<p>When would you use this?</p>
+<p>If you were writing event planning software, you might have a list of events, and a function <code>attendees</code> which takes an event and returns a list of guests.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> events <span class="op">=</span> <span class="at">getEventsThisWeek</span>()<span class="op">;</span>
+<span class="kw">let</span> attending <span class="op">=</span> <span class="at">flatMap</span> (events) (attending)<span class="op">;</span></code></pre></div>
+<p>If you had three events, the first might have 15 attendees, the second might have – wait. Wait a second.</p>
+<p>The length of the list grew. <code>map</code> can’t do that. <code>filter</code> can only shorten lists, and only using a yes/no condition. But <code>flatMap</code> can change not just the values of a list but the <em>structure</em> of the list as well. Hmm.</p>
+<p>Maybe you’re working on some retail software and you want to spam users with shitty advertisements. You can query the list of past customers and product categories easily. You also have a function telling you if a customer likes a category, and one which handles creating the advertisement for a customer and a product.</p>
+<p>Voici:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> customers <span class="op">=</span> <span class="at">getCustomers</span>()<span class="op">;</span>
+<span class="kw">let</span> categories <span class="op">=</span> <span class="at">getCategories</span>()<span class="op">;</span>
+<span class="kw">let</span> adsToSend <span class="op">=</span>
+    <span class="at">flatMap</span> (customers)  ((customer) <span class="op">=&gt;</span>
+    <span class="at">flatMap</span> (categories) ((category) <span class="op">=&gt;</span>
+        (<span class="at">likes</span>(customer<span class="op">,</span>category))
+            <span class="op">?</span> <span class="at">flatMap</span> (<span class="at">products</span>(category)) ((product) <span class="op">=&gt;</span>
+                <span class="at">unit</span>(<span class="at">ad</span>(customer<span class="op">,</span>product)))
+            : nil ))<span class="op">;</span>
+
+<span class="kw">let</span> unit <span class="op">=</span> (x) <span class="op">=&gt;</span> <span class="at">cons</span> (x) (nil)<span class="op">;</span></code></pre></div>
+<p>The logic looks more or less like how you’d handle one combination of variables: take a customer from the customers, a category from the categories, and then if the customer likes the category take a product from the products and send out the ad.</p>
+<p>It’s easy to reason about. But the key is, it implicitly loops over each of the lists and produces not just the results of one combination but the results for <em>all</em> combinations.</p>
+<p>In Python you may have seen this before: this is known as a <em>list comprehension.</em> They have syntactic support there and thus are a little more elegant. But then, this is a very naive implementation of lists and utilities; the popular <a href="https://lodash.com">lodash</a> JavaScript library has this capability implemented in a very sophisticated and efficient manner.</p>
+<p>Their implementation is undoubtedly different in order to take advantage of clever hacks and optimizations. But ultimately comprehensions are the flattened results of special map operations.</p>
+<h1 id="where-to-from-here"><span class="header-section-number">7</span> Where to from here?</h1>
+<p>Holy shit we covered a lot in this. We:</p>
+<ol type="1">
+<li>Constructed lists using elementary lambda calculus;</li>
+<li>Implemented a useful library of list processing functions; and</li>
+<li>Derived list comprehensions from scratch.</li>
+</ol>
+<p>And really <a href="https://gist.github.com/gatlin/5b022bc38aa9f5a2b63a75580a056e8c">the code for it all isn’t that long</a>. You can download it, put it in a file, and play around with it in <a href="https://nodejs.org/en/">node</a>.</p>
+<p>There are several places to go from here, which I hope to write about soon:</p>
+<ul>
+<li>Creating and processing <em>infinite</em> lists;</li>
+<li>Deriving <code>flatMap</code> for other structures and</li>
+<li>Splitting a list into its first element (“head”) and rest (“tail”), based on Church numeral <em>subtraction</em>;</li>
+<li>honestly, I shouldn’t promise too much just yet.</li>
+</ul>
+<p>This is a lot of weird, more-than-likely new stuff. Play with the code. It won’t make sense all at once but it might help you begin to think about how you design and implement programs in a different way.</p>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>The terms <em>cons</em> and <em>nil</em> come from the lisp family of languages, where lists are the central data structure. <em>cons</em> means “construct.” Since it’s short and kind of makes sense I’m using it here as well.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>While some tricks could be performed, for the most part this isn’t a very efficient implementation of lists in JavaScript. Part of the problem is each operation tears down and then builds up a new list. So if you have a chain of list operations you might free and re-allocate memory unnecessarily. The value in this implementation, though, is it is easy to verify the correctness of your algorithms so you know what to expect from more optimized implementations. Some languages also support the notion of <em>list fusion</em>, where a series of list destructions and reconstructions can be fused into one operation which destroys and recreates the list once. Then Church encoded lists can be quite speedy.<a href="#fnref2">↩</a></p></li>
+</ol>
+</section>
+        </div>
+</div><!-- row -->
+<hr>
+
+
+      <div class="footer">
+        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
+
