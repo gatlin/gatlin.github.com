@@ -277,11 +277,11 @@ It's easy to reason about. But the key is, it implicitly loops over each of the
 lists and produces not just the results of one combination but the results for
 *all* combinations.
 
-In Python you may have seen this before: this is known as a *list
-comprehension.* They have syntactic support there and thus are a little more
-elegant. But then, this is a very naive implementation of lists and utilities;
-the popular [lodash][lodash] JavaScript library has this capability implemented
-in a very sophisticated and efficient manner.
+In Python you may have seen this before: this is known as a [*list
+comprehension*][listcomp]. They have syntactic support there and thus are a
+little more elegant. But then, this is a very naive implementation of lists and
+utilities; the popular [lodash][lodash] JavaScript library has this capability
+implemented in a very sophisticated and efficient manner.
 
 Their implementation is undoubtedly different in order to take advantage of
 clever hacks and optimizations. But ultimately comprehensions are the flattened
@@ -312,6 +312,7 @@ won't make sense all at once but it might help you begin to think about how you
 design and implement programs in a different way.
 
 [church]: http://niltag.net/essays/church.html
+[listcomp]: https://en.wikipedia.org/wiki/List_comprehension
 [lodash]: https://lodash.com
 [thecode]: https://gist.github.com/gatlin/5b022bc38aa9f5a2b63a75580a056e8c
 [nodejs]: https://nodejs.org/en/
