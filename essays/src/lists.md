@@ -1,5 +1,5 @@
 ---
-title: Untitled List Essay
+title: Everything you always wanted to know about lists, but were afraid to ask
 lead: Or, how we are ultimately defined by our self-destruction
 ...
 
