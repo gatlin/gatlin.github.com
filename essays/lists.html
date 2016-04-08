@@ -193,7 +193,7 @@ Or, how we are ultimately defined by our self-destruction
 <p>When would you use this?</p>
 <p>If you were writing event planning software, you might have a list of events, and a function <code>attendees</code> which takes an event and returns a list of guests.</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> events <span class="op">=</span> <span class="at">getEventsThisWeek</span>()<span class="op">;</span>
-<span class="kw">let</span> attending <span class="op">=</span> <span class="at">flatMap</span> (events) (attending)<span class="op">;</span></code></pre></div>
+<span class="kw">let</span> attending <span class="op">=</span> <span class="at">flatMap</span> (events) (attendees)<span class="op">;</span></code></pre></div>
 <p>If you had three events, the first might have 15 attendees, the second might have – wait. Wait a second.</p>
 <p>The length of the list grew. <code>map</code> can’t do that. <code>filter</code> can only shorten lists, and only using a yes/no condition. But <code>flatMap</code> can change not just the values of a list but the <em>structure</em> of the list as well. Hmm.</p>
 <p>Maybe you’re working on some retail software and you want to spam users with shitty advertisements. You can query the list of past customers and product categories easily. You also have a function telling you if a customer likes a category, and one which handles creating the advertisement for a customer and a product.</p>

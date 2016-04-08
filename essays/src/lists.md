@@ -236,7 +236,7 @@ and a function `attendees` which takes an event and returns a list of guests.
 
 ```javascript
 let events = getEventsThisWeek();
-let attending = flatMap (events) (attending);
+let attending = flatMap (events) (attendees);
 ```
 
 If you had three events, the first might have 15 attendees, the second might
