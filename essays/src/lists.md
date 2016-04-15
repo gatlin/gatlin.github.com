@@ -322,7 +322,7 @@ design and implement programs in a different way.
     sequence of values, not just one. List-like things are a surprisingly
     powerful abstraction and while random access or variable size or other
     efficiencies can be had by straying from the linked list, a surprisingly
-    wide range of tasks boil down to transforming a sequnence of inputs into a
+    wide range of tasks boil down to transforming a sequence of inputs into a
     sequence of output data. Anyway.
 [^2]: The terms *cons* and *nil* come from the lisp family of languages, where
     lists are the central data structure. *cons* means "construct." Since
