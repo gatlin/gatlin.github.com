@@ -86,24 +86,24 @@ Or, what's Löb got to do with it?
 <p>In English, &quot;If a system has Peano arithmetic, then if for any <em>p</em> the statement 'if <em>p</em> is provable then <em>p</em> is true' is true, then <em>p</em> is provable.&quot;</p>
 <p>According to the <a href="http://en.wikipedia.org/wiki/Curry%E2%80%93Howard_correspondence">Curry-Howard isomorphism</a>, in type systems like that of Haskell's types correspond to logical propositions, and functions inhabiting those types are proofs. So if a type's definability implies its validity then it is definable.</p>
 <p>Somebody had this bright idea of pretending □ was some functor <em>f</em> and encoded this property in a function called <code>loeb</code>:</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">loeb ::</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> f (f a <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> f a
-loeb x <span class="fu">=</span> fmap (\a <span class="ot">-&gt;</span> a (loeb x)) x</code></pre></div>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">loeb ::</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> f (f a <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> f a
+loeb x <span class="fu">=</span> fmap (\a <span class="ot">-&gt;</span> a (loeb x)) x</code></pre>
 <p>How could this be useful? Recalling that the type <code>[a]</code> is a functor,</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">test_loeb_1 <span class="fu">=</span> [ length , \x <span class="ot">-&gt;</span> x <span class="fu">!!</span> <span class="dv">0</span> ]</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> loeb test_loeb_1
-[<span class="dv">2</span>,<span class="dv">2</span>]</code></pre></div>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">test_loeb_1 <span class="fu">=</span> [ length , \x <span class="ot">-&gt;</span> x <span class="fu">!!</span> <span class="dv">0</span> ]</code></pre>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> loeb test_loeb_1
+[<span class="dv">2</span>,<span class="dv">2</span>]</code></pre>
 <p>wat?</p>
 <p>Intuitively it's like a spreadsheet: you take (in this case) a row of cells containing functions which assume the final spreadsheet is finished, and they can rely on each other for their final values.</p>
 <p><code>length</code> and <code>\x -&gt; x !! 0</code> are both functions which accept a list as an argument and return a single item of the list. The length of the <code>test_loeb_1</code> list is 2 so <code>length</code> is 2, and thus <code>x !! 0</code> is 2.</p>
 <p>Here's a more elaborate example:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">test_loeb_2_bad <span class="fu">=</span> [ (<span class="fu">!!</span> <span class="dv">5</span>), <span class="dv">3</span>, (<span class="fu">!!</span> <span class="dv">0</span>) <span class="fu">+</span> (<span class="fu">!!</span> <span class="dv">1</span>), (<span class="fu">!!</span> <span class="dv">2</span>) <span class="fu">*</span> <span class="dv">2</span>, sum <span class="fu">.</span> take <span class="dv">3</span>, <span class="dv">17</span> ]</code></pre></div>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">test_loeb_2_bad <span class="fu">=</span> [ (<span class="fu">!!</span> <span class="dv">5</span>), <span class="dv">3</span>, (<span class="fu">!!</span> <span class="dv">0</span>) <span class="fu">+</span> (<span class="fu">!!</span> <span class="dv">1</span>), (<span class="fu">!!</span> <span class="dv">2</span>) <span class="fu">*</span> <span class="dv">2</span>, sum <span class="fu">.</span> take <span class="dv">3</span>, <span class="dv">17</span> ]</code></pre>
 <p>However, this is bad because <code>3</code> and <code>17</code> aren't functions. Haskell has a standard function, <code>const :: a -&gt; b -&gt; a</code>, which we can use to turn ordinary values into functions:</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">test_loeb_2 ::</span> [[<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Int</span>]
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">test_loeb_2 ::</span> [[<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Int</span>]
 test_loeb_2 <span class="fu">=</span> [ (<span class="fu">!!</span> <span class="dv">5</span>), (const <span class="dv">3</span>), (\l <span class="ot">-&gt;</span> (l <span class="fu">!!</span> <span class="dv">0</span>) <span class="fu">+</span> (l <span class="fu">!!</span> <span class="dv">1</span>))
-              , \l <span class="ot">-&gt;</span> (l <span class="fu">!!</span> <span class="dv">2</span>) <span class="fu">*</span> <span class="dv">2</span>, sum <span class="fu">.</span> take <span class="dv">3</span> , (const <span class="dv">17</span> )]</code></pre></div>
+              , \l <span class="ot">-&gt;</span> (l <span class="fu">!!</span> <span class="dv">2</span>) <span class="fu">*</span> <span class="dv">2</span>, sum <span class="fu">.</span> take <span class="dv">3</span> , (const <span class="dv">17</span> )]</code></pre>
 <p>So now I run <code>test_loeb_2</code> ...</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> loeb test_loeb_2
-[<span class="dv">17</span>,<span class="dv">3</span>,<span class="dv">20</span>,<span class="dv">40</span>,<span class="dv">40</span>,<span class="dv">17</span>]</code></pre></div>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> loeb test_loeb_2
+[<span class="dv">17</span>,<span class="dv">3</span>,<span class="dv">20</span>,<span class="dv">40</span>,<span class="dv">40</span>,<span class="dv">17</span>]</code></pre>
 <p>I took the fix point of a value that didn't exist yet and tied a very strange temporal knot. Thanks, Löb!</p>
         </div>
 </div><!-- row -->
