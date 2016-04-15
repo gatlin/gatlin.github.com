@@ -4,6 +4,7 @@ lead: Or, DIY arithmetic
 ...
 
 This post will contain JavaScript code which you can run using [node][nodejs].
+Or you can try it all out [in your browser using repl.it][replit].
 
 From zero to zero
 ===
@@ -325,5 +326,6 @@ was able to hint at how and why.
 [cata]: https://en.wikipedia.org/wiki/Catamorphism
 [church]: https://en.wikipedia.org/wiki/Alonzo_Church
 [ctthesis]: https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis
+[replit]: https://repl.it/languages/javascript
 [^1]: The little "λ" is the Greek lower-case letter *lambda*, by the way.
 [^2]: Well, *I* think so.

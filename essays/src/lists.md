@@ -6,6 +6,9 @@ lead: Or, how we are ultimately defined by our self-destruction
 If you just want the code from this essay, it's pretty short and [available
 as a gist][thecode].
 
+If you want to play along at home you can play with all this code [in your
+browser using repl.it][replit].
+
 Last time, on Gatlin's Boring Essays ...
 ===
 
@@ -316,6 +319,7 @@ design and implement programs in a different way.
 [lodash]: https://lodash.com
 [thecode]: https://gist.github.com/gatlin/5b022bc38aa9f5a2b63a75580a056e8c
 [nodejs]: https://nodejs.org/en/
+[replit]: https://repl.it/languages/javascript
 [^1]: So of course I'm fibbing a bit. You often deal with *arrays* of bytes, or
     perhaps *vectors* or some other name. This kind of shit is why people don't
     trust school. But they are different implementations of the same idea: a
