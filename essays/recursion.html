@@ -98,29 +98,29 @@ Recursion
 <img src="http://i.ytimg.com/vi/eUFY8Zw0Bag/hqdefault.jpg" alt="Fuck it, we’ll do it live" /><figcaption>Fuck it, we’ll do it live</figcaption>
 </figure>
 <p>For reference, here is the procedure we are trying to emulate <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact</span>
   (<span class="kw">lambda</span> (n)
     (<span class="kw">if</span> (<span class="kw">zero?</span> n)
         <span class="dv">1</span>
-        (* n (fact (<span class="kw">-</span> n <span class="dv">1</span>))))))</code></pre></div>
+        (* n (fact (<span class="kw">-</span> n <span class="dv">1</span>))))))</code></pre>
 <h1 id="lets-go"><span class="header-section-number">1</span> Let’s go</h1>
 <p>Without recursion, we have the following hole in our logic:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact</span>
   (<span class="kw">lambda</span> (n)
     (<span class="kw">if</span> (<span class="kw">zero?</span> n)
         <span class="dv">1</span>
-        (* n ( &lt;???&gt; (<span class="kw">-</span> n <span class="dv">1</span>))))))</code></pre></div>
+        (* n ( &lt;???&gt; (<span class="kw">-</span> n <span class="dv">1</span>))))))</code></pre>
 <p>Since we can’t call <code>fact</code> (as it hasn’t been defined yet), what can we do?</p>
 <p>What if - and please bear with me - somehow we were able to <em>give</em> <code>fact</code> the next function it should call? Like this:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact-sort-of</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact-sort-of</span>
   (<span class="kw">lambda</span> (call-me-next)
     (<span class="kw">lambda</span> (n)
       (<span class="kw">if</span> (<span class="kw">zero?</span> n)
           <span class="dv">1</span>
-          (* n (call-me-next (<span class="kw">-</span> n <span class="dv">1</span>)))))))</code></pre></div>
+          (* n (call-me-next (<span class="kw">-</span> n <span class="dv">1</span>)))))))</code></pre>
 <p><code>fact</code> is a function which returns <em>another</em> anonymous function with an argument <code>call-me-next</code>, which otherwise wraps our original function. Well, what if you were able to do something like this:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">let</span> ((k (fact-sort-of)))
-  ((k k) <span class="dv">5</span>))</code></pre></div>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">let</span> ((k (fact-sort-of)))
+  ((k k) <span class="dv">5</span>))</code></pre>
 <p>That is to say, what if you could get that anonymous function from <code>fact</code> and then apply it to itself?</p>
 <h1 id="the-universe-is-a-snake-beating-itself"><span class="header-section-number">2</span> The universe is a snake beating itself</h1>
 <p>We want to automate the process of applying a function to itself, returning the composition of the two functions and saving the galaxy from the bug invaders.</p>
@@ -130,12 +130,12 @@ Recursion
 <li><p>It will return the application of a function to itself.</p></li>
 </ol>
 <p>Let’s sketch something:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
   (<span class="kw">lambda</span> (F)
     (F F)))
 
 (<span class="kw">define</span><span class="fu"> fact </span>(function-fucker fact-sort-of))
-(fact <span class="dv">5</span>)</code></pre></div>
+(fact <span class="dv">5</span>)</code></pre>
 <p>When I run this, it tells me I’m a huge loser who will never find true love. But why?</p>
 <p><code>F</code> and <code>fact-sort-of</code> are functions which accept other functions as arguments. They return … functions which accept other functions as arguments. Passing in <code>5</code> just isn’t going to cut it.</p>
 <h1 id="time-is-a-cat-circle"><span class="header-section-number">3</span> Time is a cat circle</h1>
@@ -145,7 +145,7 @@ Recursion
 <li><p>We know that since this argument is itself, and <em>it</em> needs to be fed itself to work, that this argument is going to have to be fed to itself.</p></li>
 <li><p>Thus, we define the correct function, and then we define it <em>again</em> as an <em>argument</em> to the first one.</p></li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact-sort-of</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact-sort-of</span>
   ((<span class="kw">lambda</span> (call-me-maybe)
      (<span class="kw">lambda</span> (n)
        (<span class="kw">if</span> (<span class="kw">zero?</span> n)
@@ -157,13 +157,13 @@ Recursion
            <span class="dv">1</span>
            (* n ((call-me-maybe call-me-maybe) (<span class="kw">-</span> n <span class="dv">1</span>))))))))
 
-(fact-sort-of <span class="dv">5</span>)</code></pre></div>
+(fact-sort-of <span class="dv">5</span>)</code></pre>
 <p>HOLY JUMPING JEHOSEPHAT it worked. <em>It worked!</em> <strong>IT WORKED.</strong></p>
 <p>… why, again?</p>
 <p>Imagine that the <code>lambda</code> calls were replaced with <code>foo</code>. Then the thing looks like this:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact-sort-of</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> fact-sort-of</span>
   (<span class="kw">lambda</span> (call-me-maybe)
-    (foo foo)))</code></pre></div>
+    (foo foo)))</code></pre>
 <p>Okay, so this worked. But as wise men once said,</p>
 <blockquote>
 <p>Our work is never over</p>
@@ -171,27 +171,27 @@ Recursion
 </blockquote>
 <h1 id="i-hate-you-so-fucking-much-gatlin"><span class="header-section-number">4</span> I hate you so fucking much Gatlin</h1>
 <p>So how do we write a general function-fucker that works for any (single-argument) function? Let’s abstract our general technique:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
   (<span class="kw">lambda</span> (target)
     ((<span class="kw">lambda</span> (f) ...)
-     (<span class="kw">lambda</span> (f) ...))))</code></pre></div>
+     (<span class="kw">lambda</span> (f) ...))))</code></pre>
 <p><code>target</code> is a function which wishes to receive itself so that it can begin autophagia. The two <code>lambda</code> expressions are going to be identical, though, so figuring out one means figuring out the other.</p>
 <p>Indeed, the <code>lambda</code>s are <em>also</em> functions which expect to be given themselves as their next move, with the understanding that the first will receive the second as an argument <strong>OH MY GOD I’M CROSS EYED</strong></p>
 <p>The whole fucking point of this is to turn the <code>target</code> into a recursive function, so we may as well cut the foreplay and call it:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
   (<span class="kw">lambda</span> (target)
     ((<span class="kw">lambda</span> (f)
        (target ...)))
      (<span class="kw">lambda</span> (f)
-       (target ...))))</code></pre></div>
+       (target ...))))</code></pre>
 <p>So far, so good. Resisting the tempation to replace the ellipses with <code>target</code> and be mocked again by the cruel lifetime of loneliness ahead, what should we give it?</p>
 <p>It wants to receive a function it can call when it’s ready to call itself. The <em>itself</em> part expects to receive the actual function argument and do something with it. Let’s add this:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
   (<span class="kw">lambda</span> (target)
     ((<span class="kw">lambda</span> (f)
        (target (<span class="kw">lambda</span> (arg) ...)))
      (<span class="kw">lambda</span> (f)
-       (target (<span class="kw">lambda</span> (arg) ...))))))</code></pre></div>
+       (target (<span class="kw">lambda</span> (arg) ...))))))</code></pre>
 <p>And what should <em>that</em> inner function do with its argument? Why, it should use <code>f</code>, the roundabout reference back to <code>target</code>, to –</p>
 <p><strong>HOLD IT RIGHT THERE DON’T YOU FUCKING DARE GIVE <code>arg</code> TO <code>f</code></strong></p>
 <p><code>f</code> is a function expecting another function. It will not accept a number. FUCK WHEN DOES THIS END</p>
@@ -200,7 +200,7 @@ Recursion
 <figure>
 <img src="http://www.musicwithease.com/viola-iS-2.jpg" alt="VIOLA" /><figcaption>VIOLA</figcaption>
 </figure>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> function-fucker</span>
   (<span class="kw">lambda</span> (target)
     ((<span class="kw">lambda</span> (f)
        (target (<span class="kw">lambda</span> (arg) ((f f) arg))))
@@ -216,9 +216,9 @@ Recursion
 
 (<span class="kw">define</span><span class="fu"> fact </span>(function-fucker fact-sort-of))
 
-(fact <span class="dv">5</span>)</code></pre></div>
+(fact <span class="dv">5</span>)</code></pre>
 <p>We get <code>120</code>, as expected. Let’s walk through what happens when we fuck the function:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(function-fucker fact-sort-of) <span class="co">; =&gt;</span>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(function-fucker fact-sort-of) <span class="co">; =&gt;</span>
 
 ((<span class="kw">lambda</span> (target)
    ((<span class="kw">lambda</span> (f)
@@ -256,7 +256,7 @@ Recursion
                (fact-sort-of (<span class="kw">lambda</span> (arg) ((f f) arg))))))
           (<span class="kw">-</span> n <span class="dv">1</span>)))))
 
-<span class="co">; =&gt; ...</span></code></pre></div>
+<span class="co">; =&gt; ...</span></code></pre>
 <p>And that’s what the body of <code>fact-sort-of</code> becomes.</p>
 <p><code>function-fucker</code> has an actual name. A fellow named <a href="http://en.wikipedia.org/wiki/Fixed-point_combinator">Haskell Curry</a> drummed it up, and it’s called the <strong>Y combinator</strong> (“combinator” is a fancy word for “function with one argument you ignorant pigfucker”).</p>
 <p>Its name derives from the two identical lambda functions. Cute, huh?</p>

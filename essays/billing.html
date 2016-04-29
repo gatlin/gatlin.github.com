@@ -83,7 +83,10 @@ Proof that necessity is not the mother of invention.
 <li><a href="#the-code"><span class="toc-section-number">0.1</span> The code</a></li>
 <li><a href="#top-level-application-setup"><span class="toc-section-number">0.2</span> Top level application setup</a></li>
 <li><a href="#stripe-configuration"><span class="toc-section-number">0.3</span> Stripe configuration</a></li>
-<li><a href="#handlers"><span class="toc-section-number">0.4</span> Handlers</a></li>
+<li><a href="#handlers"><span class="toc-section-number">0.4</span> Handlers</a><ul>
+<li><a href="#monads-and-monad-transformers"><span class="toc-section-number">0.4.1</span> Monads and Monad Transformers</a></li>
+<li><a href="#moving-on"><span class="toc-section-number">0.4.2</span> Moving on</a></li>
+</ul></li>
 <li><a href="#lets-get-the-hell-out-of-here"><span class="toc-section-number">0.5</span> Let's get the hell out of here</a></li>
 <li><a href="#the-end-is-nigh"><span class="toc-section-number">0.6</span> The end is nigh</a></li>
 </ul>
@@ -106,7 +109,7 @@ Proof that necessity is not the mother of invention.
 <p>To counteract all this ease and security, I decided to write the payment backend in Haskell. I learned a lot about how Haskell web applications work and figure I'd detail some of that. Now, onward to the code!</p>
 <h2 id="the-code"><span class="header-section-number">0.1</span> The code</h2>
 <p>First, with any Haskell program complex enough to be useful, the first 30 lines or so are imports, viz:</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}</span>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}</span>
 <span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
 
 <span class="kw">import </span><span class="dt">Prelude</span>
@@ -132,12 +135,12 @@ Proof that necessity is not the mother of invention.
 <span class="kw">import </span><span class="dt">Data.Text.Encoding</span> (decodeUtf8)
 <span class="kw">import </span><span class="dt">Control.Monad.IO.Class</span> (liftIO)
 <span class="kw">import </span><span class="dt">Network.Wai.Util</span> (redirect)
-<span class="kw">import </span><span class="dt">Network.URI</span> (parseURI)</code></pre></div>
+<span class="kw">import </span><span class="dt">Network.URI</span> (parseURI)</code></pre>
 <p>That's quite a bit! I included the <a href="https://github.com/michaelschade/hs-stripe">hs-stripe</a> package; <code>System.Environment</code> in order to read the correct port number from the, uh, system environment; a lot of <code>Network.*</code> libraries to get access to raw connection details; and of course 30 kinds of ByteString for reasons I'm sure the creators can defend elegantly.</p>
 <p>I also used two GHC Haskell language extensions: <code>OverloadedStrings</code> to accommodate the trainwreck that is mixing <code>String</code>, <code>ByteString</code>, and <code>Text</code> all in the same application; and <code>ScopedTypeVariables</code> for reasons that will make more sense in context.</p>
 <p>Because I was short on time, I figured I'd rather not use a fancy shmancy framework to abstract my application but instead to use the Web Application Interface (WAI) directly. Boy did I waste a lot more time.</p>
 <h2 id="top-level-application-setup"><span class="header-section-number">0.2</span> Top level application setup</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">withApp ::</span> (<span class="dt">Application</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">withApp ::</span> (<span class="dt">Application</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 withApp handler <span class="fu">=</span> handler application
 
 <span class="ot">application ::</span> <span class="dt">Application</span>
@@ -149,14 +152,14 @@ application r<span class="fu">@</span><span class="dt">Request</span>{requestMet
 notFound <span class="fu">=</span> responseLBS
     status404
     [(<span class="st">&quot;Content-Type&quot;</span>, <span class="st">&quot;text/plain&quot;</span>)]
-    <span class="st">&quot;404 Not Found&quot;</span></code></pre></div>
+    <span class="st">&quot;404 Not Found&quot;</span></code></pre>
 <p>The <code>application</code> function accepts a <code>Request</code> value and dispatches the appropriate handler function. Here <code>ScopedTypeVariables</code> becomes very handy: I can refer to both the entire <code>Request</code> as a whole and also refer to some of its constituent parts, such as the <code>requestMethod</code> and <code>pathInfo</code>.</p>
 <p>As you might be able to tell, we have bound one handler in this version of the application: a <code>POST</code> submission to the <code>/charge</code> path will charge the credit card. It's heating up in here!</p>
 <p><code>withApp</code> is a convenience function to make gluing everything together pretty later. You'll see below.</p>
 <p>Go ahead and guess what the <code>notFound</code> handler is responsible for.</p>
 <h2 id="stripe-configuration"><span class="header-section-number">0.3</span> Stripe configuration</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">conf ::</span> <span class="dt">StripeConfig</span>
-conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span class="dt">APIKey</span> <span class="st">&quot;YOUR_STRIPE_SECRET_TOKEN&quot;</span></code></pre></div>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">conf ::</span> <span class="dt">StripeConfig</span>
+conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span class="dt">APIKey</span> <span class="st">&quot;YOUR_STRIPE_SECRET_TOKEN&quot;</span></code></pre>
 <p><code>conf</code> creates a StripeConfig value based on your secret token. I omitted mine here for obvious reasons.</p>
 <h2 id="handlers"><span class="header-section-number">0.4</span> Handlers</h2>
 <p>Okay, now we get our hands dirty.</p>
@@ -164,14 +167,14 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 <figure>
 <img src="http://i.imgur.com/02IjGIJ.gif" alt="Shall we begin?" /><figcaption>Shall we begin?</figcaption>
 </figure>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">handlePostToken req <span class="fu">=</span> <span class="kw">do</span>
-    bodyLst <span class="ot">&lt;-</span> requestBody req <span class="fu">$$</span> consume</code></pre></div>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">handlePostToken req <span class="fu">=</span> <span class="kw">do</span>
+    bodyLst <span class="ot">&lt;-</span> requestBody req <span class="fu">$$</span> consume</code></pre>
 <p>The first thing to know is that WAI uses the infamous <code>conduit</code> library. <code>conduit</code> is a Haskell library for efficiently handling large streams of data in constant memory. You see, Haskell is aggressively <em>lazy</em>: it defers actual computation until the last possible moment in order to avoid unnecessary calculations. While slick, this means it accumulates a lot of memory and makes IO kind of painful and slow. <code>conduit</code> presents a different model.</p>
 <p>At a high level, there are <code>Source</code>s and <code>Sink</code>s. You can fuse a <code>Source</code> and a <code>Sink</code> together to create a <code>Conduit</code> (<em>ahem</em>) and start creating pipelines to transform data. <a href="http://hackage.haskell.org/package/conduit">Conduit is nifty.</a></p>
 <p>It's also a fucking <a href="http://hackage.haskell.org/package/conduit-1.0.9.3/docs/src/Data-Conduit-Internal.html#ConduitM">type nightmare</a>.</p>
 <p>Anyway, the request body, it turns out, is a <code>Source</code> wrapping a <code>ByteString</code>. I used the <code>consume</code> function from <code>Data.Conduit.List</code> to read in the request data. Why? Frankly, <code>conduit</code> proved to be a worthy foe and around 3 hours into this I went with whatever code examples I could find on StackOverflow.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">    bodyStr <span class="ot">&lt;-</span> return <span class="fu">$</span> bodyLst <span class="fu">!!</span> <span class="dv">0</span>
-    bodyMap <span class="ot">&lt;-</span> return <span class="fu">$</span> M.fromList <span class="fu">$</span> parseQuery bodyStr</code></pre></div>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">    bodyStr <span class="ot">&lt;-</span> return <span class="fu">$</span> bodyLst <span class="fu">!!</span> <span class="dv">0</span>
+    bodyMap <span class="ot">&lt;-</span> return <span class="fu">$</span> M.fromList <span class="fu">$</span> parseQuery bodyStr</code></pre>
 <p>After consuming the request body into a list of 1 item, I set <code>bodyStr</code> to the first element, a ByteString. Let's take a step back: the format of the request body is thus:</p>
 <pre><code>token=TRANSACTION_TOKEN&amp;amount=35000</code></pre>
 <p>In other words, it's an HTTP query string. There is a function called <code>parseQuery</code> in <code>Network.HTTP.Types.URI</code> which turns query strings into lists of tuples, eg:</p>
@@ -179,7 +182,7 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 <p>The <code>Maybe</code> wrapper is there to ensure our program doesn't fail if someone leaves out the amount (sneaky buggers).</p>
 <p>However, I want to ... query ... the query string for values easily. I could roll my own code to search through this list and find the right values, or I could not be an idiot and use <code>Data.Map.fromlist</code> to turn it into a map structure for me.</p>
 <p>Which is, for the record, exactly what I do in creating <code>bodyMap</code>.</p>
-<p>### Monads and Monad Transformers</p>
+<h3 id="monads-and-monad-transformers"><span class="header-section-number">0.4.1</span> Monads and Monad Transformers</h3>
 <p>Yeah, you knew this was coming. I'm not going to explain what monads are in this post. However, to actually understand this code it's important to know which monad we are in and why.</p>
 <p>The monad in question here is <code>ResourceT m a</code>. According to the <a href="http://hackage.haskell.org/package/conduit-1.0.9.3/docs/Data-Conduit.html#g:10">documentation</a> it &quot;keeps track of all registered actions, and calls them upon exit&quot;. Specifically, while you're busy fusing <code>Source</code>s and <code>Sink</code>s and <code>Conduit</code>s and transforming shit all over the place, you're also allocating resources that must be deallocated or else your program will crash and you won't get paid.</p>
 <p><code>ResourceT m a</code> along with other <code>conduit</code> related operations and types appears to handle all of this internally. By writing code in the <code>ResourceT m a</code> monad and declaratively setting up your pipeline, you're getting all the bookkeeping done for free.</p>
@@ -187,12 +190,12 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 <p>Make your inception jokes here.</p>
 <p>The &quot;m&quot; in its type signature represents an inner monad. For example, later on in the code we are going to dive into a special Stripe monad for handling interactions with their server. <code>ResourceT m a</code> allows us to be in the magical resource management monad but still call into other monads that are useful during our computation.</p>
 <p>It's some sick shit.</p>
-<p>### Moving on</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">    <span class="kw">case</span> M.lookup <span class="st">&quot;amount&quot;</span> bodyMap <span class="kw">of</span>
-        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="fu">$</span> doRespond <span class="st">&quot;bad amount&quot;</span></code></pre></div>
+<h3 id="moving-on"><span class="header-section-number">0.4.2</span> Moving on</h3>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">    <span class="kw">case</span> M.lookup <span class="st">&quot;amount&quot;</span> bodyMap <span class="kw">of</span>
+        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="fu">$</span> doRespond <span class="st">&quot;bad amount&quot;</span></code></pre>
 <p>First, we see if an amount was specified. <code>Data.Map.lookup</code> takes a key and a map and returns a <code>Maybe</code> value. If the <code>Maybe</code> value is <code>Nothing</code> then I initiate the sophisticated error handling code you see above.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">        <span class="dt">Just</span> amt <span class="ot">-&gt;</span> <span class="kw">do</span>
-            amtInt <span class="ot">&lt;-</span> return <span class="fu">$</span> fst <span class="fu">.</span> fromJust <span class="fu">.</span> BC.readInt <span class="fu">$</span> BC.fromChunks <span class="fu">.</span> (<span class="fu">:</span>[]) <span class="fu">$</span> fromJust <span class="fu">$</span> amt</code></pre></div>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">        <span class="dt">Just</span> amt <span class="ot">-&gt;</span> <span class="kw">do</span>
+            amtInt <span class="ot">&lt;-</span> return <span class="fu">$</span> fst <span class="fu">.</span> fromJust <span class="fu">.</span> BC.readInt <span class="fu">$</span> BC.fromChunks <span class="fu">.</span> (<span class="fu">:</span>[]) <span class="fu">$</span> fromJust <span class="fu">$</span> amt</code></pre>
 <p>... and if I get something, I write complete gibberish and get sent away to an island with other crazy people like me.</p>
 <p>Actually, this code is more complicated than strictly necessary because I'm using the package <code>bytestring</code> 0.9.x and not 0.10.x because logistical reasons (namely, the boilerplate code I started from to interact with Heroku uses 0.9.x and I got lazy).</p>
 <p><code>amt</code> is itself a <code>Maybe</code> value. Remember the <code>(&quot;amount&quot;, Maybe &quot;35000&quot;)</code> in the query string list above? So, over on the right side of the line we use <code>Data.Maybe.fromJust</code> to unwrap the actual <code>ByteString</code>. The</p>
@@ -201,34 +204,34 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 <p>However, <code>readInt</code> also returns a <code>Maybe</code> value because there is a chance that the <code>ByteString</code> will be some stupid shit like &quot;100xyz&quot; or &quot;three&quot; and fail. I do validation elsewhere (<em>cough</em>) and don't worry about it here.</p>
 <p>Finally, for some reason the value inside the <code>Maybe</code> is a tuple consisting of the result and the original value. So I use the standard <code>fst</code> function to grab the first element from the tuple, which is our <code>Int</code>. And then I <code>return</code> it to our monad.</p>
 <p>Fuck.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">            <span class="kw">case</span> M.lookup <span class="st">&quot;token&quot;</span> bodyMap <span class="kw">of</span>
-                <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="fu">$</span> doRespond <span class="st">&quot;no token&quot;</span></code></pre></div>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">            <span class="kw">case</span> M.lookup <span class="st">&quot;token&quot;</span> bodyMap <span class="kw">of</span>
+                <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="fu">$</span> doRespond <span class="st">&quot;no token&quot;</span></code></pre>
 <p>Next, I check to see if a token was given, and apply standard error handling wizardry in the event that no token was given.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">                <span class="dt">Just</span> val <span class="ot">-&gt;</span> <span class="kw">do</span>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">                <span class="dt">Just</span> val <span class="ot">-&gt;</span> <span class="kw">do</span>
                     finalVal <span class="ot">&lt;-</span> runStripeT conf <span class="fu">$</span> <span class="kw">do</span>
                         theToken <span class="ot">&lt;-</span> getToken <span class="fu">$</span> <span class="dt">TokenId</span> <span class="fu">$</span> decodeUtf8 <span class="fu">.</span> fromJust <span class="fu">$</span> val
-                        chargeToken theToken (<span class="dt">Amount</span> amtInt) (<span class="dt">Currency</span> <span class="st">&quot;usd&quot;</span>) <span class="dt">Nothing</span> <span class="dt">Nothing</span></code></pre></div>
+                        chargeToken theToken (<span class="dt">Amount</span> amtInt) (<span class="dt">Currency</span> <span class="st">&quot;usd&quot;</span>) <span class="dt">Nothing</span> <span class="dt">Nothing</span></code></pre>
 <p>If a token was specified, I finally get to talk to Stripe! Hooray! Money! Here I use <code>runStripeT</code> to take the <code>StripeConfig</code> value we created oh-so many years ago and dive into a special Stripe monad.</p>
 <p>The reason for the Stripe monad is to hide the complexity of calling a remote web service in real time. The connection might fail, or Stripe's servers might fail and ask for a retry, or any number of things could happen. Stripe's monad, though, lets me declare what I would like done and handles it for me.</p>
 <p>Though I store the result in <code>finalVal</code>, I don't do anything with it - yet. This isn't my final version, and I plan on handling error cases later using finalVal. For now, though, this suffices, because at my low volume I'll see erroneous payments on my Stripe dashboard and handle them case by case.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">                    return <span class="fu">$</span> fromJust <span class="fu">$</span> redirect
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">                    return <span class="fu">$</span> fromJust <span class="fu">$</span> redirect
                         status303
                         [] <span class="fu">$</span>
-                        fromJust <span class="fu">$</span> parseURI <span class="st">&quot;http://niltag.net/billing/thankyou.html&quot;</span></code></pre></div>
+                        fromJust <span class="fu">$</span> parseURI <span class="st">&quot;http://niltag.net/billing/thankyou.html&quot;</span></code></pre>
 <p>Here we go, the big one: we contacted Stripe with a token and an amount and got something back and now we grovel to our monied overlords and send them to a thank you page. The <code>redirect</code> function from the <code>wai-util</code> package sets up the appropriate headers and whatnot to tell the client's browser to redirect. In this case, I send them to a patronizing &quot;thank you&quot; page.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">    <span class="kw">where</span>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">    <span class="kw">where</span>
         doRespond v <span class="fu">=</span> responseLBS
             status200
             [(<span class="st">&quot;Content-Type&quot;</span>,<span class="st">&quot;text/plain&quot;</span>)]
-            v</code></pre></div>
+            v</code></pre>
 <p><code>doRespond</code> is a simple inner function to factor out repetitive code.</p>
 <h2 id="lets-get-the-hell-out-of-here"><span class="header-section-number">0.5</span> Let's get the hell out of here</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">main <span class="fu">=</span> <span class="kw">do</span>
+<pre class="sourceCode literate haskell"><code class="sourceCode haskell">main <span class="fu">=</span> <span class="kw">do</span>
   portStr <span class="ot">&lt;-</span> getEnv <span class="st">&quot;PORT&quot;</span>
   <span class="kw">let</span> port <span class="fu">=</span> read<span class="ot"> portStr ::</span> <span class="dt">Port</span>
   withApp (\app <span class="ot">-&gt;</span> (run port) (middleware <span class="fu">$</span> app))
 
-middleware <span class="fu">=</span> logStdout</code></pre></div>
+middleware <span class="fu">=</span> logStdout</code></pre>
 <p>Finally, our <code>main</code> function, where the program actually starts. It's pretty boring: grab the port value from the system environment, convert it to an Int, and then ... what?</p>
 <p>Oh yeah, there's <code>withApp</code> again. Did you think I'd forget? <code>withApp</code> here receives a lambda function which will take its argument, and do two things:</p>
 <ol type="1">

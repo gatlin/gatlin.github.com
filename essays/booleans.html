@@ -99,11 +99,11 @@ Or, On the appreciation of conditional love
 <p>I’m going to demonstrate how to do this in perfectly valid R6RS Scheme (Racket, specifically). Hopefully it will be illuminating.</p>
 <h1 id="creating-the-data-type"><span class="header-section-number">1</span> Creating the data type</h1>
 <p>Racket doesn’t have static typing or algebraic data types but we can make pretend like so:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> True </span>(λ () (λ (a b) (a))))
-(<span class="kw">define</span><span class="fu"> False </span>(λ () (λ (a b) (b))))</code></pre></div>
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> True </span>(λ () (λ (a b) (a))))
+(<span class="kw">define</span><span class="fu"> False </span>(λ () (λ (a b) (b))))</code></pre>
 <p>Essentially, <code>True</code> is a function which evaluates the first of its two arguments, and <code>False</code> is a function which evaluates the second of its two arguments.</p>
 <p>So that we can display these values properly, I also define some helper procedures.</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(define-syntax-rule (displayln str)
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(define-syntax-rule (displayln str)
   (<span class="kw">display</span> (format
     (<span class="kw">string-append</span> str <span class="st">&quot;~n&quot;</span>))))
 
@@ -115,10 +115,10 @@ Or, On the appreciation of conditional love
 <span class="co">; &quot;True&quot;</span>
 
 (show-bool (False))
-<span class="co">; &quot;False&quot;</span></code></pre></div>
+<span class="co">; &quot;False&quot;</span></code></pre>
 <h1 id="boolean-operators"><span class="header-section-number">2</span> Boolean operators</h1>
 <p>So far, so good. But what can we <em>do</em> with these values? Why, we can perform Boolean logic! Below I define <code>and</code>, <code>or</code>, and <code>not</code>.</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> </span>(and/s p q)
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(<span class="kw">define</span><span class="fu"> </span>(and/s p q)
   (p (λ() q) (λ() p)))
 
 (<span class="kw">define</span><span class="fu"> </span>(or/s p q)
@@ -133,10 +133,10 @@ Or, On the appreciation of conditional love
 (show-bool (or/s (False) (True)))
 (show-bool (or/s (True) (False)))
 (show-bool (or/s (False) (False)))
-(show-bool (not/s (and/s (False) (True))))</code></pre></div>
+(show-bool (not/s (and/s (False) (True))))</code></pre>
 <h1 id="if-expressions"><span class="header-section-number">3</span> <code>if</code> expressions</h1>
 <p>Ah, the part you’ve all been waiting for. First the code, then the explanation:</p>
-<div class="sourceCode"><pre class="sourceCode scheme"><code class="sourceCode scheme">(define-syntax-rule (if/g condition then <span class="kw">else</span>)
+<pre class="sourceCode scheme"><code class="sourceCode scheme">(define-syntax-rule (if/g condition then <span class="kw">else</span>)
   (<span class="kw">let</span> ((then-f (λ () then))
         (else-f (λ () <span class="kw">else</span>)))
     (condition then-f else-f)))
@@ -151,7 +151,7 @@ Or, On the appreciation of conditional love
   (displayln <span class="st">&quot;Condition was true&quot;</span>)
   (displayln <span class="st">&quot;Condition was false&quot;</span>))
 
-<span class="co">; &quot;Condition was false</span></code></pre></div>
+<span class="co">; &quot;Condition was false</span></code></pre>
 <p><code>if/g</code> is defined as a macro because of how Scheme evaluates expressions. In normal functions, all arguments are evaluated before the function’s value is computed.</p>
 <p>In the case of an <code>if</code> conditional, though, the entire reason you want to use it is so that you can <em>not</em> evaluate certain expressions under certain conditions.</p>
 <p>The solution to this is to write a <em>macro</em>. A macro is a procedure run during code compilation which does <strong>not</strong> evaluate its arguments by default. Instead, it returns a form which is literally pasted in place of the macro call, and the arguments are the unevaluated expressions it received, not their values.</p>

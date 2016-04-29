@@ -93,18 +93,18 @@ Or, DIY arithmetic
 
       <div class="row">
         <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
-<p>This post will contain JavaScript code which you can run using <a href="https://nodejs.org/en/">node</a>.</p>
+<p>This post will contain JavaScript code which you can run using <a href="https://nodejs.org/en/">node</a>. Or you can try it all out <a href="https://repl.it/languages/javascript">in your browser using repl.it</a>.</p>
 <h1 id="from-zero-to-zero"><span class="header-section-number">1</span> From zero to zero</h1>
 <p>Just for kicks - in no way premeditatively or anything - I’m going write a silly little function called <code>_0</code>:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> _0 <span class="op">=</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> x<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> _0 = (f) =&gt; (x) =&gt; x;</code></pre>
 <p>This function takes an argument <code>f</code>, returns a new function accepting an argument <code>x</code>, and just returns <code>x</code>. It forgets about <code>f</code>.</p>
 <p>Of what use could this possibly be, you ask? I have a different question: why did I name it <code>_0</code>? The underscore is simply because I can’t start variable names in JavaScript with numbers.</p>
 <p>What about this function relates to the number 0? Maybe it’ll be clearer if I show the next silly little function:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> _1 <span class="op">=</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">f</span>(x)<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> _1 = (f) =&gt; (x) =&gt; <span class="fu">f</span>(x);</code></pre>
 <p>Both functions took two arguments; <code>_0</code> used the first one 0 times, and <code>_1</code> used it 1 time. And I bet you’ll never guess what the name of this function is:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> mystery <span class="op">=</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">f</span>(<span class="at">f</span>(x))<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> mystery = (f) =&gt; (x) =&gt; <span class="fu">f</span>(<span class="fu">f</span>(x));</code></pre>
 <p>If you guessed <code>_2</code> I want you to know I’m very proud of you. These silly little functions correspond to positive integers (and 0). To drive this point home I’ll write a function which converts them into JavaScript integers:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> actualNumber <span class="op">=</span> (n) <span class="op">=&gt;</span> <span class="at">n</span>((x) <span class="op">=&gt;</span> x <span class="op">+</span> <span class="dv">1</span>)(<span class="dv">0</span>)<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> actualNumber = (n) =&gt; <span class="fu">n</span>((x) =&gt; x + <span class="dv">1</span>)(<span class="dv">0</span>);</code></pre>
 <p>Indeed, if you play with it you’ll see that</p>
 <pre><code>actualNumber(_0)    = 0
 actualNumber(_1)    = 1
@@ -122,15 +122,15 @@ actualNumber(_2)    = 2</code></pre>
 <p>Church numerals are are just functions. They ask for two parameters and then apply the first one to the second some number of times and in this way they encode real data.</p>
 <p>But if they’re <em>really</em> numbers, then I should be able to add them, right? Adding <code>_1</code> and <code>_2</code> should give me <code>_3</code> and multiplying <code>_2</code> and <code>_3</code> should give <code>_6</code>. Can we do that?</p>
 <p>Let’s start small. Let’s write a function which, given a Church numeral, increments it by 1. We know that this function’s argument is going to be some numeral - say, <code>n</code> - so let’s not overthink this too much:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr <span class="op">=</span> (n) <span class="op">=&gt;</span> <span class="op">???</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr = (n) =&gt; ???</code></pre>
 <p>The result of the function is going to be a Church numeral, right? Thus the beginning of the result is going to take an <code>f</code> and an <code>x</code>. We may proceed pretty mindlessly:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr <span class="op">=</span> (n) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="op">???</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr = (n) =&gt; (f) =&gt; (x) =&gt; ???</code></pre>
 <p>Now here’s the tricky part. <code>n</code> is a function taking <code>f</code> and <code>x</code>, too, and it will apply <code>f</code> to <code>x</code> some number of times. So we know we need to give <code>n</code> its arguments:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr_wrong <span class="op">=</span> (n) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">n</span>(f)(x)<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr_wrong = (n) =&gt; (f) =&gt; (x) =&gt; <span class="fu">n</span>(f)(x);</code></pre>
 <p>This isn’t quite right, though. Giving <code>n</code> the <code>f</code> and <code>x</code> will apply <code>f</code> to <code>x</code> a certain number of times, but we want to apply <code>f</code> <em>one more time</em>.</p>
 <p>Again, let’s not overthink this. We already have <code>f</code> so let’s … apply <code>f</code> <em>one more time</em>:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr <span class="op">=</span> (n) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">f</span>(<span class="at">n</span>(f)(x))<span class="op">;</span>
-<span class="co">// see? ------------------------^</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> incr = (n) =&gt; (f) =&gt; (x) =&gt; <span class="fu">f</span>(<span class="fu">n</span>(f)(x));
+<span class="co">// see? ------------------------^</span></code></pre>
 <p>Let’s be sure this works:</p>
 <pre><code>incr(_1)
 =&gt;
@@ -153,11 +153,11 @@ actualNumber(_2)    = 2</code></pre>
 <h1 id="additionally"><span class="header-section-number">4</span> Additionally …</h1>
 <p>Now we are ready to tackle a slightly more complex problem: adding two Church numerals. So we have some number <code>a</code> which applies <code>f</code> some number <em>a</em> times and some number <code>b</code> which applies <code>f</code> some number <em>b</em> times.</p>
 <p>As with <code>incr</code> we know that we’re going to take two numbers and return a third so we can get this out of the way:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> add <span class="op">=</span> (a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="op">???</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> add = (a) =&gt; (b) =&gt; (f) =&gt; (x) =&gt; ???</code></pre>
 <p>Cool. A Church numeral applies its first argument to its second argument any number of times. We’re adding <code>a</code> and <code>b</code> so we know we want <code>f</code> applied <em>at least</em> <em>a</em> times:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> add_almost <span class="op">=</span> (a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">a</span>(f)(x)<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> add_almost = (a) =&gt; (b) =&gt; (f) =&gt; (x) =&gt; <span class="fu">a</span>(f)(x);</code></pre>
 <p>We want to take the result of <code>a(f)(x)</code> and then apply <code>f</code> <code>b</code> more times to it. It’s <em>really</em> easy to over think this!</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> add <span class="op">=</span> (a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">b</span>(f)( <span class="at">a</span>(f)(x) )<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> add = (a) =&gt; (b) =&gt; (f) =&gt; (x) =&gt; <span class="fu">b</span>(f)( <span class="fu">a</span>(f)(x) );</code></pre>
 <p><code>b</code> will do the work of applying <code>f</code> <em>b</em> times, and <code>a</code> will do the work of applying <code>f</code> <em>a</em> times.</p>
 <p>Let’s test our function by adding <code>_1</code> and <code>_2</code>:</p>
 <pre><code>add(_1)(_2)
@@ -176,35 +176,35 @@ actualNumber(_2)    = 2</code></pre>
 <p><code>f</code> is applied three times so we indeed got <code>_3</code>!</p>
 <h1 id="do-you-have-the-times"><span class="header-section-number">5</span> Do you have the times?</h1>
 <p>Triumphant and cocky let’s now try our hands at multiplication. This is trickier: for each time <code>a</code> would normally apply <code>f</code>, we want to apply it b times instead. You know the drill:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> mul <span class="op">=</span> (a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="op">???</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> mul = (a) =&gt; (b) =&gt; (f) =&gt; (x) =&gt; ???</code></pre>
 <p><code>a</code> will apply its first argument to its second <em>a</em> times; <code>b</code> will similarly apply <code>f</code> <em>b</em> times.</p>
 <p>So what if <code>(b f)</code> was the function given as the first argument to <code>a</code>? Then <code>a</code> would apply <code>(b f)</code> <em>a</em> times and each time <code>b</code> would apply <code>f</code> <em>b</em> times.</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> mul <span class="op">=</span> (a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> (f) <span class="op">=&gt;</span> (x) <span class="op">=&gt;</span> <span class="at">a</span>(<span class="at">b</span>(f))(x)<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> mul = (a) =&gt; (b) =&gt; (f) =&gt; (x) =&gt; <span class="fu">a</span>(<span class="fu">b</span>(f))(x);</code></pre>
 <p>I’ll leave it as an exercise for the reader to work this one out.</p>
 <h1 id="dont-be-listless-this-is-where-it-gets-good"><span class="header-section-number">6</span> Don’t be listless, this is where it gets good</h1>
 <p>It’s pretty interesting<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> that we can represent numbers and arithmetic using lambda calculus, but what else can we do?</p>
 <p>I’m going to provocatively rename <code>_0</code>.</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> nil <span class="op">=</span> (c) <span class="op">=&gt;</span> (n) <span class="op">=&gt;</span> n<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> nil = (c) =&gt; (n) =&gt; n;</code></pre>
 <p>Imagine if the <code>f</code> that we gave our Church numerals required <em>2</em> values? Something like, I don’t know,</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> prepend <span class="op">=</span> (hd) <span class="op">=&gt;</span> (tl) <span class="op">=&gt;</span> [hd].<span class="at">concat</span>(tl)<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> prepend = (hd) =&gt; (tl) =&gt; [hd].<span class="fu">concat</span>(tl);</code></pre>
 <p><code>prepend</code> does exactly what it says: takes a value and an array and prepends the value to the array.</p>
 <p>Our <code>incr</code> function would have to look a little bit different: “incrementing” isn’t just applying <code>f</code> to <code>x</code> one more time, it means giving <code>f</code> another value and <em>then</em> applying it to <code>x</code>.</p>
 <p>To ruin the surprise I’ll name this modified incrementer <code>cons</code>:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> cons <span class="op">=</span> (hd) <span class="op">=&gt;</span> (tl) <span class="op">=&gt;</span> (c) <span class="op">=&gt;</span> (n) <span class="op">=&gt;</span> <span class="at">c</span>(x)(<span class="at">xs</span>(c)(n))<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> cons = (hd) =&gt; (tl) =&gt; (c) =&gt; (n) =&gt; <span class="fu">c</span>(x)(<span class="fu">xs</span>(c)(n));</code></pre>
 <p>Let’s see it in action:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> example_list <span class="op">=</span> <span class="at">cons</span>(<span class="dv">1</span>) (<span class="at">cons</span>(<span class="dv">2</span>) (<span class="at">cons</span>(<span class="dv">3</span>) (nil)))<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> example_list = <span class="fu">cons</span>(<span class="dv">1</span>) (<span class="fu">cons</span>(<span class="dv">2</span>) (<span class="fu">cons</span>(<span class="dv">3</span>) (nil)));</code></pre>
 <p>And …</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">console</span>.<span class="at">log</span>(example_list)<span class="op">;</span> <span class="co">// outputs: &quot;[Function]&quot;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="ot">console</span>.<span class="fu">log</span>(example_list); <span class="co">// outputs: &quot;[Function]&quot;</span></code></pre>
 <p>That was anti-climactic. Of course, just like with Church numerals, we have to provide a little conversion function:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> actualList <span class="op">=</span> (lst) <span class="op">=&gt;</span> <span class="at">lst</span>(prepend)([])<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> actualList = (lst) =&gt; <span class="fu">lst</span>(prepend)([]);</code></pre>
 <p>Let’s try again:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">console</span>.<span class="at">log</span>(<span class="at">actualList</span>(example_list))<span class="op">;</span> <span class="co">// outputs: &quot;[ 1, 2, 3 ]&quot;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="ot">console</span>.<span class="fu">log</span>(<span class="fu">actualList</span>(example_list)); <span class="co">// outputs: &quot;[ 1, 2, 3 ]&quot;</span></code></pre>
 <p>HOLY MOLY. So we can represent lists, too! We just made a data structure out of lambda functions.</p>
 <p>Note, though, that we could actually use any two-argument function and any base starting value. Let’s write a function I’ll call <code>foldr</code>:</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> foldr <span class="op">=</span> (lst) <span class="op">=&gt;</span> (step) <span class="op">=&gt;</span> (initial) <span class="op">=&gt;</span> <span class="at">lst</span>(step)(initial)<span class="op">;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> foldr = (lst) =&gt; (step) =&gt; (initial) =&gt; <span class="fu">lst</span>(step)(initial);</code></pre>
 <p>What’s the big deal here?</p>
-<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">console</span>.<span class="at">log</span>(<span class="at">foldr</span>(example_list)( (a) <span class="op">=&gt;</span> (b) <span class="op">=&gt;</span> a<span class="op">+</span>b )( <span class="dv">0</span> ))<span class="op">;</span>
-<span class="co">// outputs: &quot;6&quot;</span></code></pre></div>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="ot">console</span>.<span class="fu">log</span>(<span class="fu">foldr</span>(example_list)( (a) =&gt; (b) =&gt; a+b )( <span class="dv">0</span> ));
+<span class="co">// outputs: &quot;6&quot;</span></code></pre>
 <p>Holy crap. <code>foldr</code> is a right fold - what a lucky coincidence I gave it that name, huh?</p>
 <p>I could go on about <a href="https://en.wikipedia.org/wiki/Catamorphism">folds</a> and how you can define data structures by the way in which you destroy them, and then subsequently wax romantic about how this really is the nature of existence, but I’ll stop here.</p>
 <h1 id="the-big-picture"><span class="header-section-number">7</span> The Big Picture</h1>

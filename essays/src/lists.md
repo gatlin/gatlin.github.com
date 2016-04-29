@@ -6,6 +6,9 @@ lead: Or, how we are ultimately defined by our self-destruction
 If you just want the code from this essay, it's pretty short and [available
 as a gist][thecode].
 
+If you want to play along at home you can play with all this code [in your
+browser using repl.it][replit].
+
 Last time, on Gatlin's Boring Essays ...
 ===
 
@@ -26,13 +29,13 @@ Reading from or writing to a file? You're dealing with lists of bytes.
 
 Doing some accounting? A ledger is a list of rows.
 
-Etc.
+Etc.[^1]
 
 A program consisting of a number of loops over data can be turned inside out
 into a series of transformations to a list.
 
 So I don't know about you but I was shocked when in the last essay toward the
-end we stumbled across these three functions[^1]:
+end we stumbled across these three functions[^2]:
 
 ```javascript
 let nil  = (h) => (t) => n;
@@ -135,7 +138,7 @@ right side.
 The idea of Church numerals extended to more complex data structures is called
 a *Church encoding*. They're curious because not only do they lend insight into
 the nature of and relationships between different structures, but also because
-they can be efficient, too, if you use them correctly.[^2]
+they can be efficient, too, if you use them correctly.[^3]
 
 These lists are essentially loops turned inside out, waiting for their bodies.
 
@@ -316,11 +319,20 @@ design and implement programs in a different way.
 [lodash]: https://lodash.com
 [thecode]: https://gist.github.com/gatlin/5b022bc38aa9f5a2b63a75580a056e8c
 [nodejs]: https://nodejs.org/en/
-[^1]: The terms *cons* and *nil* come from the lisp family of languages, where
+[replit]: https://repl.it/languages/javascript
+[^1]: So of course I'm fibbing a bit. You often deal with *arrays* of bytes, or
+    perhaps *vectors* or some other name. This kind of shit is why people don't
+    trust school. But they are different implementations of the same idea: a
+    sequence of values, not just one. List-like things are a surprisingly
+    powerful abstraction and while random access or variable size or other
+    efficiencies can be had by straying from the linked list, a surprisingly
+    wide range of tasks boil down to transforming a sequence of inputs into a
+    sequence of output data. Anyway.
+[^2]: The terms *cons* and *nil* come from the lisp family of languages, where
     lists are the central data structure. *cons* means "construct." Since
     it's short and kind of makes sense I'm using it here as well.
 
-[^2]: While some tricks could be performed, for the most part this isn't a very
+[^3]: While some tricks could be performed, for the most part this isn't a very
     efficient implementation of lists in JavaScript. Part of the problem is
     each operation tears down and then builds up a new list. So if you have a
     chain of list operations you might free and re-allocate memory
