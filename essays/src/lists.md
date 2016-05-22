@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 ---
 title: Everything you always wanted to know about lists, but were afraid to ask
 lead: Or, how we are ultimately defined by our self-destruction
@@ -344,4 +342,3 @@ design and implement programs in a different way.
     *list fusion*, where a series of list destructions and reconstructions can
     be fused into one operation which destroys and recreates the list once.
     Then Church encoded lists can be quite speedy.
->>>>>>> 1327c7223fcb5365482a2bb0678f1562ac000f89
