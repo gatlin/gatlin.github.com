@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>
+Excelsior!
+| Gatlin Johnson</title>
+
+    <!-- Merriweather font -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- glyphicons -->
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+
+    <link href="style.css" rel="stylesheet">
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+
+        div#toc-wrapper ul, div#toc-wrapper ol {
+            list-style: none;
+        }
+  </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right clearfix hidden-xs">
+          <li>
+          <a href="mailto:gatlin@niltag.net">
+              <span class="glyphicon glyphicon-envelope"></span>
+              Send me an email!</a></li>
+          <li>
+            <a href="gatlin.gpg">PGP</a>
+          </li>
+          <li>
+              <a href="/">Home</a>
+          </li>
+        </ul>
+        <h3 class="text-muted">
+            <em>Veni veni veni</em>
+        </h3>
+      </div>
+      <hr>
+      <ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+          <li><a href="/essays/">Essays</a></li>
+      </ol>
+      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
+        <h1>
+Excelsior!
+        </h1>
+        <p class="lead">
+Or, I may have finally gone insane
+        </p>
+<div id="toc-wrapper">
+<h2>Contents</h2>
+<ul>
+<li><a href="#imports-and-blah-blah"><span class="toc-section-number">1</span> Imports and blah blah</a></li>
+<li><a href="#double-löb-el"><span class="toc-section-number">2</span> Double Löb-el</a></li>
+<li><a href="#your-zipper-is-undone"><span class="toc-section-number">3</span> Your zipper is undone</a></li>
+<li><a href="#zippity-doo-dah"><span class="toc-section-number">4</span> Zippity doo-dah</a></li>
+<li><a href="#back-to-the-future"><span class="toc-section-number">5</span> Back to the future!</a></li>
+<li><a href="#zip-it-good"><span class="toc-section-number">6</span> Zip it good</a></li>
+<li><a href="#holy-shit"><span class="toc-section-number">7</span> Holy shit</a></li>
+<li><a href="#holier-shit"><span class="toc-section-number">8</span> Holier Shit</a></li>
+<li><a href="#excursor-sions"><span class="toc-section-number">9</span> Excursor-sions</a></li>
+<li><a href="#appendix-applicative-what-now"><span class="toc-section-number">10</span> Appendix: Applicative what-now?</a></li>
+</ul>
+</div><!-- toc wrapper -->
+        </div>
+      <div class="row">
+        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+<p>I've written <a href="http://niltag.net/essays/loeb.html">previously</a> about Löb's theorem and the curious manner in which we can evaluate a list of functions which depend on each other's outputs <em>simultaneously</em> without much fuss, like a shitty one-row spreadsheet.</p>
+<p>Today I am going to get inter-dimensional.</p>
+<p>Well, two-dimensional. But I am going to ... <em>Excel</em> at it.</p>
+<figure>
+<img src="http://nerdbastards.com/wp-content/uploads/2012/03/Tom-Cruise-finger-gun.jpg" alt="Tom Cruise doing a &#39;finger gun&#39;" /><figcaption>Tom Cruise doing a 'finger gun'</figcaption>
+</figure>
+<h1 id="imports-and-blah-blah"><span class="header-section-number">1</span> Imports and blah blah</h1>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE DeriveFunctor #-}</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Applicative</span>
+<span class="kw">import </span><span class="dt">Control.Comonad</span>
+<span class="kw">import </span><span class="dt">Data.Function</span> (fix)
+<span class="kw">import </span><span class="dt">Control.Monad</span></code></pre></div>
+<p>That's right: today we are dealing with <em>comonads</em>. Monads just weren't confusing enough so I turned them upside down and backward.</p>
+<p>(NB: given that the definition of <code>fix</code> is <code>fix f = f (fix f)</code> I actually typed nine <em>more</em> characters importing it than just writing it here. Meh.)</p>
+<p>Also there's a standard library function whose name I want to use but which is otherwise useless for this exercise:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Prelude</span> <span class="kw">hiding</span> (iterate)</code></pre></div>
+<h1 id="double-löb-el"><span class="header-section-number">2</span> Double Löb-el</h1>
+<p>To recap, by abusing Löb's theorem we were able to write this:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">loeb ::</span> (<span class="dt">Functor</span> f) <span class="ot">=&gt;</span> f ( f a <span class="ot">-&gt;</span> a ) <span class="ot">-&gt;</span> f a
+loeb x <span class="fu">=</span> fmap (\a <span class="ot">-&gt;</span> a (loeb x)) x</code></pre></div>
+<p>What? Here is an example:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">test_list ::</span> [[<span class="dt">Integer</span>] <span class="ot">-&gt;</span> <span class="dt">Integer</span>]
+test_list <span class="fu">=</span> [ \ _ <span class="ot">-&gt;</span> <span class="dv">0</span>             <span class="co">-- a constant value</span>
+            , \ l <span class="ot">-&gt;</span> (l <span class="fu">!!</span> <span class="dv">0</span>) <span class="fu">+</span> <span class="dv">2</span>  <span class="co">-- 2 + the first item</span>
+            , \ l <span class="ot">-&gt;</span> (l <span class="fu">!!</span> <span class="dv">1</span>) <span class="fu">*</span> <span class="dv">2</span>  <span class="co">-- 2 * the second element</span>
+            ]</code></pre></div>
+<p><code>test_list</code> is a list of functions of the type <code>[Integer] -&gt; Integer</code>. Let's see what happens when we apply <code>loeb</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> loeb test_List
+[<span class="dv">0</span>,<span class="dv">2</span>,<span class="dv">4</span>]</code></pre></div>
+<p>NB: there is a standard Haskell function, <code>const</code>, which we could have used in place of <code>\ _ -&gt; 0</code>. It takes two arguments, ignores the second one and returns the first. We will use that from now on.</p>
+<h1 id="your-zipper-is-undone"><span class="header-section-number">3</span> Your zipper is undone</h1>
+<p>So a fixed length list of functions is cool but, and I don't know about you, but when I use Excel it's kind of infinite in all directions.</p>
+<p>But how do I represent an infinite list in such a way that I can navigate it, read data from it, and modify its internals? The structure I'll use is often called a <em>list zipper</em>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Zipper</span> a <span class="fu">=</span> <span class="dt">Zipper</span>
+    {<span class="ot"> viewL ::</span> [a]
+    ,<span class="ot"> focus ::</span> a
+    ,<span class="ot"> viewR ::</span> [a]
+    } <span class="kw">deriving</span> (<span class="dt">Functor</span>, <span class="dt">Show</span>)</code></pre></div>
+<p>A list zipper is like a cursor: it has a current focus element and lists of elements on either side of the focus it can navigate to. Accessing or modifying the focus is a constant time operation.</p>
+<p>Moving &quot;left&quot; (or &quot;right&quot;) amounts to prepending the focus to one list and popping the head off the other one, creating the new focus. These are also constant time operations.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">moveL ::</span> <span class="dt">Zipper</span> a <span class="ot">-&gt;</span> <span class="dt">Zipper</span> a
+moveL (<span class="dt">Zipper</span> (l<span class="fu">:</span>ls) c rs) <span class="fu">=</span> <span class="dt">Zipper</span> ls l (c<span class="fu">:</span>rs)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">moveR ::</span> <span class="dt">Zipper</span> a <span class="ot">-&gt;</span> <span class="dt">Zipper</span> a
+moveR (<span class="dt">Zipper</span> ls c (r<span class="fu">:</span>rs)) <span class="fu">=</span> <span class="dt">Zipper</span> (c<span class="fu">:</span>ls) r rs</code></pre></div>
+<p>It so happens that a <code>Zipper</code> is an <code>Applicative</code>:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Applicative</span> <span class="dt">Zipper</span> <span class="kw">where</span>
+    (<span class="dt">Zipper</span> ls c rs) <span class="fu">&lt;*&gt;</span> (<span class="dt">Zipper</span> ls&#39; c&#39; rs&#39;) <span class="fu">=</span>
+        <span class="dt">Zipper</span> (ls <span class="fu">&lt;*&gt;</span> ls&#39;) (c c&#39;) (rs <span class="fu">&lt;*&gt;</span> rs&#39;)
+    pure <span class="fu">=</span> <span class="dt">Zipper</span> <span class="fu">&lt;$&gt;</span> pure <span class="fu">&lt;*&gt;</span> id <span class="fu">&lt;*&gt;</span> pure</code></pre></div>
+<p>If you don't what <code>Applicative</code> is, skip to the end of this post and then come back.</p>
+<h1 id="zippity-doo-dah"><span class="header-section-number">4</span> Zippity doo-dah</h1>
+<p>We have created a zipper to anchor us at a desired location in an infinite list, so to get started using our zipper we'll need to be able to create an infinite list. Voici:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">unfold ::</span> (b <span class="ot">-&gt;</span> (a, b)) <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> [a]
+unfold f c <span class="fu">=</span>
+    <span class="kw">let</span> (x, d)  <span class="fu">=</span> f c
+    <span class="kw">in</span>  x<span class="fu">:</span>(unfold f d)</code></pre></div>
+<p><code>unfold</code> is like the opposite of a traditional list <em>fold</em>: instead of iterating over a list and accumulating some result value, we take an initial value and generate a list from it according to some pre-determined rule.</p>
+<p>Armed with a means of generating infinite lists according to some rule, we can now <em>seed</em> new zippers with some initial focus value:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">seed ::</span> (c <span class="ot">-&gt;</span> (a, c)) <span class="co">-- \</span>
+     <span class="ot">-&gt;</span> (c <span class="ot">-&gt;</span> a)      <span class="co">--  \</span>
+     <span class="ot">-&gt;</span> (c <span class="ot">-&gt;</span> (a, c)) <span class="co">--   - Type signatures are so fun!</span>
+     <span class="ot">-&gt;</span> c             <span class="co">--  /</span>
+     <span class="ot">-&gt;</span> <span class="dt">Zipper</span> a      <span class="co">-- /</span>
+seed prev center next <span class="fu">=</span>
+    <span class="dt">Zipper</span> <span class="fu">&lt;$&gt;</span> unfold prev <span class="fu">&lt;*&gt;</span> center <span class="fu">&lt;*&gt;</span> unfold next</code></pre></div>
+<p>Basically, take the fourth argument, <code>unfold</code> two infinite lists with it based on some generating rules, and set it as the focus.</p>
+<p>Note the type signature says <code>seed</code> has four values but the function only has three: <code>Zipper &lt;$&gt; unfold prev &lt;*&gt; center &lt;*&gt; unfold next</code> creates a function awaiting the final argument.</p>
+<h1 id="back-to-the-future"><span class="header-section-number">5</span> Back to the future!</h1>
+<p>It so happens that our <code>Zipper</code> is a <em>comonad</em>. The name comes from the fact that it is the mathematical dual of another concept that already had a name, and mathematicians are kind of predictable that way.</p>
+<p>All comonads are functors, in that they provide some kind of computational context for a value. Here's one way of thinking about comonads: a structure is comonadic if we always know how to get a value from it.</p>
+<p>A comonad must also allow me to duplicate its values: if I have a comonadic structure containing values of type <code>a</code>, then I can create a structure of structures. This is confusing and mind-bendy to think about so if it doesn't make sense just go with the flow.</p>
+<p>The reason, though, is that comonads describe computations where, instead of sequentially moving from state to state reacting to and causing effects like normal imperative programming, we instead are presented with multiple simultaneous future states. We can write a function to transform one of them, abstractly, and this function will be applied to all possible future states.</p>
+<p>This is intimately related to the fact that we know for certain we will be able to yank a value out of the comonad: thus, we can borrow against the future.</p>
+<p>Thus, a comonad must implement these functions <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">extract ::</span> (<span class="dt">Comonad</span> w) <span class="ot">=&gt;</span> w a <span class="ot">-&gt;</span> a
+<span class="co">-- and</span>
+<span class="ot">duplicate ::</span> (<span class="dt">Comonad</span> w) <span class="ot">=&gt;</span> w a <span class="ot">-&gt;</span> w (w a)</code></pre></div>
+<p><code>extract</code> is easy: hand back the focus of the <code>Zipper</code>. That's kind of why we have it in the first place.</p>
+<p>What about the <code>duplicate</code> function? We know we can create a <code>Zipper</code> by giving a seed value to <code>seed</code>. What if that seed value was a <code>Zipper</code>? What does a <code>Zipper</code> of <code>Zipper</code>s look like?</p>
+<p>Let's take this shit slow. A <code>Zipper</code> of, say, <code>Int</code> values</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">z1 <span class="fu">=</span> seed (\x <span class="ot">-&gt;</span> (x<span class="fu">-</span><span class="dv">1</span>,x<span class="fu">-</span><span class="dv">1</span>)) (const <span class="dv">0</span>) (\x <span class="ot">-&gt;</span> (x<span class="fu">+</span><span class="dv">1</span>,x<span class="fu">+</span><span class="dv">1</span>))</code></pre></div>
+<p>like this one is focused on some number, and the values to the left and right are modifications defined by some transformation function (in this case, adding or subtracting 1).</p>
+<p>So a <code>Zipper</code> of <code>Zipper</code>s is focused on one zipper and the left and right neighbors are other zippers. How we want to transform the focus should really just be left up to the user. Hence:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">iterate<span class="ot"> ::</span> (a <span class="ot">-&gt;</span> a)
+        <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> a)
+        <span class="ot">-&gt;</span> a
+        <span class="ot">-&gt;</span> <span class="dt">Zipper</span> a
+iterate prev next <span class="fu">=</span>
+    seed (dup <span class="fu">.</span> prev) id (dup <span class="fu">.</span> next)
+    <span class="kw">where</span> dup a <span class="fu">=</span> (a, a)</code></pre></div>
+<p>Thus, our comonad instance is complete:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Comonad</span> <span class="dt">Zipper</span> <span class="kw">where</span>
+    extract <span class="fu">=</span> focus
+    duplicate <span class="fu">=</span> iterate moveL moveR</code></pre></div>
+<p><code>duplicate</code> creates a <code>Zipper</code> of <code>Zippers</code> where the focus is our original and moving in either direction transforms the focus by moving it.</p>
+<p>HEAD ASPLODE</p>
+<h1 id="zip-it-good"><span class="header-section-number">6</span> Zip it good</h1>
+<p>Comonads also have a function, <code>extend</code>, which is defined in terms of <code>duplicate</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">extend ::</span> (<span class="dt">Comonad</span> w) <span class="ot">=&gt;</span> (w a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> w a <span class="ot">-&gt;</span> w b
+extend <span class="fu">=</span> fmap f <span class="fu">.</span> duplicate</code></pre></div>
+<p>So if we can extract a value of type <code>a</code> and transform it into a <code>b</code> then we can extend the whole comonad to being a comonad of <code>b</code> values.</p>
+<p>Another standard function defined on comonads is the fixpoint:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">wfix ::</span> <span class="dt">Comonad</span> w <span class="ot">=&gt;</span> w (w a <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> a
+wfix w <span class="fu">=</span> extract w (extend wfix w)</code></pre></div>
+<p>If I have a comonad containing an extract procedure (or perhaps multiple extraction procedures) I can compute a fixed point of those functions and extract the final value.</p>
+<p>I noticed that <code>extend wfix</code> has a very interesting type signature:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">evaluate ::</span> (<span class="dt">Comonad</span> w) <span class="ot">=&gt;</span> w (w a <span class="ot">-&gt;</span> a) <span class="ot">-&gt;</span> w a
+evaluate <span class="fu">=</span> extend wfix</code></pre></div>
+<p>Intredasting.</p>
+<p><code>Zipper</code> is a comonad. If we have a <code>Zipper</code> of functions which ... evaluate <code>Zipper</code>s then ... holy shit.</p>
+<h1 id="holy-shit"><span class="header-section-number">7</span> Holy shit</h1>
+<p>So let's create a <code>Zipper</code> of functions that evaluate <code>Zipper</code>s:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">zipper_1 ::</span> <span class="dt">Zipper</span> (<span class="dt">Zipper</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>)
+zipper_1 <span class="fu">=</span> <span class="dt">Zipper</span> (repeat ((<span class="fu">*</span><span class="dv">2</span>) <span class="fu">.</span> extract <span class="fu">.</span> moveR))
+            (const <span class="dv">1</span>) (repeat ((<span class="fu">+</span><span class="dv">1</span>) <span class="fu">.</span> extract <span class="fu">.</span> moveL))</code></pre></div>
+<p>The initial focus is <code>1</code>; as you move left, you double; as you move right, you add 1.</p>
+<p>For convenience let's write a function to extract a subsection of a <code>Zipper</code> into a list for viewing:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">toList ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Zipper</span> a <span class="ot">-&gt;</span> [a]
+toList n (<span class="dt">Zipper</span> ls x rs) <span class="fu">=</span>
+    reverse (take n ls) <span class="fu">++</span> [x] <span class="fu">++</span> take n rs</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> toList <span class="dv">5</span> (evaluate zipper<span class="fu">-</span><span class="dv">1</span>)
+[<span class="dv">32</span>,<span class="dv">16</span>,<span class="dv">8</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>]</code></pre></div>
+<h1 id="holier-shit"><span class="header-section-number">8</span> Holier Shit</h1>
+<p>I said we were going interdimensional, and I'm no liar.</p>
+<figure>
+<img src="http://upload.wikimedia.org/wikipedia/en/4/4b/BeastieBoysIntergalactic.jpg" alt="Picture of the Beastie Boys&#39; Intergalactic album" /><figcaption>Picture of the Beastie Boys' Intergalactic album</figcaption>
+</figure>
+<p>We have already shown we can create <code>Zipper</code>s of <code>Zipper</code>s on-demand, and the result is an infinite list of variations on an initial <code>Zipper</code>.</p>
+<p>Let's make this official:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Cursor</span> a <span class="fu">=</span> <span class="dt">Cursor</span> (<span class="dt">Zipper</span> (<span class="dt">Zipper</span> a))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">up ::</span> <span class="dt">Cursor</span> a <span class="ot">-&gt;</span> <span class="dt">Cursor</span> a
+up (<span class="dt">Cursor</span> p) <span class="fu">=</span> <span class="dt">Cursor</span> (moveL p)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">down ::</span> <span class="dt">Cursor</span> a <span class="ot">-&gt;</span> <span class="dt">Cursor</span> a
+down (<span class="dt">Cursor</span> p) <span class="fu">=</span> <span class="dt">Cursor</span> (moveR p)</code></pre></div>
+<p>By convention, we'll say that going left on the outer <code>Zipper</code> is going &quot;up,&quot; and vice versa. A <code>Cursor</code> is a <code>Functor</code>:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">Cursor</span> <span class="kw">where</span>
+    fmap f (<span class="dt">Cursor</span> p) <span class="fu">=</span> <span class="dt">Cursor</span> (fmap (fmap f) p)</code></pre></div>
+<p>Going left and right, though, is a little hairy: we want to shift every single <code>Zipper</code> left or right uniformly. Fortunately, we <em>just</em> defined <code>Cursor</code>s as <code>Functor</code>s, so we'll just <code>fmap</code> the movements inside the outer <code>Zipper</code>:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">left ::</span> <span class="dt">Cursor</span> a <span class="ot">-&gt;</span> <span class="dt">Cursor</span> a
+left (<span class="dt">Cursor</span> p) <span class="fu">=</span> <span class="dt">Cursor</span> (fmap moveL p)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">right ::</span> <span class="dt">Cursor</span> a <span class="ot">-&gt;</span> <span class="dt">Cursor</span> a
+right (<span class="dt">Cursor</span> p) <span class="fu">=</span> <span class="dt">Cursor</span> (fmap moveR p)</code></pre></div>
+<p>A <code>Cursor</code> is also a comonad. <code>extract</code> is just extracting the focus of the focus <code>Zipper</code>. <code>duplicate</code> is a little weirder. We want to generate a <code>Cursor</code> of <code>Cursor</code>s. Following from the same trick we used for <code>Zipper</code>s:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">horizontal ::</span> <span class="dt">Cursor</span> a <span class="ot">-&gt;</span> <span class="dt">Zipper</span> (<span class="dt">Cursor</span> a)
+horizontal <span class="fu">=</span> iterate left right</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">vertical ::</span> <span class="dt">Cursor</span> a <span class="ot">-&gt;</span> <span class="dt">Zipper</span> (<span class="dt">Cursor</span> a)
+vertical <span class="fu">=</span> iterate up down</code></pre></div>
+<p>We can declare the <code>Cursor</code> a comonad and move on with our lives:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Comonad</span> <span class="dt">Cursor</span> <span class="kw">where</span>
+    extract (<span class="dt">Cursor</span> p) <span class="fu">=</span> extract <span class="fu">$</span> extract p
+    duplicate z <span class="fu">=</span>
+        <span class="dt">Cursor</span> <span class="fu">$</span> fmap horizontal <span class="fu">$</span> vertical z</code></pre></div>
+<p>We created the <code>Cursor</code> to allow us to do two-dimensional spreadsheet-esque programming so it'd be nice if I could write some easy-to-read grid of functions and then make a <code>Cursor</code> out of them.</p>
+<p>And lo:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">makeCursor ::</span> a <span class="ot">-&gt;</span> [[a]] <span class="ot">-&gt;</span> <span class="dt">Cursor</span> a
+makeCursor def grid <span class="fu">=</span> <span class="dt">Cursor</span> <span class="fu">$</span> <span class="dt">Zipper</span> (repeat fz) fz rs <span class="kw">where</span>
+    rs <span class="fu">=</span> (map line grid) <span class="fu">++</span> repeat fz
+    dl <span class="fu">=</span> repeat def
+    fz <span class="fu">=</span> <span class="dt">Zipper</span> dl def dl
+    line l <span class="fu">=</span> <span class="dt">Zipper</span> dl def (l <span class="fu">++</span> dl)</code></pre></div>
+<p>Armed and ready, let's create a spreadsheet with default cell values of <code>0</code> and two functions in the same column:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">sheet1 ::</span> <span class="dt">Cursor</span> (<span class="dt">Cursor</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span>)
+sheet1 <span class="fu">=</span> makeCursor (const <span class="dv">0</span>)
+    [ [ (\c <span class="ot">-&gt;</span> <span class="dv">15</span> <span class="fu">+</span> <span class="dv">2</span> <span class="fu">*</span> (extract (left c)))   ]
+    , [ (\c <span class="ot">-&gt;</span> <span class="dv">1</span> <span class="fu">+</span> (extract (up c)))          ] ]</code></pre></div>
+<p>It would be nice if we could view some subset of our <code>Cursor</code> as a list of lists, analogously to our <code>toList</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">cursorView ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Cursor</span> a <span class="ot">-&gt;</span> [[a]]
+cursorView n (<span class="dt">Cursor</span> zs) <span class="fu">=</span> toList n <span class="fu">$</span> fmap (toList n) zs</code></pre></div>
+<p>Let's run this in <code>ghci</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="kw">let</span> rows <span class="fu">=</span> sheet1 <span class="fu">&amp;</span> evaluate <span class="fu">&amp;</span> cursorView <span class="dv">5</span>
+ghci<span class="fu">&gt;</span> forM_ rows (putStrLn <span class="fu">.</span> show)
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">15</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">16</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]
+[<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>]</code></pre></div>
+<p>Boom.</p>
+<p><em>The definition of <code>(&amp;)</code> is very simple:</em></p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">(<span class="fu">&amp;</span>) <span class="fu">=</span> flip (<span class="fu">$</span>)</code></pre></div>
+<h1 id="excursor-sions"><span class="header-section-number">9</span> Excursor-sions</h1>
+<p>For completeness, let's define a way to insert a value at the focus of a <code>Cursor</code> or a <code>Zipper</code>. I made up a simple typeclass for things that can be inserted into so that I wouldn't have to have <code>insertCursor</code> and <code>insertZipper</code> or some other ugly nonsense.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">Insertable</span> i <span class="kw">where</span>
+<span class="ot">    insert ::</span> a <span class="ot">-&gt;</span> i a <span class="ot">-&gt;</span> i a</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Insertable</span> <span class="dt">Zipper</span> <span class="kw">where</span>
+    insert x (<span class="dt">Zipper</span> l _ r) <span class="fu">=</span> <span class="dt">Zipper</span> l x r</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Insertable</span> <span class="dt">Cursor</span> <span class="kw">where</span>
+    insert x (<span class="dt">Cursor</span> p) <span class="fu">=</span>
+        <span class="dt">Cursor</span> <span class="fu">$</span> insert newLine p <span class="kw">where</span>
+            newLine <span class="fu">=</span> insert x oldLine
+            oldLine <span class="fu">=</span> extract p</code></pre></div>
+<h1 id="appendix-applicative-what-now"><span class="header-section-number">10</span> Appendix: Applicative what-now?</h1>
+<p>An <em>applicative functor</em> is a <em>functor</em> with a little extra power. A <em>functor</em> is a computational context into which you can map transformations. Concrete example: <code>Maybe Int</code> lets me map <code>Int</code> functions into a context where there may not be an actual value. <code>fmap (+1) (Just 1)</code> gives <code>Just 2</code> even though <code>(+1)</code> knows nothing of <code>Maybe</code>. However, <code>fmap (+1) Nothing</code> gives <code>Nothing</code>.</p>
+<p>Applicative functors let you take a function which is <em>already in the context</em> and map it onto contextualized values. A type signature is worth a thousand words:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">(&lt;*&gt;) ::</span> (<span class="dt">Applicative</span> f) <span class="ot">=&gt;</span> f (a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> f a <span class="ot">-&gt;</span> f b</code></pre></div>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="dt">Just</span> (\x y <span class="ot">-&gt;</span> x <span class="fu">*</span> y) <span class="fu">&lt;*&gt;</span> <span class="dt">Just</span> <span class="dv">3</span> <span class="fu">&lt;*&gt;</span> <span class="dt">Just</span> <span class="dv">4</span>
+<span class="dt">Just</span> <span class="dv">12</span></code></pre></div>
+<p>An <code>Applicative</code> must also give you a way of lifting pure values into the functor. Hence:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">pure ::</span> (<span class="dt">Applicative</span> f) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> f a</code></pre></div>
+<p>If your functor can support <code>(&lt;*&gt;)</code> and <code>pure</code> then congratulations, it is also <code>Applicative</code>. There are a number of cases where <code>Applicatives</code> are handy or convenient.</p>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>This is a bit over-simplified. A third function, <code>extend</code>, may be defined in place of <code>duplicate</code>. Each has a default implementation defined in terms of each other, so you only have to specify one.<a href="#fnref1">↩</a></p></li>
+</ol>
+</section>
+        </div>
+</div><!-- row -->
+<hr>
+
+
+      <div class="footer">
+        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
+
