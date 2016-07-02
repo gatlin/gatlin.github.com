@@ -96,3 +96,8 @@ a:hover {
     text-decoration: none;
     background-image: none;
 }
+
+li a {
+    text-decoration: underline;
+    background-image: none;
+}
