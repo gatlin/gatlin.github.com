@@ -98,6 +98,14 @@ a:hover {
 }
 
 li a {
+  text-decoration: none;
+  background-image: none;
+}
+
+li a:hover {
     text-decoration: underline;
-    background-image: none;
+}
+
+div#toc-wrapper ul {
+    border-left: 1px solid #b9b9b9;
 }
