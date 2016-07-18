@@ -139,15 +139,14 @@ operations. But how do we *use* them?
 Monads are like languages; *comonads* are like interpreters. And just
 as there is a "free" monad there is a "cofree" comonad which takes a
 type describing an interpreter and hands you back one ready to
-program.
+program. How does that work?
 
-Each command in our language takes an argument and a continuation of
-some kind. So an interpreter for each will accept whatever argument is
-necessary and *return* a continuation for the next command to use. 
+For every command in our language our interpreter must contain a handler which
+executes the correct action. Different interpreters might, uh, interpret the
+language differently: one might edit a local document, one might simply
+pretty-print the operations in a log, one might do both, etc.
 
-One final thing to note: a language describes *possible* statements
-but an interpreter must be prepared to handle *any* statements, as it
-does not know ahead of time what the expression will be.
+Thus I will define the `Cursor` to be the interpreter of an `Operation`:
 
 ```haskell
 data CursorF k = CursorF
@@ -159,11 +158,40 @@ data CursorF k = CursorF
 type Cursor = Cofree CursorF
 ```
 
+A `Cursor a` is given some initial value of type `a`. It interprets expressions
+in the `Operation` language using its handler functions to transform this
+initial value into subsequent `a` values.
 
+Since we actually want to apply edits to a document, though, we will need the
+`Cursor` to keep track of a `Document` and in index into it. I call this kind of
+`Cursor` an `Editor`:
 
 ```haskell
 type Editor = Cursor (Int, Document)
 ```
+
+Cofree comonads essentially receive an instruction, adjust their internal value
+accordingly, and then produce a new cofree comonad. In this light, all cofree
+comonads are like streams: they'll produce an infinite series of states if you
+provide an infinite series of expressions.
+
+The `free` package provides the `coiter` function which helps us construct
+cofree comonads by supplying logic for
+
+- where to start; and
+- how to step forward
+
+Using `coiter` we can build new `Editors`!
+
+```haskell
+newEditor :: (Int, Document) -> Editor
+newEditor start = coiter next start where
+  next w = CursorF (coInsert w) (coDelete w) (coRetain w)
+```
+
+Of course, we must also define the functions describing how to proceed with each
+specific command. In case you're wondering, yes, this is *finally* where we give
+operational semantics to the `Operation` commands.
 
 ```haskell
 coInsert :: (Int, Document) -> Document -> (Int, Document)
@@ -185,26 +213,47 @@ coRetain :: (Int, Document) -> Int -> (Int, Document)
 coRetain (idx, doc) n = (idx + n, doc)
 ```
 
-```haskell
-newEditor :: (Int, Document) -> Editor
-newEditor start = coiter next start where
-  next w = CursorF (coInsert w) (coDelete w) (coRetain w)
-```
+I really like the cofree comonad design pattern because I can break up an
+interpreter for a language into small parts like this and clearly see what each
+one is supposed to do.
+
+## Running our edits
+
+We are finally ready to interpret `Operation`s with our `Editor`. However, we
+are in a slight pickle. The process of feeding our language into our interpreter
+is one of first determining if the `Operation` is finished or not (so
+determining what `Cofree` should do based on `Free`) **and then** determining
+which `CursorF` function shuold be called based on the `OperationGrammar` value.
+
+In Haskell when you want a function overloaded for different types you use type
+classes. So here is the `Run` typeclass, containing the method `run`:
 
 ```haskell
 class (Functor f, Functor g) => Run f g where
   run :: (a -> b -> r) -> f a -> g b -> r
 ```
 
-```haskell
-instance Run ((->) a) ((,) a) where
-  run p f = uncurry (p . f)
-```
+`run` will accept three arguments. The last two are types wrapping values of
+interest; the first is a combiner function which wants those values of interest.
+
+An `f a` can `Run` a `g b` if you can describe how to pick them apart and get at
+those interesting values.
+
+For `CursorF` and `OperationGrammar` it's dead simple:
 
 ```haskell
-instance Run ((,) a) ((->) a) where
-  run p f g = p (snd f) (g (fst f))
+instance Run CursorF OperationGrammar where
+  run f (CursorF i _ _) (Insert s k) = f (i s) k
+  run f (CursorF _ d _) (Delete s k) = f (d s) k
+  run f (CursorF _ _ r) (Retain n k) = f (r n) k
 ```
+
+Each case is explained in essentially the same way: we'll take the argument from
+the command, we'll give it to the correct handler function, and the result will
+be the first argument to our combiner. The result of the `OperationGrammar`
+value will be second.
+
+We also need to describe how `Cofree` can, in general, run `Free`. Voici:
 
 ```haskell
 instance Run f g => Run (Cofree f) (Free g) where
@@ -212,50 +261,52 @@ instance Run f g => Run (Cofree f) (Free g) where
   run p (_ :< fs) (Free gs) = run (run p) fs gs
 ```
 
-```haskell
-instance Run CursorF OpF where
-  run f (CursorF i _ _) (Insert s k) = f (i s) k
-  run f (CursorF _ d _) (Delete s k) = f (d s) k
-  run f (CursorF _ _ r) (Retain n k) = f (r n) k
-```
+Note that here, in the case where we aren't finished, `run` refers to
+itself. Because we defined `run` as a typeclass instance, the correct `run` will
+be selected each time.
 
-```haskell
-buildDocument :: Operation -> (Int, Document)
-buildDocument = editDocument ""
-```
+To put all of this together, we define `edit` which takes a `Document` and an
+`Operation` and returns a new `Document` and its length.
+
 
 ```haskell
 edit :: Document -> Operation -> (Int, Document)
 edit doc ops = run const (newEditor (0, doc)) ops
+
+my_stupid_edit = do
+  let doc = "hello world"
+  let op = delete 1 >> insert "H" >> retain 10
+  let (_, doc') = edit doc op
+  putStrLn doc' -- "Hello world"
+
 ```
 
-```haskell
-test_op_1, test_op_2 :: Operation
-test_op_1 = do
-  retain 11
-  insert "!"
-```
+## Transforming operations
+
+Now we have a DSL for operations and an interpreter which can apply them to
+documents. But that's not really why we're here. We want to learn how to
+*transform* operations so that concurrent edits to the same parent document may
+be composed into a consistent document that makes sense to all parties.
+
+We want to take two concurrent operations, which can't be applied sequentially,
+and produce a pair of analogous operations which *could* be applied
+sequentially. For instance, if two concurrent edits `a` and `b` are sent to the
+server and `a` is processed first, we want to transform `b` into a `b'` which
+may be applied after `a`.
+
+Of course, the author of `b` has undoubtedly already applied `b` to their local
+document, so they'll need an `a'` from the server which they can use to
+incorporate the `a` changes. Ultimately, both clients and the server will need
+to arrive at the same document.
+
+We will call this function `rebase` because of its similarity to the rebase
+functionality in `git`. `rebase a b` will compute both `a'` and `b'`.
+
+Let's get started. Initial case: both expressions are empty.
 
 ```haskell
-test_op_2 = do
-  delete 1
-  insert "L"
-  retain 11
-```
-
-```haskell
-test_edit :: IO ()
-test_edit = do
-  let doc1 = "lorem ipsum"
-  let (_, doc2) = edit doc1 test_op_1
-  putStrLn doc2 -- "lorem ipsum!"
-  let (_, doc3) = edit doc2 test_op_2
-  putStrLn doc3 -- "Lorem ipsum!"
-```
-
-```haskell
-xform :: Operation -> Operation -> (Operation, Operation)
-xform a b = go a b (return (), return ()) wher
+rebase :: Operation -> Operation -> (Operation, Operation)
+rebase a b = go a b (return (), return ()) where
   go (Pure ()) (Pure ()) result = result
 ```
 
@@ -315,8 +366,8 @@ b = do
 ```
 
 ```haskell
-test_xform :: IO ()
-test_xform = do
+test_rebase :: IO ()
+test_rebase = do
   let (_, doc_a) = edit testDoc a
   let (_, doc_b) = edit testDoc b
   let (b', a') = xform b a
