@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>
+PID controller in Haskell
+| Gatlin Johnson</title>
+
+    <!-- Merriweather font -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- glyphicons -->
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+
+    <link href="style.css" rel="stylesheet">
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+
+        div#toc-wrapper ul, div#toc-wrapper ol {
+            list-style: none;
+        }
+  </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right clearfix hidden-xs">
+          <li>
+          <a href="mailto:gatlin@niltag.net">
+              <span class="glyphicon glyphicon-envelope"></span>
+              Send me an email!</a></li>
+          <li>
+            <a href="gatlin.gpg">PGP</a>
+          </li>
+          <li>
+              <a href="/">Home</a>
+          </li>
+        </ul>
+        <h3 class="text-muted">
+            <em>Veni veni veni</em>
+        </h3>
+      </div>
+      <hr>
+      <ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+          <li><a href="/essays/">Essays</a></li>
+      </ol>
+      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
+        <h1>
+PID controller in Haskell
+        </h1>
+        <p class="lead">
+Or, when will the screaming stop? When?
+        </p>
+<div id="toc-wrapper">
+<h2>Contents</h2>
+<ul>
+<li><a href="#pid-controller-theory"><span class="toc-section-number">1</span> PID controller theory</a></li>
+<li><a href="#setup"><span class="toc-section-number">2</span> Setup</a></li>
+<li><a href="#lets-write-some-actual-fucking-code"><span class="toc-section-number">3</span> Let's write some actual fucking code</a></li>
+<li><a href="#lets-finally-give-this-arrow-a-point"><span class="toc-section-number">4</span> Let's finally give this arrow a point</a></li>
+</ul>
+</div><!-- toc wrapper -->
+        </div>
+      <div class="row">
+        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+<p>A major project I want to embark on at some point in the future is making a quadrotor. I've made one before but I was at the mercy of a lot of off-the-shelf software that I'm not altogether sure was entirely correct, either.</p>
+<p>So I want to eventually program a quadrotor (or similarly awesome robot thing) and I would really enjoy doing it in Haskell. It has a low footprint and is already used in other real time settings.</p>
+<p>A baby step on this journey, for me, is to understand how <a href="http://en.wikipedia.org/PID_controller">PID controllers</a> work. To that end I'm going to try and write a PID controller in Haskell.</p>
+<p>This post is actually written in literate Haskell, so you can download the source <a href="http://niltag.net/essays/src/pid.lhs">here</a> and compile it as-is. You'll need to ensure you have installed the latest <code>tubes</code> package (<code>cabal install tubes</code> should suffice).</p>
+<h1 id="pid-controller-theory"><span class="header-section-number">1</span> PID controller theory</h1>
+<p>The <em>error</em> is the difference between my measured value and my desired value. PID controllers try to minimize this error by emitting a correction value. The error value makes three considerations:</p>
+<ul>
+<li><p>The correction should be in <strong>p</strong>roportion to the size of the error. You want to make small corrections for small errors, and large corrections for large errors.</p></li>
+<li><p>The correction should take into account the <strong>i</strong>ntegral of past errors; in other words, their sum. If the controller is working, then output values will become negative (or positive) to get the sum down to 0.</p></li>
+<li><p>The correction should consider the <strong>d</strong>erivative of the error function. In other words, it should look at the difference between the last error and the current one to forecast if the situation is getting better or worse.</p></li>
+</ul>
+<p>Hence, <strong>PID</strong>. Each of these three computed values is multiplied by a different constant, called a <em>gain</em>, allowing PID controllers to be tuned to correct behavior.</p>
+<p>The function that governs a PID controller is this:</p>
+<pre><code>u(t) = K[p] e(t) + K[i] (Integral 0 -&gt; t of e(t)dt) + K[d] de(t)/dt
+
+where
+    K[p] = Proportional gain
+    K[i] = Integral gain
+    K[d] = Derivative gain
+    e(t) = Error function: desired value - measured value at time t</code></pre>
+<p>This almost reads like Haskell already. First let's write a simple integration routine.</p>
+<h1 id="setup"><span class="header-section-number">2</span> Setup</h1>
+<p>I'm going to use my <a href="https://github.org/gatlin/tubes">tubes library</a> to generate fake output data and my PID controller will be a <code>Tube</code> receiving these values and emitting corrections.</p>
+<p>First, the modules and language extensions I'll be using:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE Arrows #-}</span>
+<span class="kw">import </span><span class="dt">Tubes</span>
+<span class="kw">import </span><span class="dt">Prelude</span> <span class="kw">hiding</span> (map)
+<span class="kw">import </span><span class="dt">Control.Arrow</span></code></pre></div>
+<p>I hear you ask, &quot;What's the arrow crap?&quot; There are a lot of excellent resources for arrows and I won't bother trying to retread. The simple answer is that an <em>arrow</em> models a process that transforms some value <em>a</em> into a value <em>b</em>.</p>
+<p>And again I hear you: &quot;Isn't that what a function does?&quot; Indeed. And actually functions <em>are</em> arrows. But there are other kinds. Arrows can, for instance, perform multiple computations <em>simultaneously</em>.</p>
+<p>The <code>Arrow</code> class is exported by <code>Control.Arrow</code>. GHC's <code>Arrows</code> language extension allows us to write complex arrow functions in a notation that looks an awful lot like a wiring diagram.</p>
+<p>The <code>Channel</code> type from <code>tubes</code> is a variety of <code>Tube</code> that isn't a <code>Source</code> or a <code>Sink</code>: in other words, it receives upstream values, does something, and forwards results downstream. It also happens to be an <code>Arrow</code>.</p>
+<h1 id="lets-write-some-actual-fucking-code"><span class="header-section-number">3</span> Let's write some actual fucking code</h1>
+<p>In a discrete system like this the integral is more or less just the sum of all previous values. Let's write an integration <code>Channel</code> that keeps track of this state internally:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">integral ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> <span class="dt">Channel</span> m a a
+integral <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu">$</span> loop <span class="dv">0</span> <span class="kw">where</span>
+    loop sumErr <span class="fu">=</span> <span class="kw">do</span>
+        err <span class="ot">&lt;-</span> await
+        <span class="kw">let</span> result <span class="fu">=</span> <span class="fl">0.5</span><span class="fu">*</span>(sumErr <span class="fu">+</span> err)
+        yield result
+        loop result</code></pre></div>
+<p>With a starting sum of 0 this is very self-explanatory: a new err value comes from upstream, it is added to the running total, the total is yielded downstream, repeat.</p>
+<p>The derivative is similarly simple:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">deriv ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> <span class="dt">Channel</span> m a a
+deriv <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu">$</span> loop <span class="dv">0</span> <span class="kw">where</span>
+    loop lastErr <span class="fu">=</span> <span class="kw">do</span>
+        err <span class="ot">&lt;-</span> await
+        yield (err <span class="fu">-</span> lastErr)
+        loop err</code></pre></div>
+<p>Actually <code>deriv</code> is even simpler. The last error is subtracted from the current error, and then the current error becomes the last error. Woah.</p>
+<h1 id="lets-finally-give-this-arrow-a-point"><span class="header-section-number">4</span> Let's finally give this arrow a point</h1>
+<p>Equipped with integration and derivation and fancy <code>Arrow</code> notation we can write our PID routine.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">pid ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m)
+    <span class="ot">=&gt;</span> a <span class="co">-- ^ proportional gain</span>
+    <span class="ot">=&gt;</span> a <span class="co">-- ^ integral gain</span>
+    <span class="ot">=&gt;</span> a <span class="co">-- ^ derivative gain</span>
+    <span class="ot">=&gt;</span> a <span class="co">-- ^ desired value</span>
+    <span class="ot">=&gt;</span> <span class="dt">Channel</span> m a a
+
+pid kp ki kd desired <span class="fu">=</span> proc measured <span class="ot">-&gt;</span> <span class="kw">do</span>
+    <span class="kw">let</span> err <span class="fu">=</span> desired <span class="fu">-</span> measured
+    i <span class="ot">&lt;-</span> integral <span class="fu">-&lt;</span> err
+    d <span class="ot">&lt;-</span> derivative <span class="fu">-&lt;</span> err
+    returnA <span class="fu">-&lt;</span> kp<span class="fu">*</span>err <span class="fu">+</span> ki<span class="fu">*</span>i <span class="fu">+</span> kd<span class="fu">*</span>d</code></pre></div>
+<p>To wit: the measured output comes in, the error is computed, the integral and derivative are computed, and the correction value is computed straightforwardly from the definition.</p>
+<p>Let's test it out.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+    <span class="kw">let</span> outputs <span class="fu">=</span> [<span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>, <span class="dv">14</span>, <span class="dv">11</span>, <span class="dv">9</span>, <span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">9</span>]
+    runTube <span class="fu">$</span> each outputs
+           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.5</span> <span class="fl">0.1</span> <span class="fl">0.2</span> <span class="dv">10</span>)
+           <span class="fu">&gt;&lt;</span> map show
+           <span class="fu">&gt;&lt;</span> pour display</code></pre></div>
+<p>The output from running this program<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>
+<pre><code>4.0
+1.9
+0.9999999999999999
+-2.5
+0.5000000000000001
+1.4
+1.9000000000000001
+-1.3
+1.7000000000000002</code></pre>
+<p>Not too shabby, honestly. While this could use some fine-tuning the correction codes are more or less solid attempts to keep the output near 10.</p>
+<p>My goal would be to write control software in Haskell using <code>tubes</code>, with sensors emitting streams of values and control routines operating on them in real time and constant memory usage.</p>
+<p>Anyway I had fun and I hope you did too!</p>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>The functions <code>tune</code> and <code>pour</code> correspond to the types <code>Channel</code> and <code>Sink</code>, respectively. Both are wrappers around a more fundamental <code>Tube</code> type, and after they have been constructed safely they can be unwrapped using those functions. <code>display</code> is a <code>Sink</code> that comes with the <code>tubes</code> package.<a href="#fnref1">↩</a></p></li>
+</ol>
+</section>
+        </div>
+</div><!-- row -->
+<hr>
+
+
+      <div class="footer">
+        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
+

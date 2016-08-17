@@ -83,10 +83,7 @@ Proof that necessity is not the mother of invention.
 <li><a href="#the-code"><span class="toc-section-number">0.1</span> The code</a></li>
 <li><a href="#top-level-application-setup"><span class="toc-section-number">0.2</span> Top level application setup</a></li>
 <li><a href="#stripe-configuration"><span class="toc-section-number">0.3</span> Stripe configuration</a></li>
-<li><a href="#handlers"><span class="toc-section-number">0.4</span> Handlers</a><ul>
-<li><a href="#monads-and-monad-transformers"><span class="toc-section-number">0.4.1</span> Monads and Monad Transformers</a></li>
-<li><a href="#moving-on"><span class="toc-section-number">0.4.2</span> Moving on</a></li>
-</ul></li>
+<li><a href="#handlers"><span class="toc-section-number">0.4</span> Handlers</a></li>
 <li><a href="#lets-get-the-hell-out-of-here"><span class="toc-section-number">0.5</span> Let's get the hell out of here</a></li>
 <li><a href="#the-end-is-nigh"><span class="toc-section-number">0.6</span> The end is nigh</a></li>
 </ul>
@@ -182,7 +179,7 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 <p>The <code>Maybe</code> wrapper is there to ensure our program doesn't fail if someone leaves out the amount (sneaky buggers).</p>
 <p>However, I want to ... query ... the query string for values easily. I could roll my own code to search through this list and find the right values, or I could not be an idiot and use <code>Data.Map.fromlist</code> to turn it into a map structure for me.</p>
 <p>Which is, for the record, exactly what I do in creating <code>bodyMap</code>.</p>
-<h3 id="monads-and-monad-transformers"><span class="header-section-number">0.4.1</span> Monads and Monad Transformers</h3>
+<p>### Monads and Monad Transformers</p>
 <p>Yeah, you knew this was coming. I'm not going to explain what monads are in this post. However, to actually understand this code it's important to know which monad we are in and why.</p>
 <p>The monad in question here is <code>ResourceT m a</code>. According to the <a href="http://hackage.haskell.org/package/conduit-1.0.9.3/docs/Data-Conduit.html#g:10">documentation</a> it &quot;keeps track of all registered actions, and calls them upon exit&quot;. Specifically, while you're busy fusing <code>Source</code>s and <code>Sink</code>s and <code>Conduit</code>s and transforming shit all over the place, you're also allocating resources that must be deallocated or else your program will crash and you won't get paid.</p>
 <p><code>ResourceT m a</code> along with other <code>conduit</code> related operations and types appears to handle all of this internally. By writing code in the <code>ResourceT m a</code> monad and declaratively setting up your pipeline, you're getting all the bookkeeping done for free.</p>
@@ -190,7 +187,7 @@ conf  <span class="fu">=</span> defaultConfig <span class="fu">$</span> <span cl
 <p>Make your inception jokes here.</p>
 <p>The &quot;m&quot; in its type signature represents an inner monad. For example, later on in the code we are going to dive into a special Stripe monad for handling interactions with their server. <code>ResourceT m a</code> allows us to be in the magical resource management monad but still call into other monads that are useful during our computation.</p>
 <p>It's some sick shit.</p>
-<h3 id="moving-on"><span class="header-section-number">0.4.2</span> Moving on</h3>
+<p>### Moving on</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">    <span class="kw">case</span> M.lookup <span class="st">&quot;amount&quot;</span> bodyMap <span class="kw">of</span>
         <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return <span class="fu">$</span> doRespond <span class="st">&quot;bad amount&quot;</span></code></pre></div>
 <p>First, we see if an amount was specified. <code>Data.Map.lookup</code> takes a key and a map and returns a <code>Maybe</code> value. If the <code>Maybe</code> value is <code>Nothing</code> then I initiate the sophisticated error handling code you see above.</p>

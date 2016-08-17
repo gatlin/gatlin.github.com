@@ -79,33 +79,3 @@ p {
   font-feature-settings: "liga", "onum", "kern";
   font-family: "Merriweather",serif;
   }
-
-a {
-  color: #333333;
-  text-decoration: none;
-  background-image: linear-gradient(to top,
-    rgba(0,0,0,0) 11%,
-    rgba(0,0,0,.5) 11%,
-    rgba(0,0,0,.5) 16%,
-    rgba(0,0,0,0) 16%
-    );
-}
-
-a:hover {
-    color: #333333;
-    text-decoration: none;
-    background-image: none;
-}
-
-li a {
-  text-decoration: none;
-  background-image: none;
-}
-
-li a:hover {
-    text-decoration: underline;
-}
-
-div#toc-wrapper ul {
-    border-left: 1px solid #b9b9b9;
-}
