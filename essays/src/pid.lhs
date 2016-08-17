@@ -68,7 +68,7 @@ And again I hear you: "Isn't that what a function does?" Indeed. And actually
 functions *are* arrows. But there are other kinds. Arrows can, for instance,
 perform multiple computations *simultaneously*, built by combining other
 `Arrows`. You can use the functions in `Control.Arrow` to do this or you can be
-lazy and have the `Arrows` language extension do them for you.
+lazy and have the `Arrows` language extension use them for you.
 
 The `tubes` library defines a base `Tube` type, which is a computation that can
 suspend itself to `await` upstream values or `yield` values downstream. A
