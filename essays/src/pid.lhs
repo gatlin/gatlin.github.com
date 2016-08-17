@@ -95,7 +95,7 @@ state internally:
 > integral = Channel $ loop 0 where
 >     loop sumErr = do
 >         err <- await
->         let result = 0.5*(sumErr + err)
+>         let result = sumErr + err
 >         yield result
 >         loop result
 
@@ -145,21 +145,21 @@ Let's test it out.
 >     let outputs = [5, 7, 9, 14, 11, 9, 8, 12, 9]
 >     let target_value = 10 -- why not?
 >     runTube $ each outputs
->            >< tune (pid 0.5 0.2 0.2 target_value)
+>            >< tune (pid 0.5 0.15 0.2 target_value)
 >            >< map show
 >            >< pour display
 
 The output from running this program[^1]:
 
-    4.0
+    4.25
+    2.3000000000000003
+    1.4499999999999997
+    -2.25
+    0.7000000000000001
     1.65
-    0.475
-    -3.2125
-    -0.10624999999999996
-    0.8968750000000001
-    1.3984375
-    -1.90078125
-    1.149609375
+    2.25
+    -1.05
+    2.0
 
 Not too shabby, honestly. While this could use some fine-tuning the correction
 values are more or less solid attempts to keep the output near 10.

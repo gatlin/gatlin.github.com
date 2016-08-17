@@ -127,7 +127,7 @@ where
 integral <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu">$</span> loop <span class="dv">0</span> <span class="kw">where</span>
     loop sumErr <span class="fu">=</span> <span class="kw">do</span>
         err <span class="ot">&lt;-</span> await
-        <span class="kw">let</span> result <span class="fu">=</span> <span class="fl">0.5</span><span class="fu">*</span>(sumErr <span class="fu">+</span> err)
+        <span class="kw">let</span> result <span class="fu">=</span> sumErr <span class="fu">+</span> err
         yield result
         loop result</code></pre></div>
 <p>With a starting sum of 0 this is very self-explanatory: a new error value comes from upstream, it is added to the running total, the total is yielded downstream, repeat.</p>
@@ -160,19 +160,19 @@ main <span class="fu">=</span> <span class="kw">do</span>
     <span class="kw">let</span> outputs <span class="fu">=</span> [<span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>, <span class="dv">14</span>, <span class="dv">11</span>, <span class="dv">9</span>, <span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">9</span>]
     <span class="kw">let</span> target_value <span class="fu">=</span> <span class="dv">10</span> <span class="co">-- why not?</span>
     runTube <span class="fu">$</span> each outputs
-           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.5</span> <span class="fl">0.2</span> <span class="fl">0.2</span> target_value)
+           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.5</span> <span class="fl">0.15</span> <span class="fl">0.2</span> target_value)
            <span class="fu">&gt;&lt;</span> map show
            <span class="fu">&gt;&lt;</span> pour display</code></pre></div>
 <p>The output from running this program<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>
-<pre><code>4.0
+<pre><code>4.25
+2.3000000000000003
+1.4499999999999997
+-2.25
+0.7000000000000001
 1.65
-0.475
--3.2125
--0.10624999999999996
-0.8968750000000001
-1.3984375
--1.90078125
-1.149609375</code></pre>
+2.25
+-1.05
+2.0</code></pre>
 <p>Not too shabby, honestly. While this could use some fine-tuning the correction values are more or less solid attempts to keep the output near 10.</p>
 <p>My goal would be to write control software in Haskell using <code>tubes</code>, with sensors emitting streams of values and control routines operating on them in real time and constant memory usage.</p>
 <p>Anyway I had fun and I hope you did too!</p>
