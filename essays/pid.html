@@ -158,8 +158,9 @@ pid kp ki kd desired <span class="fu">=</span> proc measured <span class="ot">-&
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span>
     <span class="kw">let</span> outputs <span class="fu">=</span> [<span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>, <span class="dv">14</span>, <span class="dv">11</span>, <span class="dv">9</span>, <span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">9</span>]
+    <span class="kw">let</span> target_value <span class="fu">=</span> <span class="dv">10</span> <span class="co">-- why not?</span>
     runTube <span class="fu">$</span> each outputs
-           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.5</span> <span class="fl">0.1</span> <span class="fl">0.2</span> <span class="dv">10</span>)
+           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.5</span> <span class="fl">0.1</span> <span class="fl">0.2</span> target_value)
            <span class="fu">&gt;&lt;</span> map show
            <span class="fu">&gt;&lt;</span> pour display</code></pre></div>
 <p>The output from running this program<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>

@@ -142,8 +142,9 @@ Let's test it out.
 > main :: IO ()
 > main = do
 >     let outputs = [5, 7, 9, 14, 11, 9, 8, 12, 9]
+>     let target_value = 10 -- why not?
 >     runTube $ each outputs
->            >< tune (pid 0.5 0.1 0.2 10)
+>            >< tune (pid 0.5 0.1 0.2 target_value)
 >            >< map show
 >            >< pour display
 
