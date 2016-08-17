@@ -130,8 +130,8 @@ integral <span class="fu">=</span> <span class="dt">Channel</span> <span class="
         <span class="kw">let</span> result <span class="fu">=</span> <span class="fl">0.5</span><span class="fu">*</span>(sumErr <span class="fu">+</span> err)
         yield result
         loop result</code></pre></div>
-<p>With a starting sum of 0 this is very self-explanatory: a new err value comes from upstream, it is added to the running total, the total is yielded downstream, repeat.</p>
-<p>The derivative is similarly simple:</p>
+<p>With a starting sum of 0 this is very self-explanatory: a new error value comes from upstream, it is added to the running total, the total is yielded downstream, repeat.</p>
+<p>And now for the derivative:</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">deriv ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> <span class="dt">Channel</span> m a a
 deriv <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu">$</span> loop <span class="dv">0</span> <span class="kw">where</span>
     loop lastErr <span class="fu">=</span> <span class="kw">do</span>

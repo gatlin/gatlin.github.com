@@ -97,11 +97,11 @@ state internally:
 >         yield result
 >         loop result
 
-With a starting sum of 0 this is very self-explanatory: a new err value comes
+With a starting sum of 0 this is very self-explanatory: a new error value comes
 from upstream, it is added to the running total, the total is yielded
 downstream, repeat.
 
-The derivative is similarly simple:
+And now for the derivative:
 
 > deriv :: (Fractional a, Monad m) => Channel m a a
 > deriv = Channel $ loop 0 where
