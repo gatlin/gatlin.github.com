@@ -122,15 +122,15 @@ our PID routine.
 
 > pid :: (Fractional a, Monad m)
 >     => a -- ^ proportional gain
->     => a -- ^ integral gain
->     => a -- ^ derivative gain
->     => a -- ^ desired value
->     => Channel m a a
+>     -> a -- ^ integral gain
+>     -> a -- ^ derivative gain
+>     -> a -- ^ desired value
+>     -> Channel m a a
 >
 > pid kp ki kd desired = proc measured -> do
 >     let err = desired - measured
 >     i <- integral -< err
->     d <- derivative -< err
+>     d <- deriv -< err
 >     returnA -< kp*err + ki*i + kd*d
 
 To wit: the measured output comes in, the error is computed, the integral and

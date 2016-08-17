@@ -143,15 +143,15 @@ deriv <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu"
 <p>Equipped with integration and derivation and fancy <code>Arrow</code> notation we can write our PID routine.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">pid ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m)
     <span class="ot">=&gt;</span> a <span class="co">-- ^ proportional gain</span>
-    <span class="ot">=&gt;</span> a <span class="co">-- ^ integral gain</span>
-    <span class="ot">=&gt;</span> a <span class="co">-- ^ derivative gain</span>
-    <span class="ot">=&gt;</span> a <span class="co">-- ^ desired value</span>
-    <span class="ot">=&gt;</span> <span class="dt">Channel</span> m a a
+    <span class="ot">-&gt;</span> a <span class="co">-- ^ integral gain</span>
+    <span class="ot">-&gt;</span> a <span class="co">-- ^ derivative gain</span>
+    <span class="ot">-&gt;</span> a <span class="co">-- ^ desired value</span>
+    <span class="ot">-&gt;</span> <span class="dt">Channel</span> m a a
 
 pid kp ki kd desired <span class="fu">=</span> proc measured <span class="ot">-&gt;</span> <span class="kw">do</span>
     <span class="kw">let</span> err <span class="fu">=</span> desired <span class="fu">-</span> measured
     i <span class="ot">&lt;-</span> integral <span class="fu">-&lt;</span> err
-    d <span class="ot">&lt;-</span> derivative <span class="fu">-&lt;</span> err
+    d <span class="ot">&lt;-</span> deriv <span class="fu">-&lt;</span> err
     returnA <span class="fu">-&lt;</span> kp<span class="fu">*</span>err <span class="fu">+</span> ki<span class="fu">*</span>i <span class="fu">+</span> kd<span class="fu">*</span>d</code></pre></div>
 <p>To wit: the measured output comes in, the error is computed, the integral and derivative are computed, and the correction value is computed straightforwardly from the definition.</p>
 <p>Let's test it out.</p>
