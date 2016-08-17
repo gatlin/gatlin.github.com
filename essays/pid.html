@@ -118,7 +118,7 @@ where
 <span class="kw">import </span><span class="dt">Prelude</span> <span class="kw">hiding</span> (map)
 <span class="kw">import </span><span class="dt">Control.Arrow</span></code></pre></div>
 <p>I hear you ask, &quot;What's the arrow crap?&quot; There are a lot of excellent resources for arrows and I won't bother trying to retread. The simple answer is that an <em>arrow</em> models a process that transforms some value <em>a</em> into a value <em>b</em>.</p>
-<p>And again I hear you: &quot;Isn't that what a function does?&quot; Indeed. And actually functions <em>are</em> arrows. But there are other kinds. Arrows can, for instance, perform multiple computations <em>simultaneously</em>.</p>
+<p>And again I hear you: &quot;Isn't that what a function does?&quot; Indeed. And actually functions <em>are</em> arrows. But there are other kinds. Arrows can, for instance, perform multiple computations <em>simultaneously</em>, built by combining other <code>Arrows</code>.</p>
 <p>The <code>Arrow</code> class is exported by <code>Control.Arrow</code>. GHC's <code>Arrows</code> language extension allows us to write complex arrow functions in a notation that looks an awful lot like a wiring diagram.</p>
 <p>The <code>Channel</code> type from <code>tubes</code> is a variety of <code>Tube</code> that isn't a <code>Source</code> or a <code>Sink</code>: in other words, it receives upstream values, does something, and forwards results downstream. It also happens to be an <code>Arrow</code>.</p>
 <h1 id="lets-write-some-actual-fucking-code"><span class="header-section-number">3</span> Let's write some actual fucking code</h1>

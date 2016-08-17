@@ -72,7 +72,8 @@ for arrows and I won't bother trying to retread. The simple answer is that an
 
 And again I hear you: "Isn't that what a function does?" Indeed. And actually
 functions *are* arrows. But there are other kinds. Arrows can, for instance,
-perform multiple computations *simultaneously*.
+perform multiple computations *simultaneously*, built by combining other
+`Arrows`.
 
 The `Arrow` class is exported by `Control.Arrow`. GHC's `Arrows` language
 extension allows us to write complex arrow functions in a notation that looks an
