@@ -164,15 +164,15 @@ main <span class="fu">=</span> <span class="kw">do</span>
            <span class="fu">&gt;&lt;</span> map show
            <span class="fu">&gt;&lt;</span> pour display</code></pre></div>
 <p>The output from running this program<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>
-<pre><code>4.0
-1.9
-0.9999999999999999
--2.5
-0.5000000000000001
-1.4
-1.9000000000000001
--1.3
-1.7000000000000002</code></pre>
+<pre><code>3.75
+1.375
+0.2875
+-3.10625
+-3.1249999999999334e-3
+0.8984375
+1.2992187499999999
+-1.850390625
+1.1248046875000002</code></pre>
 <p>Not too shabby, honestly. While this could use some fine-tuning the correction codes are more or less solid attempts to keep the output near 10.</p>
 <p>My goal would be to write control software in Haskell using <code>tubes</code>, with sensors emitting streams of values and control routines operating on them in real time and constant memory usage.</p>
 <p>Anyway I had fun and I hope you did too!</p>

@@ -150,15 +150,15 @@ Let's test it out.
 
 The output from running this program[^1]:
 
-    4.0
-    1.9
-    0.9999999999999999
-    -2.5
-    0.5000000000000001
-    1.4
-    1.9000000000000001
-    -1.3
-    1.7000000000000002
+    3.75
+    1.375
+    0.2875
+    -3.10625
+    -3.1249999999999334e-3
+    0.8984375
+    1.2992187499999999
+    -1.850390625
+    1.1248046875000002
 
 Not too shabby, honestly. While this could use some fine-tuning the correction
 codes are more or less solid attempts to keep the output near 10.
