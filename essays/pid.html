@@ -83,7 +83,7 @@ Or, when will the screaming stop? When?
 <li><a href="#pid-controller-theory"><span class="toc-section-number">1</span> PID controller theory</a></li>
 <li><a href="#setup"><span class="toc-section-number">2</span> Setup</a></li>
 <li><a href="#lets-write-some-actual-fucking-code"><span class="toc-section-number">3</span> Let's write some actual fucking code</a></li>
-<li><a href="#lets-finally-give-this-arrow-a-point"><span class="toc-section-number">4</span> Let's finally give this arrow a point</a></li>
+<li><a href="#and-now-the-point-of-our-arrow"><span class="toc-section-number">4</span> And now the point of our arrow</a></li>
 </ul>
 </div><!-- toc wrapper -->
         </div>
@@ -139,7 +139,7 @@ deriv <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu"
         yield (err <span class="fu">-</span> lastErr)
         loop err</code></pre></div>
 <p>Actually <code>deriv</code> is even simpler. The last error is subtracted from the current error, and then the current error becomes the last error. Woah.</p>
-<h1 id="lets-finally-give-this-arrow-a-point"><span class="header-section-number">4</span> Let's finally give this arrow a point</h1>
+<h1 id="and-now-the-point-of-our-arrow"><span class="header-section-number">4</span> And now the point of our arrow</h1>
 <p>Equipped with integration and derivation and fancy <code>Arrow</code> notation we can write our PID routine.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">pid ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m)
     <span class="ot">=&gt;</span> a <span class="co">-- ^ proportional gain</span>

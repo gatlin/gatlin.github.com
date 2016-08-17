@@ -114,7 +114,7 @@ And now for the derivative:
 Actually `deriv` is even simpler. The last error is subtracted from the current
 error, and then the current error becomes the last error. Woah.
 
-Let's finally give this arrow a point
+And now the point of our arrow
 ===
 
 Equipped with integration and derivation and fancy `Arrow` notation we can write
