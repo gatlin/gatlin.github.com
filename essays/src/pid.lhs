@@ -171,7 +171,7 @@ real time and constant memory usage.
 Anyway I had fun and I hope you did too!
 
 [pid]: http://en.wikipedia.org/PID_controller
-[tubes]: https://github.org/gatlin/tubes
+[tubes]: http://hackage.haskell.org/package/tubes
 [src]: http://niltag.net/essays/src/pid.lhs
 
 [^1]: The functions `tune` and `pour` correspond to the types `Channel` and
