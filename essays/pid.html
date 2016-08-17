@@ -109,7 +109,7 @@ where
     K[i] = Integral gain
     K[d] = Derivative gain
     e(t) = Error function: desired value - measured value at time t</code></pre>
-<p>This almost reads like Haskell already. First let's write a simple integration routine.</p>
+<p>This almost reads like Haskell already.</p>
 <h1 id="setup"><span class="header-section-number">2</span> Setup</h1>
 <p>I'm going to use my <a href="https://github.org/gatlin/tubes">tubes library</a> to generate fake output data and my PID controller will be a <code>Tube</code> receiving these values and emitting corrections.</p>
 <p>First, the modules and language extensions I'll be using:</p>

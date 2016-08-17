@@ -51,8 +51,7 @@ The function that governs a PID controller is this:
         K[d] = Derivative gain
         e(t) = Error function: desired value - measured value at time t
 
-This almost reads like Haskell already. First let's write a simple integration
-routine.
+This almost reads like Haskell already.
 
 Setup
 ===
