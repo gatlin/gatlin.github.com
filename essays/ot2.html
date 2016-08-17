@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>
+Operational Transformation in Haskell, Part 2
+| Gatlin Johnson</title>
+
+    <!-- Merriweather font -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- glyphicons -->
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+
+    <link href="style.css" rel="stylesheet">
+    <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+
+        div#toc-wrapper ul, div#toc-wrapper ol {
+            list-style: none;
+        }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right clearfix hidden-xs">
+          <li>
+          <a href="mailto:gatlin@niltag.net">
+              <span class="glyphicon glyphicon-envelope"></span>
+              Send me an email!</a></li>
+          <li>
+            <a href="gatlin.gpg">PGP</a>
+          </li>
+          <li>
+              <a href="/">Home</a>
+          </li>
+        </ul>
+        <h3 class="text-muted">
+            <em>Veni veni veni</em>
+        </h3>
+      </div>
+      <hr>
+      <ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+          <li><a href="/essays/">Essays</a></li>
+      </ol>
+      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
+        <h1>
+Operational Transformation in Haskell, Part 2
+        </h1>
+        <p class="lead">
+Or, Thank You (Re)based God
+        </p>
+<div id="toc-wrapper">
+<h2>Contents</h2>
+<ul>
+<li><a href="#what-ot-really-is"><span class="toc-section-number">1</span> What OT really is</a></li>
+<li><a href="#yup"><span class="toc-section-number">2</span> Yup</a></li>
+<li><a href="#i-3-monoids"><span class="toc-section-number">3</span> I &lt;3 Monoids</a></li>
+<li><a href="#why-couldnt-i-be-good-at-something-that-lets-me-go-outside-more"><span class="toc-section-number">4</span> Why couldn’t I be good at something that lets me go outside more?</a><ul>
+<li><a href="#case-1-were-finished"><span class="toc-section-number">4.1</span> Case 1: We’re finished</a></li>
+<li><a href="#case-2-insertions"><span class="toc-section-number">4.2</span> Case 2: Insertions</a></li>
+<li><a href="#cases-3-6"><span class="toc-section-number">4.3</span> Cases 3-6</a><ul>
+<li><a href="#case-3-retain-retain"><span class="toc-section-number">4.3.1</span> Case 3: Retain / Retain</a></li>
+<li><a href="#case-4-delete-delete"><span class="toc-section-number">4.3.2</span> Case 4: Delete / Delete</a></li>
+<li><a href="#case-5-delete-retain"><span class="toc-section-number">4.3.3</span> Case 5: Delete / Retain</a></li>
+<li><a href="#case-6-retain-delete"><span class="toc-section-number">4.3.4</span> Case 6: Retain / Delete</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#and-the-result"><span class="toc-section-number">5</span> And the result?</a></li>
+<li><a href="#what-did-all-of-this-mean"><span class="toc-section-number">6</span> What did all of this mean?</a></li>
+</ul>
+</div>
+        </div>
+
+      <div class="row">
+        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+<p>In my <a href="/essays/ot.html">previous article</a> I outlined a project to implement <a href="http://en.wikipedia.org/Operational_transformation">operational transformation</a> in Haskell. I defined a domain specific language for operations on documents - <code>insert</code>, <code>delete</code>, and <code>retain</code> (skip) - and built an interpreter it which would correctly apply operations to a “document,” in this case a run-of-the-mill <code>String</code>.</p>
+<p>For convenience here is an example of the DSL in action:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">opA ::</span> <span class="dt">Operation</span>
+opA <span class="fu">=</span> <span class="kw">do</span>
+    delete <span class="dv">1</span>
+    insert <span class="st">&quot;H&quot;</span>
+    retain <span class="dv">10</span>
+
+<span class="ot">editor_test ::</span> <span class="dt">IO</span> ()
+editor_test <span class="fu">=</span> <span class="kw">do</span>
+    <span class="kw">let</span> doc <span class="fu">=</span> <span class="st">&quot;hello world&quot;</span>
+    <span class="kw">let</span> (result_length doc&#39;) <span class="fu">=</span> edit doc opA
+    putStrLn doc&#39;
+    <span class="co">-- prints &quot;Hello world&quot;</span></code></pre></div>
+<p>Here we define a series of edits we wish to make to a <code>String</code> as a value and then use it to transform a <code>String</code>.</p>
+<p>Armed with the ability to see what the fuck we’re doing I can now move on to actually implementing the interesting parts of OT.</p>
+<p>As with last time, <a href="https://gist.github.com/gatlin/1bf02fa50e02a481f7142dd87fe2711f">the code is available for you to play along at home</a>.</p>
+<h1 id="what-ot-really-is"><span class="header-section-number">1</span> What OT really is</h1>
+<p>OT is used to implement real-time collaboration services which coordinate multiple authors working on a single document in a way which ensures consistency among the different authors.</p>
+<p>An actual full-fledged OT service is out of the scope of this article. At its core, though, OT solves the following problem basic problem: if two users make different edits to the same document and send them to one another, how can each <em>change each others’ edits</em> in a way that they’ll both end up with the same document after applying them?</p>
+<p>That is, if <strong>User A</strong> and <strong>User B</strong> create edits <em>a</em> and <em>b</em>, respectively, is there a way to create edits <em>a’</em> and <em>b’</em> so that <strong>A</strong> can apply <em>ab’</em> and <strong>B</strong> can apply <em>ba’</em> and wind up with the same document?</p>
+<h1 id="yup"><span class="header-section-number">2</span> Yup</h1>
+<p>Okay, cool, thanks for reading the article. Just kidding I’m going to drone on forever with this.</p>
+<p>The operation we’re searching for is often called <em>transform</em> (hence, “operational transformation”). Given a pair of edits which were ostensibly made to the same document it can generate the pair of new edits we seek.</p>
+<p>Before we define <em>transform</em>, though, let’s define something useful we’ll need as a prerequisite: composition.</p>
+<h1 id="i-3-monoids"><span class="header-section-number">3</span> I &lt;3 Monoids</h1>
+<p><code>Operation</code>s form a <em>monoid</em>: there is a default “empty” value and a “combiner” function that can take two of them to produce a third; if either argument is our “empty” value then it is ignored.</p>
+<p>So let’s define a <code>Monoid</code> instance for <code>Operation</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Monoid</span> (<span class="dt">Free</span> <span class="dt">OperationGrammar</span> k) <span class="kw">where</span>
+    mempty <span class="fu">=</span> return ()
+    mappend <span class="fu">=</span> (<span class="fu">&gt;&gt;</span>)</code></pre></div>
+<p>Turns out that the monad “then” operator, <code>(&gt;&gt;)</code>, already does what we want. And the value returned by <code>return ()</code> can be treated as an identity for <code>mappend</code>. If we <code>import Data.Monoid</code> we can get access to the <code>(&lt;&gt;)</code> operator, which is an infix shorthand for <code>mappend</code>. Glad we got that sorted out.</p>
+<p>Now we will define <em>transform!</em></p>
+<h1 id="why-couldnt-i-be-good-at-something-that-lets-me-go-outside-more"><span class="header-section-number">4</span> Why couldn’t I be good at something that lets me go outside more?</h1>
+<p>In Haskell recursion isn’t the terrible idea it is in some other languages so we are going to construct our response recursively, starting with a pair of “empty” operations.</p>
+<p>Recall that operations may be composed together so an <code>Operation</code> is essentially a sequence of tagged values indicating which operation should be performed followed by either another value or the end of the sequence.</p>
+<p>It’s important to keep our goal in mind: we want to create two <em>new</em> <code>Operation</code>s <code>a'</code> and <code>b' such that</code>a &lt;&gt; b’<code>and</code> b &lt;&gt; a’` result in the same new document. So some of our logic may be a little weird. I’ll type slowly.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">xform ::</span> <span class="dt">Operation</span> <span class="ot">-&gt;</span> <span class="dt">Operation</span> <span class="ot">-&gt;</span> (<span class="dt">Operation</span>, <span class="dt">Operation</span>)
+xform a b <span class="fu">=</span> go a b (return (), return ()) <span class="kw">where</span></code></pre></div>
+<p>The <code>go</code> function will actually handle the construction of our two result <code>Operation</code>s. <code>return ()</code> is a little ugly but, in the context of our operation language, it simply means “do nothing.” (See the <code>Monoid</code> instance above).</p>
+<h2 id="case-1-were-finished"><span class="header-section-number">4.1</span> Case 1: We’re finished</h2>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">go (<span class="dt">Pure</span> ()) (<span class="dt">Pure</span> ()) result <span class="fu">=</span> result</code></pre></div>
+<p>Since I used the <code>free</code> library, the value created by <code>return ()</code> is <code>Pure ()</code> (if you want to know why, feel free to email me). So in our first case we check to see if the two <code>Operation</code> arguments are essentially finished. If so, well, whatever result we have constructed thus far is the final one.</p>
+<h2 id="case-2-insertions"><span class="header-section-number">4.2</span> Case 2: Insertions</h2>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">go (<span class="dt">Free</span> (<span class="dt">Insert</span> s k)) b (a&#39;, b&#39;) <span class="fu">=</span>
+    go k b (a&#39; <span class="fu">&lt;&gt;</span> insert s, b&#39; <span class="fu">&lt;&gt;</span> retain (length s))
+
+go a (<span class="dt">Free</span> (<span class="dt">Insert</span> s k)) (a&#39;, b&#39;) <span class="fu">=</span>
+    go a k (a&#39; <span class="fu">&lt;&gt;</span> retain (length s), b&#39; <span class="fu">&lt;&gt;</span> insert s)</code></pre></div>
+<p>We’re going to be biased toward the first <code>Operation</code> argument. If it is an <code>Insert</code> command, then we want our first transformed command to be that insertion, and the second command will skip over that many characters.</p>
+<p>If we exhaust all the <code>insert</code>s from the first command then we do the same exact thing for the second command.</p>
+<p>Why do we do this? We are trying to create versions of our edits that allow us to end up with the same document. If the left one has an insert, all we know is that wherever we are in the document, the right-hand operation needs to move whatever it was going to do until after the inserted text (or vice versa).</p>
+<h2 id="cases-3-6"><span class="header-section-number">4.3</span> Cases 3-6</h2>
+<p>With <code>insert</code> out of the way we have only <code>delete</code> and <code>retain</code> with which to contend. <code>insert</code> changes the cursor position and the document; <code>delete</code> changes only the document and <code>retain</code> changes only the cursor position.</p>
+<p>We are going to pair up our arguments and look at these four combinations case-by-case:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">go a b (a&#39;, b&#39;) <span class="fu">=</span> <span class="kw">case</span> (a, b) <span class="kw">of</span></code></pre></div>
+<h3 id="case-3-retain-retain"><span class="header-section-number">4.3.1</span> Case 3: Retain / Retain</h3>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">(<span class="dt">Free</span> (<span class="dt">Retain</span> n1 k1), <span class="dt">Free</span> (<span class="dt">Retain</span> n2 k2)) <span class="ot">-&gt;</span>
+    <span class="kw">let</span> ops minl <span class="fu">=</span> (a&#39; <span class="fu">&lt;&gt;</span> retain minl, b&#39; <span class="fu">&lt;&gt;</span> retain minl)
+    <span class="kw">in</span>  <span class="kw">case</span> compare n1 n2 <span class="kw">of</span>
+        <span class="dt">EQ</span> <span class="ot">-&gt;</span> go k1 k2 (ops n2)
+        <span class="dt">GT</span> <span class="ot">-&gt;</span> go (<span class="dt">Free</span> (<span class="dt">Retain</span> (n1 <span class="fu">-</span> n2) k1)) k2 (ops n2)
+        <span class="dt">LT</span> <span class="ot">-&gt;</span> go k1 (<span class="dt">Free</span> (<span class="dt">Retain</span> (n2 <span class="fu">-</span> n1) k2)) (ops n1)</code></pre></div>
+<p>There’s a lot going on here. The left-hand operation <code>retain</code>s <code>n1</code> characters while the right-hand <code>retain</code>s <code>n2</code> characters. Our strategy will be to determine which of the two retained the least, call that number <code>minl</code>, and add <code>retain minl</code> to both of our result <code>Operation</code>s. The larger of the two operations, if any, will have more characters to retain so we essentially replace it with a <code>retain (larger - smaller)</code>.</p>
+<p>The <code>compare</code> function, as well as the values <code>EQ</code>, <code>GT</code>, and <code>LT</code> are from the <code>Data.Ord</code> package.</p>
+<h3 id="case-4-delete-delete"><span class="header-section-number">4.3.2</span> Case 4: Delete / Delete</h3>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">(<span class="dt">Free</span> (<span class="dt">Delete</span> n1 k1), <span class="dt">Free</span> (<span class="dt">Delete</span> n2 k2)) <span class="ot">-&gt;</span>
+    <span class="kw">case</span> compare n1 n2 <span class="kw">of</span>
+        <span class="dt">EQ</span> <span class="ot">-&gt;</span> go k1 k2 (a&#39;, b&#39;)
+        <span class="dt">GT</span> <span class="ot">-&gt;</span> go (<span class="dt">Free</span> (<span class="dt">Delete</span> (n1 <span class="fu">-</span> n2) k1)) k2 (a&#39;, b&#39;)
+        <span class="dt">LT</span> <span class="ot">-&gt;</span> go k1 (<span class="dt">Free</span> (<span class="dt">Delete</span> (n2 <span class="fu">-</span> n1) k2)) (a&#39;, b&#39;)</code></pre></div>
+<p>This case is even simpler! If both operations delete the same document at the same place then we don’t need to change the operations at all, we just need to handle the two cases where one deleted more than the other.</p>
+<p>Remember, we’re thinking of ways to change one operation to have come <em>after</em> another operation which it didn’t know about. If both operations deleted then we care about handling the difference in how much was deleted.</p>
+<h3 id="case-5-delete-retain"><span class="header-section-number">4.3.3</span> Case 5: Delete / Retain</h3>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">(<span class="dt">Free</span> (<span class="dt">Delete</span> n1 k1), <span class="dt">Free</span> (<span class="dt">Retain</span> n2 k2)) <span class="ot">-&gt;</span>
+    <span class="kw">let</span> ops minl <span class="fu">=</span> (a&#39; <span class="fu">&lt;&gt;</span> delete minl, b&#39;)
+    <span class="kw">in</span>  <span class="kw">case</span> compare n1 n2 <span class="kw">of</span>
+        <span class="dt">EQ</span> <span class="ot">-&gt;</span> go k1 k2 (ops n2)
+        <span class="dt">GT</span> <span class="ot">-&gt;</span> go (<span class="dt">Free</span> (<span class="dt">Delete</span> (n1 <span class="fu">-</span> n2) k1)) k2 (ops n2)
+        <span class="dt">LT</span> <span class="ot">-&gt;</span> go k1 (<span class="dt">Free</span> (<span class="dt">Retain</span> (n2 <span class="fu">-</span> n1) k2)) (ops n1)</code></pre></div>
+<p>If the left-hand operation deleted more text than the right side skipped, then we just ignore the right-hand operation and continue with a <code>delete (larger - smaller)</code> command, which should be familiar by now. If we deleted less than we skipped, then we <code>retain (larger - smaller)</code>.</p>
+<h3 id="case-6-retain-delete"><span class="header-section-number">4.3.4</span> Case 6: Retain / Delete</h3>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">(<span class="dt">Free</span> (<span class="dt">Retain</span> n1 k1), <span class="dt">Free</span> (<span class="dt">Delete</span> n2 k2)) <span class="ot">-&gt;</span>
+    <span class="kw">let</span> ops minl <span class="fu">=</span> (a&#39;, b&#39; <span class="fu">&lt;&gt;</span> delete minl)
+    <span class="kw">in</span>  <span class="kw">case</span> compare n1 n2 <span class="kw">of</span>
+        <span class="dt">EQ</span> <span class="ot">-&gt;</span> go k1 k2 (ops n2)
+        <span class="dt">GT</span> <span class="ot">-&gt;</span> go (<span class="dt">Free</span> (<span class="dt">Retain</span> (n1 <span class="fu">-</span> n2) k1)) k2 (ops n2)
+        <span class="dt">LT</span> <span class="ot">-&gt;</span> go k1 (<span class="dt">Free</span> (<span class="dt">Delete</span> (n2 <span class="fu">-</span> n1) k2)) (ops n1)</code></pre></div>
+<p>This is fundamentally the reverse of the previous case.</p>
+<h1 id="and-the-result"><span class="header-section-number">5</span> And the result?</h1>
+<p>Let’s find out!</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">
+a,<span class="ot"> b ::</span> <span class="dt">Operation</span>
+a <span class="fu">=</span> <span class="kw">do</span>
+    retain <span class="dv">2</span>
+    insert <span class="st">&quot;t&quot;</span>
+
+b <span class="fu">=</span> <span class="kw">do</span>
+    retain <span class="dv">2</span>
+    insert <span class="st">&quot;a&quot;</span>
+
+<span class="ot">test1 ::</span> <span class="dt">IO</span> ()
+test1 <span class="fu">=</span> <span class="kw">do</span>
+    <span class="kw">let</span> (b&#39;, a&#39;) <span class="fu">=</span> xform b a
+    <span class="kw">let</span> (_, go_a) <span class="fu">=</span> edit go_doc a
+    <span class="kw">let</span> (_, go_b) <span class="fu">=</span> edit go_doc b
+    putStrLn <span class="fu">.</span> show <span class="fu">$</span> edit go_a b&#39; <span class="co">-- &quot;goat&quot;</span>
+    putStrLn <span class="fu">.</span> show <span class="fu">$</span> edit go_b a&#39; <span class="co">-- &quot;goat&quot;</span>
+
+op1,<span class="ot"> op2 ::</span> <span class="dt">Operation</span>
+op1 <span class="fu">=</span> <span class="kw">do</span>
+    retain <span class="dv">11</span>
+    insert <span class="st">&quot; dolor&quot;</span>
+
+op2 <span class="fu">=</span> <span class="kw">do</span>
+    delete <span class="dv">6</span>
+    retain <span class="dv">5</span>
+
+<span class="ot">doc ::</span> <span class="dt">Document</span>
+doc <span class="fu">=</span> <span class="st">&quot;lorem ipsum&quot;</span>
+
+<span class="ot">test2 ::</span> <span class="dt">IO</span> ()
+test2 <span class="fu">=</span> <span class="kw">do</span>
+    <span class="kw">let</span> (_, doc_op1) <span class="fu">=</span> edit doc op1
+    <span class="kw">let</span> (_, doc_op2) <span class="fu">=</span> edit doc op2
+    <span class="kw">let</span> (op2&#39;, op1&#39;) <span class="fu">=</span> xform op2 op1
+    putStrLn <span class="fu">.</span> show <span class="fu">$</span> edit doc_op1 op2&#39; <span class="co">-- (11, &quot;ipsum dolor&quot;)</span>
+    putStrLn <span class="fu">.</span> show <span class="fu">$</span> edit doc_op2 op1&#39; <span class="co">-- (11, &quot;ipsum dolor&quot;)</span></code></pre></div>
+<p>While far from a comprehensive test, this suggests we are more or less correct.</p>
+<h1 id="what-did-all-of-this-mean"><span class="header-section-number">6</span> What did all of this mean?</h1>
+<p>Ultimately, nothing, the Sun will still engulf the Earth when it finally dies. However, for the time being, we have shown how to</p>
+<ol type="1">
+<li><p>Implement a system for describing, composing, and applying text operations to documents; and</p></li>
+<li><p>Transform concurrent edits so that multiple parties may arrive at consistent document states after applying one another’s work.</p></li>
+</ol>
+<p>This article may get more elaboration in the future. Feel free to shoot me an email in the meantime.</p>
+        </div>
+</div><!-- row -->
+<hr>
+
+
+      <div class="footer">
+        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
+

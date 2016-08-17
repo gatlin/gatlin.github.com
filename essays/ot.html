@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>
+Operational Transformation in Haskell, Part 1
+| Gatlin Johnson</title>
+
+    <!-- Merriweather font -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- glyphicons -->
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+
+    <link href="style.css" rel="stylesheet">
+    <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+
+        div#toc-wrapper ul, div#toc-wrapper ol {
+            list-style: none;
+        }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right clearfix hidden-xs">
+          <li>
+          <a href="mailto:gatlin@niltag.net">
+              <span class="glyphicon glyphicon-envelope"></span>
+              Send me an email!</a></li>
+          <li>
+            <a href="gatlin.gpg">PGP</a>
+          </li>
+          <li>
+              <a href="/">Home</a>
+          </li>
+        </ul>
+        <h3 class="text-muted">
+            <em>Veni veni veni</em>
+        </h3>
+      </div>
+      <hr>
+      <ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+          <li><a href="/essays/">Essays</a></li>
+      </ol>
+      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
+        <h1>
+Operational Transformation in Haskell, Part 1
+        </h1>
+        <p class="lead">
+Or, Watch Your Language!
+        </p>
+<div id="toc-wrapper">
+<h2>Contents</h2>
+<ul>
+<li><a href="#free-falling"><span class="toc-section-number">1</span> Free falling</a></li>
+<li><a href="#a-cursory-overview"><span class="toc-section-number">2</span> A cursory overview</a></li>
+<li><a href="#run-away"><span class="toc-section-number">3</span> Run away!!!</a></li>
+<li><a href="#lets-try-it-out"><span class="toc-section-number">4</span> Let’s try it out!</a></li>
+</ul>
+</div>
+        </div>
+
+      <div class="row">
+        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+<p>Recently for a client project I’ve been studying <a href="https://en.wikipedia.org/wiki/Operational_transformation">operational transformation</a>, which sounds significantly more sci-fi than it actually is.</p>
+<p>If you aren’t familiar with OT, the premise is this: if you and I are editing a document in real time then we can’t just keep sending up our drafts to the server because we’ll overwrite each other (and also not get each others’ changes). Instead, we send up <em>operations</em>.</p>
+<p>But if you and I send up, say, edits <code>A</code> and <code>B</code> (respectively) to a server and the server arbitrarily applies mine first, it can’t simply apply <code>B</code> next. <code>B</code> was an edit to an earlier version of the document and it may not make sense anymore.</p>
+<p>While real-time collaborative editing has a lot of moving parts, the heart of it is a <em>transformation</em> algorithm which, in the scenario described above, transforms <code>B</code> into something which <em>can</em> be applied after <code>A</code>.</p>
+<p>I decided I wanted to implement this transformation algorithm myself to better understand how it works, but for this to be meaningful (and to know if it actually worked) I need to first come up with a way to represent documents and edits, and apply said edits to said documents.</p>
+<p><strong>Thus</strong> this first article will explain how I created a domain specific language (DSL) for document operations as well as an accompanying interpreter which computes a new document from an original, based on the operations. The techniques used here give me several nice things:</p>
+<ol type="1">
+<li>My DSL takes advantage of Haskell’s type checker automatically;</li>
+<li>The syntax of the language is separate from the semantics, meaning I may write several different interpreters for the same language; and</li>
+<li>Because of that separation it’s easy to transform the <code>Operation</code> expressions before ever caring what they do.</li>
+</ol>
+<p>You can view the entire <a href="https://gist.github.com/gatlin/1bf02fa50e02a481f7142dd87fe2711f">code listing here</a> and play along at home!</p>
+<h1 id="free-falling"><span class="header-section-number">1</span> Free falling</h1>
+<p>In OT, there are three kinds of edits: insertions, deletions, and skips (also called “retains”), and those will be the three commands in our operation language.</p>
+<p>OT assumes that you have a document and a cursor at some position in that document. Insertion, uh, inserts characters and moves the cursor forward. Deletion keeps the cursor still but deletes some number of characters after the cursor. Retaining just skips the cursor ahead without affecting the document.</p>
+<p>For our purposes, we can define documents like so:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Document</span> <span class="fu">=</span> <span class="dt">String</span></code></pre></div>
+<p>This makes the type signatures a little bit more expressive.</p>
+<p>The <a href="http://hackage.haskell.org/package/free"><code>free package</code></a> on Hackage defines what is called the <em>free monad</em>. If you’re not comfortable with the term “monad” that’s actually great. What you need to know is: monads define imperative languages and side effects they may perform, and how they may perform them.</p>
+<p>The <code>Free</code> type exported from this package is the common structure of all monads distilled into a “just add water” data type. All you have to do is provide the grammar of the language you want to create.</p>
+<p>Here is what <code>Free</code> looks like, with some naming changes to make it more intuitive:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Free</span> f a
+    <span class="fu">=</span> <span class="dt">Done</span> a
+    <span class="fu">|</span> <span class="dt">More</span> (f (<span class="dt">Free</span> f a))</code></pre></div>
+<p>At heart, all monads define either a finished computation of some value <code>a</code>, or declare there is more to be done. That’s really it. The <code>f</code> represents your grammar, limiting how expressions in your language interact with one another.</p>
+<p>Without further ado, then, here is our <code>Operation</code> language:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">OperationGrammar</span> k
+    <span class="fu">=</span> <span class="dt">Insert</span> <span class="dt">String</span> k
+    <span class="fu">|</span> <span class="dt">Delete</span> <span class="dt">Int</span>    k
+    <span class="fu">|</span> <span class="dt">Retain</span> <span class="dt">Int</span>    k
+    <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Functor</span>)
+
+<span class="kw">type</span> <span class="dt">Operation</span> <span class="fu">=</span> <span class="dt">Free</span> <span class="dt">OperationGrammar</span> ()
+
+<span class="ot">insert ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Operation</span>
+insert str <span class="fu">=</span> liftF <span class="fu">$</span> <span class="dt">Insert</span> str ()
+
+<span class="ot">delete ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Operation</span>
+delete n <span class="fu">=</span> liftF <span class="fu">$</span> <span class="dt">Delete</span> n ()
+
+<span class="ot">retain ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Operation</span>
+retain n <span class="fu">=</span> liftF <span class="fu">$</span> <span class="dt">Retain</span> n ()</code></pre></div>
+<p>And with that you have created an embedded language. You can define operations like so:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">my_first_op ::</span> <span class="dt">Operation</span>
+my_first_op <span class="fu">=</span> <span class="kw">do</span>
+    delete <span class="dv">6</span>
+    insert <span class="st">&quot;Hello World&quot;</span></code></pre></div>
+<p>Note the definition of <code>Operation</code>. Monads <em>in general</em> are computations of some base type and the result of the computation may often be important. In our case however the language is <em>only</em> useful for its side effects. Because of this we can safely “plug the hole” with <code>()</code>.</p>
+<h1 id="a-cursory-overview"><span class="header-section-number">2</span> A cursory overview</h1>
+<p>We have said that operations essentially dictate how to edit a document at a given cursor position, which may result in changes to both the document and the cursor position.</p>
+<p>Thus we will say that an <em>operation</em> is interpreted by a <em>cursor</em> representing a document and a position.</p>
+<p>Just as there is a <code>Free</code> monad there is a <code>Cofree</code> comonad. Calm down. Breathe.</p>
+<p>Monads define languages with side effects and comonads define interpreters with internal environments. That’s really it.</p>
+<p>The <code>Cofree</code> definition is this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Cofree</span> f a <span class="fu">=</span> a <span class="fu">:&lt;</span> f (<span class="dt">Cofree</span> f a)</code></pre></div>
+<p>You can think of <code>a</code> as the internal state of the comonad. At any given point in a comonad computation you are in a state and you have the possibility of moving to a different state. In the case of cofree comonads, your options are defined by - you guessed it - some functor type.</p>
+<p>We want an interpreter which can process the <code>OperationGrammar</code> commands we wrote. So, here goes:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">CursorF</span> k <span class="fu">=</span> <span class="dt">CursorF</span>
+    {<span class="ot"> insertH ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> k
+    ,<span class="ot"> deleteH ::</span> <span class="dt">Int</span>    <span class="ot">-&gt;</span> k
+    ,<span class="ot"> retainH ::</span> <span class="dt">Int</span>    <span class="ot">-&gt;</span> k
+    } <span class="kw">deriving</span> (<span class="dt">Functor</span>)
+<span class="kw">type</span> <span class="dt">Cursor</span> a <span class="fu">=</span> <span class="dt">Cofree</span> <span class="dt">CursorF</span> a</code></pre></div>
+<p>A <code>Cursor a</code> is an interpreter which modifies an internal value of type <code>a</code> using one of three different handler functions. The handlers will accept the arguments from their corresponding operations and then produce (ultimately) a new <code>Cursor a</code>. The <code>Cofree</code> type handles tying all the particular knots.</p>
+<p>Now, we might want different kinds of interpreters for different situations. One might pretty-print <code>Operation</code> expressions to a log. One might apply them to a document. One might send them over the network and then apply edits from <em>other people</em> first.</p>
+<p>We want a document editor, specifically, which keeps track of a document string and a cursor position. So let’s define it:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Editor</span> <span class="fu">=</span> <span class="dt">Cursor</span> (<span class="dt">Int</span>, <span class="dt">Document</span>)</code></pre></div>
+<p>Now we need to create an <code>Editor</code>. The <code>free</code> package provides the <code>coiter</code> function, which is a bit of an opaque name. However, refer back to the <code>Cofree</code> definition. A cofree comonad at all times has a current internal value and a way to get to a “next” value. This makes it a bit like a stream of values that lets you pick which branch you want to explore. <code>coiter</code> is a way of building a comonad stream in a way that is not nearly as complicated as it sounds.</p>
+<p>Let’s start at the top level:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">newEditor ::</span> (<span class="dt">Int</span>, <span class="dt">Document</span>) <span class="ot">-&gt;</span> <span class="dt">Editor</span>
+newEditor start <span class="fu">=</span> coiter next start <span class="kw">where</span>
+    next w <span class="fu">=</span> <span class="dt">CursorF</span>
+                (coInsert w)
+                (coDelete w)
+                (coRetain w)</code></pre></div>
+<p>We provide a starting state (most likely <code>(0, &quot;&quot;)</code> but it could be anything) and a function <code>next</code> which takes a cofree comonad and produces an interpreter value that contains the next comonad. I know, I know. Let it sink in.</p>
+<p>Let’s define these auxiliary functions.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">coInsert ::</span> (<span class="dt">Int</span>, <span class="dt">Document</span>) <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> (<span class="dt">Int</span>, <span class="dt">Document</span>)
+coInsert (idx, doc) str <span class="fu">=</span> (idx&#39;, doc&#39;) <span class="kw">where</span>
+    idx&#39; <span class="fu">=</span> idx <span class="fu">+</span> length str
+    doc&#39; <span class="fu">=</span> pre <span class="fu">++</span> str <span class="fu">++</span> post
+    (pre, post) <span class="fu">=</span> splitAt idx doc</code></pre></div>
+<p>(We get <code>splitAt</code> from <code>Data.List</code> in the base libraries.)</p>
+<p><code>coInsert</code> accepts a state value (in this case, <code>(Int, Document)</code>) and a string to insert, and produces a <em>new</em> state value. That’s really it. This really showcases the elegance of the (co)free approach to DSLs: the behavior of a command is defined separately from the declaration of the command, and indeed it may not be the only behavior.</p>
+<p><code>coDelete</code> and <code>coRetain</code> are similar:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">coDelete ::</span> (<span class="dt">Int</span>, <span class="dt">Document</span>) <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> (<span class="dt">Int</span>, <span class="dt">Document</span>)
+coDelete (idx, doc) n <span class="fu">=</span> (idx, doc&#39;) <span class="kw">where</span>
+    doc&#39; <span class="fu">=</span> pre <span class="fu">++</span> (drop n post)
+    (pre,post) <span class="fu">=</span> splitAt idx doc
+    
+<span class="ot">coRetain ::</span> (<span class="dt">Int</span>, <span class="dt">Document</span>) <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> (<span class="dt">Int</span>, <span class="dt">Document</span>)
+coRetain (idx, doc) n <span class="fu">=</span> (idx<span class="fu">+</span>n, doc)</code></pre></div>
+<p>And with that, we can create a new <code>Editor</code> with <code>newEditor (0, &quot;&quot;)</code> and … well, actually, we still need to feed <code>Operation</code>s into the <code>Editor</code> to get the result document. Hm.</p>
+<h1 id="run-away"><span class="header-section-number">3</span> Run away!!!</h1>
+<p>We have a grammar for document operations and an interpreter for those operations and how they affect a document and cursor position. We need to define how these may be combined.</p>
+<p>The tricky thing is, the language and interpreter are each composites of two types. The <code>Free</code> layer of an operation tells the <code>Cofree</code> layer of the interpreter whether to keep going or yield the latest state value; and <code>OperationGrammar</code> dictates which <code>CursorF</code> function will be used to modify the state value.</p>
+<p>The following type class, with a different name, is stolen from <a href="http://dlaing.org/cofun/posts/free_and_cofree.html">David Laing</a>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> (<span class="dt">Functor</span> f, <span class="dt">Functor</span> g) <span class="ot">=&gt;</span> <span class="dt">Run</span> f g <span class="kw">where</span>
+<span class="ot">    run ::</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> r) <span class="ot">-&gt;</span> f a <span class="ot">-&gt;</span> g b <span class="ot">-&gt;</span> r</code></pre></div>
+<p>The <code>run</code> method will accept the final monad and comonad computations as well as a function saying what to do with them.</p>
+<p>We will define instances for both <code>Cofree</code>/<code>Free</code> and <code>CursorF</code>/<code>OperationGrammar</code> and let the compiler decide what we mean when we say <code>run</code>.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Run</span> f g <span class="ot">=&gt;</span> <span class="dt">Run</span> (<span class="dt">Cofree</span> f) (<span class="dt">Free</span> g) <span class="kw">where</span>
+    run p (a <span class="fu">:&lt;</span>  _) (<span class="dt">Pure</span> x) <span class="fu">=</span> p a x
+    run p (_ <span class="fu">:&lt;</span> fs) (<span class="dt">Free</span> gs) <span class="fu">=</span> run (run p) fs gs
+
+<span class="kw">instance</span> <span class="dt">Run</span> <span class="dt">CursorF</span> <span class="dt">OperationGrammar</span> <span class="kw">where</span>
+    run f (<span class="dt">CursorF</span> i _ _) (<span class="dt">Insert</span> s k) <span class="fu">=</span> f (i s) k
+    run f (<span class="dt">CursorF</span> _ d _) (<span class="dt">Delete</span> n k) <span class="fu">=</span> f (d n) k
+    run f (<span class="dt">CursorF</span> _ _ r) (<span class="dt">Retain</span> n k) <span class="fu">=</span> f (r n) k</code></pre></div>
+<p>The idea behind all three is we give the operation argument to the appropriate handler, which will produce the correct next <code>Cursor</code>. Both that and the next <code>Operation</code> are then given to <code>f</code>.</p>
+<p>With this we may define the <code>edit</code> function to transform a <code>Document</code> with an <code>Operation</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">edit ::</span> <span class="dt">Document</span> <span class="ot">-&gt;</span> <span class="dt">Operation</span> <span class="ot">-&gt;</span> (<span class="dt">Int</span>, <span class="dt">Document</span>)
+edit doc ops <span class="fu">=</span> run const (newEditor (<span class="dv">0</span>, doc)) ops</code></pre></div>
+<p>Since the base value of every <code>Operation</code> is <code>()</code> we use <code>const</code> to basically throw away the monadic result.</p>
+<h1 id="lets-try-it-out"><span class="header-section-number">4</span> Let’s try it out!</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">opA ::</span> <span class="dt">Operation</span>
+opA <span class="fu">=</span> <span class="kw">do</span>
+    delete <span class="dv">1</span>
+    insert <span class="st">&quot;H&quot;</span>
+    retain <span class="dv">10</span>
+
+<span class="ot">editor_test ::</span> <span class="dt">IO</span> ()
+editor_test <span class="fu">=</span> <span class="kw">do</span>
+    <span class="kw">let</span> doc <span class="fu">=</span> <span class="st">&quot;hello world&quot;</span>
+    <span class="kw">let</span> (result_length, doc&#39;) <span class="fu">=</span> edit doc opA
+    putStrLn doc&#39;
+    <span class="co">-- &quot;Hello world&quot;</span></code></pre></div>
+<p>And there you have it! We created a language for document operations and an interpreter which could actually transform documents with it.</p>
+<p>My next article will show how to actually do the OT part of this. Until then!</p>
+        </div>
+</div><!-- row -->
+<hr>
+
+
+      <div class="footer">
+        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
+
