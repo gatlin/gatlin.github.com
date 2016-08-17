@@ -91,7 +91,7 @@ Or, when will the screaming stop? When?
         <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
 <p>A major project I want to embark on at some point in the future is making a quadrotor. I've made one before but I was at the mercy of a lot of off-the-shelf software that I'm not altogether sure was entirely correct, either.</p>
 <p>So I want to eventually program a quadrotor (or similarly awesome robot thing) and I would really enjoy doing it in Haskell. It has a low footprint and is already used in other real time settings.</p>
-<p>A baby step on this journey, for me, is to understand how <a href="http://en.wikipedia.org/PID_controller">PID controllers</a> work. To that end I'm going to try and write a PID controller in Haskell.</p>
+<p>A baby step on this journey, for me, is to understand how <a href="http://en.wikipedia.org/PID_controller">PID controllers</a> work. To that end I'm going to try and write my very own PID controller. I'm sure my parents will want this framed on the refrigerator.</p>
 <p>This post is actually written in literate Haskell, so you can download the source <a href="http://niltag.net/essays/src/pid.lhs">here</a> and compile it as-is. You'll need to ensure you have installed the latest <code>tubes</code> package (<code>cabal install tubes</code> should suffice).</p>
 <h1 id="pid-controller-theory"><span class="header-section-number">1</span> PID controller theory</h1>
 <p>The <em>error</em> is the difference between my measured value and my desired value. PID controllers try to minimize this error by emitting a correction value. The error value makes three considerations:</p>

@@ -12,7 +12,8 @@ and I would really enjoy doing it in Haskell. It has a low footprint and is
 already used in other real time settings.
 
 A baby step on this journey, for me, is to understand how [PID controllers][pid]
-work. To that end I'm going to try and write a PID controller in Haskell.
+work. To that end I'm going to try and write my very own PID controller. I'm
+sure my parents will want this framed on the refrigerator.
 
 This post is actually written in literate Haskell, so you can download the
 source [here][src] and compile it as-is. You'll need to ensure you have
