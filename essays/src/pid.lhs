@@ -144,21 +144,21 @@ Let's test it out.
 >     let outputs = [5, 7, 9, 14, 11, 9, 8, 12, 9]
 >     let target_value = 10 -- why not?
 >     runTube $ each outputs
->            >< tune (pid 0.5 0.1 0.2 target_value)
+>            >< tune (pid 0.5 0.2 0.2 target_value)
 >            >< map show
 >            >< pour display
 
 The output from running this program[^1]:
 
-    3.75
-    1.375
-    0.2875
-    -3.10625
-    -3.1249999999999334e-3
-    0.8984375
-    1.2992187499999999
-    -1.850390625
-    1.1248046875000002
+    4.0
+    1.65
+    0.475
+    -3.2125
+    -0.10624999999999996
+    0.8968750000000001
+    1.3984375
+    -1.90078125
+    1.149609375
 
 Not too shabby, honestly. While this could use some fine-tuning the correction
 codes are more or less solid attempts to keep the output near 10.

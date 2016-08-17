@@ -160,19 +160,19 @@ main <span class="fu">=</span> <span class="kw">do</span>
     <span class="kw">let</span> outputs <span class="fu">=</span> [<span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>, <span class="dv">14</span>, <span class="dv">11</span>, <span class="dv">9</span>, <span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">9</span>]
     <span class="kw">let</span> target_value <span class="fu">=</span> <span class="dv">10</span> <span class="co">-- why not?</span>
     runTube <span class="fu">$</span> each outputs
-           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.5</span> <span class="fl">0.1</span> <span class="fl">0.2</span> target_value)
+           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.5</span> <span class="fl">0.2</span> <span class="fl">0.2</span> target_value)
            <span class="fu">&gt;&lt;</span> map show
            <span class="fu">&gt;&lt;</span> pour display</code></pre></div>
 <p>The output from running this program<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>
-<pre><code>3.75
-1.375
-0.2875
--3.10625
--3.1249999999999334e-3
-0.8984375
-1.2992187499999999
--1.850390625
-1.1248046875000002</code></pre>
+<pre><code>4.0
+1.65
+0.475
+-3.2125
+-0.10624999999999996
+0.8968750000000001
+1.3984375
+-1.90078125
+1.149609375</code></pre>
 <p>Not too shabby, honestly. While this could use some fine-tuning the correction codes are more or less solid attempts to keep the output near 10.</p>
 <p>My goal would be to write control software in Haskell using <code>tubes</code>, with sensors emitting streams of values and control routines operating on them in real time and constant memory usage.</p>
 <p>Anyway I had fun and I hope you did too!</p>
