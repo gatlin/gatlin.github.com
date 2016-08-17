@@ -162,7 +162,7 @@ The output from running this program[^1]:
     1.149609375
 
 Not too shabby, honestly. While this could use some fine-tuning the correction
-codes are more or less solid attempts to keep the output near 10.
+values are more or less solid attempts to keep the output near 10.
 
 My goal would be to write control software in Haskell using `tubes`, with
 sensors emitting streams of values and control routines operating on them in
