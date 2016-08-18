@@ -20,23 +20,35 @@ installed the latest `tubes` package (`cabal install tubes` should suffice).
 PID controller theory
 ===
 
+We are trying to control something - say, a rotor on a quadcoptor. We have a
+measurement of how level we are along some axis, along with a desired value.
+
 The *error* is the difference between my measured value and my desired
 value. PID controllers try to minimize this error by emitting a correction
-value. The error value makes three considerations:
+value.
 
-- The correction should be in **p**roportion to the size of the error. Small
-  errors should beget small corrections, etc;
+The *error function* is very simple: `e(t) = desired_value - measured_value(t)`,
+wehre `measured_value` is a function giving the measurement at any given time,
+and `t` is time. This is a little pedantic but we'll use this in a moment.
 
-- The correction should take into account the **i**ntegral of past errors,
-  which is ultimately just their sum; and
+The control algorithm makes three considerations:
 
-- The correction should consider the **d**erivative of the error function. This
-  is accomplished simply by subtracting the last error from the current error
-  to guage what direction we're headed.
+- The correction should be in **p**roportion to the size of the error (small
+  errors should beget small corrections, etc);
+
+- The **i**ntegral of the error function from start to the current time which,
+  informally, tracks the *amount* of error we have accumulated over the runtime
+  of the controller; and
+
+- The correction should consider the **d**erivative of the error function at
+  the current time which gives a forecast about the general direction the
+  function is heading.
 
 Hence, **PID**. Each of these three computed values is multiplied by a different
 constant, called a *gain*, allowing PID controllers to be tuned to correct
-behavior.
+behavior. In our example we are measuring how level a rotor is but the thing we
+are controlling is power sent to the motor. So we must have these configurable
+gain values.
 
 The function that governs a PID controller is this:
 
@@ -48,7 +60,7 @@ The function that governs a PID controller is this:
         K[d] = Derivative gain
         e(t) = Error function: desired value - measured value at time t
 
-This almost reads like Haskell already.
+I can feel the excitement welling within you!
 
 Setup and a little background
 ===
@@ -79,79 +91,109 @@ in greater detail.
 Let's write some actual fucking code
 ===
 
-In a discrete system like this the integral is more or less just the sum of all
-previous values. Let's write an integration `Channel` that keeps track of this
-state internally:
+First we will define a function computes a running integral. The integral term
+allows us to take into account how much error we have accumulated over time.
+If significant error persists for a while, the *I* term will change
+proportionally to reflect that.
 
-> integral :: (Fractional a, Monad m) => Channel m a a
+> integral :: (Fractional a, Monad m) => Channel m (a,a) a
 > integral = Channel $ loop 0 where
 >     loop sumErr = do
->         err <- await
->         let result = sumErr + err
+>         (dt, err) <- await
+>         let result = sumErr + err*dt
 >         yield result
 >         loop result
 
-With a starting sum of 0 this is very self-explanatory: a new error value comes
-from upstream, it is added to the running total, the total is yielded
-downstream, repeat.
+The input is a pair of values. The first item in the pair is the number of
+timesteps since our last sample. The second item is the actual measured value.
+
+We will take into account the time difference because there are a number of
+reasons why we might miss a few samples in a real time, complex system. Hence
+we scale the error by the number of timesteps since the last reading to
+approximate the integral.
 
 And now for the derivative:
 
-> deriv :: (Fractional a, Monad m) => Channel m a a
+> deriv :: (Fractional a, Monad m) => Channel m (a,a) a
 > deriv = Channel $ loop 0 where
 >     loop lastErr = do
->         err <- await
->         yield (err - lastErr)
+>         (dt, err) <- await
+>         yield $ (err - lastErr) / dt
 >         loop err
 
-Actually `deriv` is even simpler. The last error is subtracted from the current
-error, and then the current error becomes the last error. Woah.
+Again the input is a pair of the time since we last saw a value, and a new
+actual value. The derivative of a function is basically a measurement of the
+slope of the curve at a given point. Our algorithm is crude but will get the
+job done: we subtract the last value from the current value and divide it by
+the amount of time between the two.
 
 And now the point of our arrow
 ===
 
-Equipped with integration and derivation and fancy `Arrow` notation we can write
-our PID routine.
+Our fake readings will be a sequence of pairs: the first item in the pair will
+be a number indicating a timestamp, and the second will be the actual value
+read. Intuitively this is more or less the shape of the data I could expect
+from a real system.
+
+However, we needed the time *differences* for our intrepid integral and
+derivative functions. So let's write a `Channel` that turns the timestamps into
+time differentials:
+
+> timeDiff :: (Fractional a, Monad m) => a -> Channel m (a, a) (a, a)
+> timeDiff startTime = Channel $ loop startTime where
+>     loop lastTime = do
+>     (t, v) <- await
+>     let dt = t - lastTime
+>     yield (dt, v)
+>     loop t
+
+Finally, we can write out PID controller using the functions we've written and
+the `Arrows` language extension:
 
 > pid :: (Fractional a, Monad m)
 >     => a -- ^ proportional gain
 >     -> a -- ^ integral gain
 >     -> a -- ^ derivative gain
 >     -> a -- ^ desired value
->     -> Channel m a a
+>     -> Channel m (a, a) a
 >
-> pid kp ki kd desired = proc measured -> do
->     let err = desired - measured
->     i <- integral -< err
->     d <- deriv -< err
->     returnA -< kp*err + ki*i + kd*d
+> pid kp ki kd desired = timeDiff 0 >>> proc pv -> do
+>     let pv' = fmap (desired -) pv
+>     i <- integral -< pv'
+>     d <- deriv -< pv'
+>     returnA -< kp*(snd pv') + ki*i + kd*d
 
-To wit: the measured output comes in, the error is computed, the integral and
-derivative are computed, and the correction value is computed straightforwardly
-from the definition.
+The `pv` term means "process variable" and is a pair containing the time
+differential and the measured value.
+
+We use the `(>>>)` function from `Control.Arrow` to define `pid` as accepting
+the output of `timeDiff`. The `Arrows` syntax further makes it very simple and
+intuitive to feed a value through two concurrent `Channel`s and combine their
+results at the end.
 
 Let's test it out.
 
 > main :: IO ()
 > main = do
->     let outputs = [5, 7, 9, 14, 11, 9, 8, 12, 9]
+>     let readings = [(1, 5) , (3 , 7), (4 , 9), (7 , 14)
+>                    ,(8, 11), (10, 9), (11, 8), (13,12), (15, 9)]
 >     let target_value = 10 -- why not?
->     runTube $ each outputs
->            >< tune (pid 0.5 0.15 0.2 target_value)
+>     runTube $ each readings
+>            >< tune (pid 0.6 0.1 0.15 target_value)
 >            >< map show
 >            >< pour display
 
 The output from running this program[^1]:
 
     4.25
-    2.3000000000000003
-    1.4499999999999997
-    -2.25
-    0.7000000000000001
+    2.75
+    1.5000000000000002
+    -2.65
+    -0.25
+    0.85
     1.65
-    2.25
-    -1.05
-    2.0
+    -1.6
+    0.9249999999999999
 
 Not too shabby, honestly. While this could use some fine-tuning the correction
 values are more or less solid attempts to keep the output near 10.

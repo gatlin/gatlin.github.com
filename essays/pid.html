@@ -93,13 +93,16 @@ Or, when will the screaming stop? When?
 <p>A baby step on this journey, for me, is to understand how <a href="http://en.wikipedia.org/PID_controller">PID controllers</a> work. To that end I'm going to try and write my very own PID controller, which I'm sure my parents will want to post on the refrigerator and show their friends.</p>
 <p>This post is actually written in literate Haskell, so you can download the source <a href="http://niltag.net/essays/src/pid.lhs">here</a> and compile it as-is. You'll need to ensure you have installed the latest <code>tubes</code> package (<code>cabal install tubes</code> should suffice).</p>
 <h1 id="pid-controller-theory"><span class="header-section-number">1</span> PID controller theory</h1>
-<p>The <em>error</em> is the difference between my measured value and my desired value. PID controllers try to minimize this error by emitting a correction value. The error value makes three considerations:</p>
+<p>We are trying to control something - say, a rotor on a quadcoptor. We have a measurement of how level we are along some axis, along with a desired value.</p>
+<p>The <em>error</em> is the difference between my measured value and my desired value. PID controllers try to minimize this error by emitting a correction value.</p>
+<p>The <em>error function</em> is very simple: <code>e(t) = desired_value - measured_value(t)</code>, wehre <code>measured_value</code> is a function giving the measurement at any given time, and <code>t</code> is time. This is a little pedantic but we'll use this in a moment.</p>
+<p>The control algorithm makes three considerations:</p>
 <ul>
-<li><p>The correction should be in <strong>p</strong>roportion to the size of the error. Small errors should beget small corrections, etc;</p></li>
-<li><p>The correction should take into account the <strong>i</strong>ntegral of past errors, which is ultimately just their sum; and</p></li>
-<li><p>The correction should consider the <strong>d</strong>erivative of the error function. This is accomplished simply by subtracting the last error from the current error to guage what direction we're headed.</p></li>
+<li><p>The correction should be in <strong>p</strong>roportion to the size of the error (small errors should beget small corrections, etc);</p></li>
+<li><p>The <strong>i</strong>ntegral of the error function from start to the current time which, informally, tracks the <em>amount</em> of error we have accumulated over the runtime of the controller; and</p></li>
+<li><p>The correction should consider the <strong>d</strong>erivative of the error function at the current time which gives a forecast about the general direction the function is heading.</p></li>
 </ul>
-<p>Hence, <strong>PID</strong>. Each of these three computed values is multiplied by a different constant, called a <em>gain</em>, allowing PID controllers to be tuned to correct behavior.</p>
+<p>Hence, <strong>PID</strong>. Each of these three computed values is multiplied by a different constant, called a <em>gain</em>, allowing PID controllers to be tuned to correct behavior. In our example we are measuring how level a rotor is but the thing we are controlling is power sent to the motor. So we must have these configurable gain values.</p>
 <p>The function that governs a PID controller is this:</p>
 <pre><code>u(t) = K[p] e(t) + K[i] (Integral 0 -&gt; t of e(t)dt) + K[d] de(t)/dt
 
@@ -108,7 +111,7 @@ where
     K[i] = Integral gain
     K[d] = Derivative gain
     e(t) = Error function: desired value - measured value at time t</code></pre>
-<p>This almost reads like Haskell already.</p>
+<p>I can feel the excitement welling within you!</p>
 <h1 id="setup-and-a-little-background"><span class="header-section-number">2</span> Setup and a little background</h1>
 <p>First, the modules and language extensions I'll be using:</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE Arrows #-}</span>
@@ -119,57 +122,69 @@ where
 <p>And again I hear you: &quot;Isn't that what a function does?&quot; Indeed. And actually functions <em>are</em> arrows. But there are other kinds. Arrows can, for instance, perform multiple computations <em>simultaneously</em>, built by combining other <code>Arrows</code>. You can use the functions in <code>Control.Arrow</code> to do this or you can be lazy and have the <code>Arrows</code> language extension use them for you.</p>
 <p>The <code>tubes</code> library defines a base <code>Tube</code> type, which is a computation that can suspend itself to <code>await</code> upstream values or <code>yield</code> values downstream. A <code>Channel</code> is a restricted, specialized variety of <code>Tube</code> that can do both. It also happens to be an <code>Arrow</code>. The <a href="http://hackage.haskell.org/package/tubes">tubes documentation</a> explains this in greater detail.</p>
 <h1 id="lets-write-some-actual-fucking-code"><span class="header-section-number">3</span> Let's write some actual fucking code</h1>
-<p>In a discrete system like this the integral is more or less just the sum of all previous values. Let's write an integration <code>Channel</code> that keeps track of this state internally:</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">integral ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> <span class="dt">Channel</span> m a a
+<p>First we will define a function computes a running integral. The integral term allows us to take into account how much error we have accumulated over time. If significant error persists for a while, the <em>I</em> term will change proportionally to reflect that.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">integral ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> <span class="dt">Channel</span> m (a,a) a
 integral <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu">$</span> loop <span class="dv">0</span> <span class="kw">where</span>
     loop sumErr <span class="fu">=</span> <span class="kw">do</span>
-        err <span class="ot">&lt;-</span> await
-        <span class="kw">let</span> result <span class="fu">=</span> sumErr <span class="fu">+</span> err
+        (dt, err) <span class="ot">&lt;-</span> await
+        <span class="kw">let</span> result <span class="fu">=</span> sumErr <span class="fu">+</span> err<span class="fu">*</span>dt
         yield result
         loop result</code></pre></div>
-<p>With a starting sum of 0 this is very self-explanatory: a new error value comes from upstream, it is added to the running total, the total is yielded downstream, repeat.</p>
+<p>The input is a pair of values. The first item in the pair is the number of timesteps since our last sample. The second item is the actual measured value.</p>
+<p>We will take into account the time difference because there are a number of reasons why we might miss a few samples in a real time, complex system. Hence we scale the error by the number of timesteps since the last reading to approximate the integral.</p>
 <p>And now for the derivative:</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">deriv ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> <span class="dt">Channel</span> m a a
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">deriv ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> <span class="dt">Channel</span> m (a,a) a
 deriv <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu">$</span> loop <span class="dv">0</span> <span class="kw">where</span>
     loop lastErr <span class="fu">=</span> <span class="kw">do</span>
-        err <span class="ot">&lt;-</span> await
-        yield (err <span class="fu">-</span> lastErr)
+        (dt, err) <span class="ot">&lt;-</span> await
+        yield <span class="fu">$</span> (err <span class="fu">-</span> lastErr) <span class="fu">/</span> dt
         loop err</code></pre></div>
-<p>Actually <code>deriv</code> is even simpler. The last error is subtracted from the current error, and then the current error becomes the last error. Woah.</p>
+<p>Again the input is a pair of the time since we last saw a value, and a new actual value. The derivative of a function is basically a measurement of the slope of the curve at a given point. Our algorithm is crude but will get the job done: we subtract the last value from the current value and divide it by the amount of time between the two.</p>
 <h1 id="and-now-the-point-of-our-arrow"><span class="header-section-number">4</span> And now the point of our arrow</h1>
-<p>Equipped with integration and derivation and fancy <code>Arrow</code> notation we can write our PID routine.</p>
+<p>Our fake readings will be a sequence of pairs: the first item in the pair will be a number indicating a timestamp, and the second will be the actual value read. Intuitively this is more or less the shape of the data I could expect from a real system.</p>
+<p>However, we needed the time <em>differences</em> for our intrepid integral and derivative functions. So let's write a <code>Channel</code> that turns the timestamps into time differentials:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">timeDiff ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Channel</span> m (a, a) (a, a)
+timeDiff startTime <span class="fu">=</span> <span class="dt">Channel</span> <span class="fu">$</span> loop startTime <span class="kw">where</span>
+    loop lastTime <span class="fu">=</span> <span class="kw">do</span>
+    (t, v) <span class="ot">&lt;-</span> await
+    <span class="kw">let</span> dt <span class="fu">=</span> t <span class="fu">-</span> lastTime
+    yield (dt, v)
+    loop t</code></pre></div>
+<p>Finally, we can write out PID controller using the functions we've written and the <code>Arrows</code> language extension:</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">pid ::</span> (<span class="dt">Fractional</span> a, <span class="dt">Monad</span> m)
     <span class="ot">=&gt;</span> a <span class="co">-- ^ proportional gain</span>
     <span class="ot">-&gt;</span> a <span class="co">-- ^ integral gain</span>
     <span class="ot">-&gt;</span> a <span class="co">-- ^ derivative gain</span>
     <span class="ot">-&gt;</span> a <span class="co">-- ^ desired value</span>
-    <span class="ot">-&gt;</span> <span class="dt">Channel</span> m a a
+    <span class="ot">-&gt;</span> <span class="dt">Channel</span> m (a, a) a
 
-pid kp ki kd desired <span class="fu">=</span> proc measured <span class="ot">-&gt;</span> <span class="kw">do</span>
-    <span class="kw">let</span> err <span class="fu">=</span> desired <span class="fu">-</span> measured
-    i <span class="ot">&lt;-</span> integral <span class="fu">-&lt;</span> err
-    d <span class="ot">&lt;-</span> deriv <span class="fu">-&lt;</span> err
-    returnA <span class="fu">-&lt;</span> kp<span class="fu">*</span>err <span class="fu">+</span> ki<span class="fu">*</span>i <span class="fu">+</span> kd<span class="fu">*</span>d</code></pre></div>
-<p>To wit: the measured output comes in, the error is computed, the integral and derivative are computed, and the correction value is computed straightforwardly from the definition.</p>
+pid kp ki kd desired <span class="fu">=</span> timeDiff <span class="dv">0</span> <span class="fu">&gt;&gt;&gt;</span> proc pv <span class="ot">-&gt;</span> <span class="kw">do</span>
+    <span class="kw">let</span> pv&#39; <span class="fu">=</span> fmap (desired <span class="fu">-</span>) pv
+    i <span class="ot">&lt;-</span> integral <span class="fu">-&lt;</span> pv&#39;
+    d <span class="ot">&lt;-</span> deriv <span class="fu">-&lt;</span> pv&#39;
+    returnA <span class="fu">-&lt;</span> kp<span class="fu">*</span>(snd pv&#39;) <span class="fu">+</span> ki<span class="fu">*</span>i <span class="fu">+</span> kd<span class="fu">*</span>d</code></pre></div>
+<p>The <code>pv</code> term means &quot;process variable&quot; and is a pair containing the time differential and the measured value.</p>
+<p>We use the <code>(&gt;&gt;&gt;)</code> function from <code>Control.Arrow</code> to define <code>pid</code> as accepting the output of <code>timeDiff</code>. The <code>Arrows</code> syntax further makes it very simple and intuitive to feed a value through two concurrent <code>Channel</code>s and combine their results at the end.</p>
 <p>Let's test it out.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span>
-    <span class="kw">let</span> outputs <span class="fu">=</span> [<span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>, <span class="dv">14</span>, <span class="dv">11</span>, <span class="dv">9</span>, <span class="dv">8</span>, <span class="dv">12</span>, <span class="dv">9</span>]
+    <span class="kw">let</span> readings <span class="fu">=</span> [(<span class="dv">1</span>, <span class="dv">5</span>) , (<span class="dv">3</span> , <span class="dv">7</span>), (<span class="dv">4</span> , <span class="dv">9</span>), (<span class="dv">7</span> , <span class="dv">14</span>)
+                   ,(<span class="dv">8</span>, <span class="dv">11</span>), (<span class="dv">10</span>, <span class="dv">9</span>), (<span class="dv">11</span>, <span class="dv">8</span>), (<span class="dv">13</span>,<span class="dv">12</span>), (<span class="dv">15</span>, <span class="dv">9</span>)]
     <span class="kw">let</span> target_value <span class="fu">=</span> <span class="dv">10</span> <span class="co">-- why not?</span>
-    runTube <span class="fu">$</span> each outputs
-           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.5</span> <span class="fl">0.15</span> <span class="fl">0.2</span> target_value)
+    runTube <span class="fu">$</span> each readings
+           <span class="fu">&gt;&lt;</span> tune (pid <span class="fl">0.6</span> <span class="fl">0.1</span> <span class="fl">0.15</span> target_value)
            <span class="fu">&gt;&lt;</span> map show
            <span class="fu">&gt;&lt;</span> pour display</code></pre></div>
 <p>The output from running this program<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>
 <pre><code>4.25
-2.3000000000000003
-1.4499999999999997
--2.25
-0.7000000000000001
+2.75
+1.5000000000000002
+-2.65
+-0.25
+0.85
 1.65
-2.25
--1.05
-2.0</code></pre>
+-1.6
+0.9249999999999999</code></pre>
 <p>Not too shabby, honestly. While this could use some fine-tuning the correction values are more or less solid attempts to keep the output near 10.</p>
 <p>My goal would be to write control software in Haskell using <code>tubes</code>, with sensors emitting streams of values and control routines operating on them in real time and constant memory usage.</p>
 <p>Anyway I had fun and I hope you did too!</p>
