@@ -25,7 +25,7 @@ Or this:
 ```haskell
 exampleSearchStream = runTwitter credentials $ do
     publicStream ["dog","dogs"] $ \status tweets ->
-        when (status == 200) $
+        when (statusCode status == 200) $
             runTube $ for (sample tweets) doSomethingWithDogTweet
 ```
 

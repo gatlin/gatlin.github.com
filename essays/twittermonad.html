@@ -102,7 +102,7 @@ Or in other words I essentially built myself
 <p>Or this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">exampleSearchStream <span class="fu">=</span> runTwitter credentials <span class="fu">$</span> <span class="kw">do</span>
     publicStream [<span class="st">&quot;dog&quot;</span>,<span class="st">&quot;dogs&quot;</span>] <span class="fu">$</span> \status tweets <span class="ot">-&gt;</span>
-        when (status <span class="fu">==</span> <span class="dv">200</span>) <span class="fu">$</span>
+        when (statusCode status <span class="fu">==</span> <span class="dv">200</span>) <span class="fu">$</span>
             runTube <span class="fu">$</span> for (sample tweets) doSomethingWithDogTweet</code></pre></div>
 <p>Like so many of my recent projects this library builds on my <a href="http://hackage.haskell.org/package/tubes">tubes</a> library for handling streaming output. However I think its uses are fairly self-explanatory, and where they aren’t the <a href="http://hackage.haskell.org/package/tubes-2.1.1.0/docs/Tubes.html">documentation should be</a>.</p>
 <p><em>NB: I’m going to discuss some stuff that sounds scary at first but isn’t. Believe in yourself!</em></p>
