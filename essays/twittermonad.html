@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>
+A Haskell Twitter Shitposting Framework
+| Gatlin Johnson</title>
+
+    <!-- Merriweather font -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- glyphicons -->
+    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
+
+    <link href="style.css" rel="stylesheet">
+    <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; }
+code > span.ch { color: #008080; }
+code > span.st { color: #008080; }
+code > span.co { color: #008000; }
+code > span.ot { color: #ff4000; }
+code > span.al { color: #ff0000; }
+code > span.er { font-weight: bold; }
+
+        div#toc-wrapper ul, div#toc-wrapper ol {
+            list-style: none;
+        }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right clearfix hidden-xs">
+          <li>
+          <a href="mailto:gatlin@niltag.net">
+              <span class="glyphicon glyphicon-envelope"></span>
+              Send me an email!</a></li>
+          <li>
+            <a href="gatlin.gpg">PGP</a>
+          </li>
+          <li>
+              <a href="/">Home</a>
+          </li>
+        </ul>
+        <h3 class="text-muted">
+            <em>Veni veni veni</em>
+        </h3>
+      </div>
+      <hr>
+      <ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+          <li><a href="/essays/">Essays</a></li>
+      </ol>
+      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
+        <h1>
+A Haskell Twitter Shitposting Framework
+        </h1>
+        <p class="lead">
+Or in other words I essentially built myself
+        </p>
+<div id="toc-wrapper">
+<h2>Contents</h2>
+<ul>
+<li><a href="#type-hype"><span class="toc-section-number">1</span> Type Hype</a></li>
+<li><a href="#its-okay-everyone-youll-be-fine"><span class="toc-section-number">2</span> IT’S OKAY EVERYONE YOU’LL BE FINE</a></li>
+<li><a href="#oauth-where-are-thou"><span class="toc-section-number">3</span> OAuth, where are thou?</a></li>
+<li><a href="#i-got-served"><span class="toc-section-number">4</span> I got SERVED</a></li>
+<li><a href="#lets-twitterpate"><span class="toc-section-number">5</span> Let’s twitterpate</a></li>
+<li><a href="#closing-thoughtsandprayers"><span class="toc-section-number">6</span> Closing #thoughtsandprayers</a></li>
+</ul>
+</div>
+        </div>
+
+      <div class="row">
+        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+<p>Recently I’ve had the urge to write a Twitter bot but I don’t actually know <em>what</em> I want it to do yet. So I did what any self-respecting functional programmer would do: I wrote a bunch of tools to make writing bots easier!</p>
+<p>So I took a look at the Twitter API<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> and got to hacking. It was fun and while I’m not done implementing every little piece I thought I would showcase a style of programming that is quite nice in Haskell. Using my library writing a Twitter bot is as simple as this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">sendExampleTweet <span class="fu">=</span> runTwitter credentials <span class="fu">$</span> <span class="kw">do</span>
+    status <span class="ot">&lt;-</span> tweet <span class="st">&quot;Sending an example tweet!&quot;</span>
+    liftIO <span class="fu">.</span> putStrLn <span class="fu">$</span> <span class="kw">case</span> statusCode status <span class="kw">of</span>
+        <span class="dv">200</span> <span class="ot">-&gt;</span> <span class="st">&quot;Success!&quot;</span>
+        _   <span class="ot">-&gt;</span> <span class="st">&quot;Couldn&#39;t send Tweet :(&quot;</span></code></pre></div>
+<p>Or this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">exampleSearchStream <span class="fu">=</span> runTwitter credentials <span class="fu">$</span> <span class="kw">do</span>
+    publicStream [<span class="st">&quot;dog&quot;</span>,<span class="st">&quot;dogs&quot;</span>] <span class="fu">$</span> \status tweets <span class="ot">-&gt;</span>
+        when (status <span class="fu">==</span> <span class="dv">200</span>) <span class="fu">$</span>
+            runTube <span class="fu">$</span> for (sample tweets) doSomethingWithDogTweet</code></pre></div>
+<p>Like so many of my recent projects this library builds on my <a href="http://hackage.haskell.org/package/tubes">tubes</a> library for handling streaming output. However I think its uses are fairly self-explanatory, and where they aren’t the <a href="http://hackage.haskell.org/package/tubes-2.1.1.0/docs/Tubes.html">documentation should be</a>.</p>
+<p><em>NB: I’m going to discuss some stuff that sounds scary at first but isn’t. Believe in yourself!</em></p>
+<p>The code is available in a <a href="https://github.com/gatlin/shitter">github repository</a>.</p>
+<h1 id="type-hype"><span class="header-section-number">1</span> Type Hype</h1>
+<p>To begin I decided to use the excellent <a href="http://hackage.haskell.org/package/http-client">http-client</a> package. It exposes a fairly low-level interface for creating HTTP requests and getting back responses. And as such the library almost exclusively uses <code>ByteString</code>s for moving data around. The additional <a href="http://hackage.haskell.org/package/http-client-tls">http-client-tls</a> package provides an easy way to handle HTTPS connections.</p>
+<p>Because I turned out to need them in a lot of places I first wrote a type for request parameters:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Param</span> <span class="fu">=</span> <span class="dt">Param</span> <span class="dt">ByteString</span> <span class="dt">ByteString</span></code></pre></div>
+<p>Pretty straightforward.</p>
+<p>The Twitter API requires a <em>consumer key</em> and <em>consumer secret</em> for authenticated endpoints to determine <strong>who</strong> is making the request. And for most endpoints you must also supply an <em>access token</em> and an <em>access secret</em>. Some endpoints - for instance, ones where you obtain access tokens and secrets - don’t require them. So without further ado let’s define a type to hold all of our credentials:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Credentials</span> <span class="fu">=</span> <span class="dt">Credentials</span>
+    {<span class="ot"> consumerKey ::</span> <span class="dt">ByteString</span>
+    ,<span class="ot"> consumerSecret ::</span> <span class="dt">ByteString</span>
+    ,<span class="ot"> token ::</span> <span class="dt">Maybe</span> <span class="dt">ByteString</span>
+    ,<span class="ot"> tokenSecret ::</span> <span class="dt">Maybe</span> <span class="dt">ByteString</span>
+    } <span class="kw">deriving</span> (<span class="dt">Show</span>)</code></pre></div>
+<p>Awesome. We’re going to need these just about everywhere. <code>http-client</code> keeps track of connection pools for me using a <code>Manager</code> value. For efficiency (and, sometimes, correct behavior) it’s a good practice to create one and share it throughout an application. Twitter might decide I have too many open connections otherwise.</p>
+<p>Since we will want to share credentials and connection managers throughout the entire program we can define a read-only Twitter state type:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">TwitterStateRO</span> <span class="fu">=</span> <span class="dt">TwitterStateRO</span>
+    {<span class="ot"> credentials ::</span> <span class="dt">Credentials</span>
+    ,<span class="ot"> manager     ::</span> <span class="dt">Manager</span>
+    }</code></pre></div>
+<p>But wait, where exactly will we be –</p>
+<h1 id="its-okay-everyone-youll-be-fine"><span class="header-section-number">2</span> IT’S OKAY EVERYONE YOU’LL BE FINE</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE GeneralizedNewtypeDeriving #-}</span>
+
+<span class="kw">import </span><span class="dt">Control.Monad.Reader</span>
+<span class="kw">import </span><span class="dt">Control.Monad.IO.Class</span>
+
+<span class="co">{- ... -}</span>
+
+<span class="kw">newtype</span> <span class="dt">Twitter</span> a <span class="fu">=</span> <span class="dt">Twitter</span> (<span class="dt">ReaderT</span> <span class="dt">TwitterStateRO</span> <span class="dt">IO</span> a)
+    <span class="kw">deriving</span> ( <span class="dt">Functor</span>
+             , <span class="dt">Applicative</span>
+             , <span class="dt">Monad</span>
+             , <span class="dt">MonadReader</span> <span class="dt">TwitterStateRO</span>
+             , <span class="dt">MonadIO</span> )</code></pre></div>
+<p>Oh, that word. Yay.</p>
+<p>Monads are miniature command languages. Just like with a command prompt, commands take arguments and produce output but they also have side effects on the underlying computer.</p>
+<p><code>IO</code> is a language with commands that can perform I/O with the computer. Another (defined in the <code>transformers</code> and <code>mtl</code> packages), <code>Reader r</code>, is a language that can at any time consult a hidden value of type <code>r</code> while executing commands.</p>
+<p>Specifically, <code>Reader r</code> has the following function:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">ask ::</span> <span class="dt">Reader</span> r r</code></pre></div>
+<p>When you call it, it returns the hidden <code>r</code> value you were storing. To wit:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">someReaderComputation ::</span> <span class="dt">Reader</span> <span class="dt">Int</span> <span class="dt">String</span>
+someReaderComputation n <span class="fu">=</span> <span class="kw">do</span>
+    hiddenValue <span class="ot">&lt;-</span> ask
+    <span class="kw">if</span> (hiddenValue <span class="ot">`mod`</span> <span class="dv">2</span> <span class="fu">==</span> <span class="dv">0</span>)
+        <span class="kw">then</span> return <span class="st">&quot;The number is even&quot;</span>
+        <span class="kw">else</span> return <span class="st">&quot;This was a stupid example Gatlin and you know it&quot;</span></code></pre></div>
+<p>Monads can also be stacked on top of each other to combine their abilities. In addition to <code>Reader r</code> there is <code>ReaderT r m</code>, which has a hidden value of type <code>r</code> and sits on top of another monad <code>m</code>. By convention monads which <em>transform</em> others have a <code>T</code> suffix.</p>
+<p>A lot of clever bullshit has gone into the various implementations of monad transformers but the good news is with a language extension enabled you can automatically derive everything you need, as shown above. <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<p>Now we need a way of taking evaluating <code>Twitter</code> commands with user-supplied <code>Credentials</code> that automatically sets up and tears down a connection <code>Manager</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">runTwitter ::</span> <span class="dt">Credentials</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
+runTwitter creds (<span class="dt">Twitter</span> c) <span class="fu">=</span> <span class="kw">do</span>
+    manager <span class="ot">&lt;-</span> newManager tlsManagerSettings
+    runReaderT c <span class="fu">$</span> <span class="dt">TwitterStateRO</span> creds manager</code></pre></div>
+<p>That’s the very same one demonstrated at the beginning of the article. <code>runReaderT</code> takes expressions in the <code>ReaderT r m</code> language and delivers values in the underlying <code>m</code> language.</p>
+<p>How do we go about making it easy to access the <code>Credentials</code> or the <code>Manager</code>?</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">getCredentials ::</span> <span class="dt">Twitter</span> <span class="dt">Credentials</span>
+getCredentials <span class="fu">=</span> ask <span class="fu">&gt;&gt;=</span> return <span class="fu">.</span> credentials
+
+<span class="ot">getManager ::</span> <span class="dt">Twitter</span> <span class="dt">Manager</span>
+getManager <span class="fu">=</span> ask <span class="fu">&gt;&gt;=</span> return <span class="fu">.</span> manager</code></pre></div>
+<p>Oh. And then by exporting <code>Twitter</code>, <code>runTwitter</code>, <code>getCredentials</code>, and <code>getManager</code>, users of the library don’t have to know how the proverbial sausage is made. They can just use these functions.</p>
+<h1 id="oauth-where-are-thou"><span class="header-section-number">3</span> OAuth, where are thou?</h1>
+<p>The OAuth implementation is actually enough to be an article all on its own. For good reason Twitter has high and particular standards. After hours of battling real literal actual dragons I produced a function <code>auth_header</code> which produces the correct OAuth signatures and such required to authenticate with Twitter.</p>
+<p>Because I opted to use a custom monad which threads the credentials through it, though, I got to write this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">auth_header
+<span class="ot">    ::</span> <span class="dt">ByteString</span> <span class="co">-- ^ method</span>
+    <span class="ot">-&gt;</span> <span class="dt">ByteString</span> <span class="co">-- ^ url</span>
+    <span class="ot">-&gt;</span> [<span class="dt">Param</span>] <span class="co">-- ^ Any extra parameters to pass</span>
+    <span class="ot">-&gt;</span> <span class="dt">Twitter</span> <span class="dt">ByteString</span>
+auth_header method url extras  <span class="fu">=</span> <span class="kw">do</span>
+    nonce <span class="ot">&lt;-</span> gen_nonce
+    ts    <span class="ot">&lt;-</span> timestamp <span class="fu">&gt;&gt;=</span> return <span class="fu">.</span> pack <span class="fu">.</span> show
+    (<span class="dt">Credentials</span> key secret token token_secret) <span class="ot">&lt;-</span> getCredentials
+    <span class="kw">let</span> params <span class="fu">=</span> [ <span class="dt">Param</span> <span class="st">&quot;oauth_consumer_key&quot;</span> key
+                 , <span class="dt">Param</span> <span class="st">&quot;oauth_nonce&quot;</span> nonce
+                 , <span class="dt">Param</span> <span class="st">&quot;oauth_timestamp&quot;</span> ts
+                 , <span class="dt">Param</span> <span class="st">&quot;oauth_token&quot;</span> (maybe <span class="st">&quot;&quot;</span> id token)
+                 , <span class="dt">Param</span> <span class="st">&quot;oauth_signature_method&quot;</span> <span class="st">&quot;HMAC-SHA1&quot;</span>
+                 , <span class="dt">Param</span> <span class="st">&quot;oauth_version&quot;</span> <span class="st">&quot;1.0&quot;</span>
+                 ]
+    <span class="kw">let</span> sk      <span class="fu">=</span> signing_key secret token_secret
+    <span class="kw">let</span> params&#39; <span class="fu">=</span> param_string <span class="fu">$</span> extras <span class="fu">++</span> params
+    <span class="kw">let</span> base_string <span class="fu">=</span> sig_base_string params&#39; method url
+    <span class="kw">let</span> signature <span class="fu">=</span> sign sk base_string
+    <span class="kw">let</span> with_signature <span class="fu">=</span> (<span class="dt">Param</span> <span class="st">&quot;oauth_signature&quot;</span> signature) <span class="fu">:</span> params
+    return <span class="fu">$</span> create_header_string with_signature</code></pre></div>
+<p>Notice how cool and fly I am as I use <code>getCredentials</code>. Because of the requirement to generate random values and get a timestamp <code>auth_header</code> had to somehow be part of the <code>IO</code> monad anyway so this was a natural fit.</p>
+<h1 id="i-got-served"><span class="header-section-number">4</span> I got SERVED</h1>
+<p>A design goal of <code>Twitter</code> is to automatically close open connections and do as much repetitive work as possible.</p>
+<p><code>http-client</code> provides a type <code>Response a</code> which allows you to get back response data in any number of forms. (We’ll get to <code>Request</code>s in a moment.)</p>
+<p>One such value is a <code>BodyReader</code>, which is an alias for <code>IO ByteString</code> because the former gives you an indication of what it’s used for. Because <code>IO</code> expressions evaluate on an as-needed basis this is actually a clever way to prevent more data from being loaded until necessary.</p>
+<p>I want to be able to stream incoming results using my <code>tubes</code> library, though. Specifically I’d like to have a <code>Response (Source Twitter ByteString)</code>. Since that’s quite a handful I’ll alias it:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">ResponseStream</span> <span class="fu">=</span> <span class="dt">Response</span> (<span class="dt">Source</span> <span class="dt">Twitter</span> <span class="dt">ByteString</span>)</code></pre></div>
+<p>The first step, then, is converting <code>BodyReader</code> to <code>Source Twitter ByteString</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">from ::</span> <span class="dt">BodyReader</span> <span class="ot">-&gt;</span> <span class="dt">Source</span> <span class="dt">Twitter</span> <span class="dt">ByteString</span>
+from br <span class="fu">=</span> <span class="dt">Source</span> loop <span class="kw">where</span>
+    loop <span class="kw">do</span>
+        bs <span class="ot">&lt;-</span> liftIO br
+        <span class="kw">if</span> null bs
+            <span class="kw">then</span> halt
+            <span class="kw">else</span> (yield bs) <span class="fu">&gt;&gt;</span> loop</code></pre></div>
+<p>Additionally <code>http-client</code> provides two functions:</p>
+<ul>
+<li><code>responseOpen :: Request -&gt; Manager -&gt; IO (Response BodyReader)</code></li>
+<li><code>responseClose :: Response BodyReader -&gt; IO ()</code></li>
+</ul>
+<p>The first essentially takes a request and a connection manager, performs the actual HTTP request, and gives you back a <code>Response</code> ready to be evaluated. The second explicitly closes the connection involved with the <code>Response</code>.</p>
+<p>Since we’re operating in a different monad, though, I imported these two functions with a prefix and wrote my own:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">responseOpen ::</span> <span class="dt">Request</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> <span class="dt">ResponseStream</span>
+responseOpen req <span class="fu">=</span> <span class="kw">do</span>
+    manager <span class="ot">&lt;-</span> getManager
+    response <span class="ot">&lt;-</span> liftIO <span class="fu">$</span> H.responseOpen req manager
+    return <span class="fu">$</span> fmap (from <span class="fu">.</span> brRead) response
+
+<span class="ot">responseClose ::</span> <span class="dt">Response</span> a <span class="ot">-&gt;</span> <span class="dt">Twitter</span> ()
+responseClose <span class="fu">=</span> liftIO <span class="fu">.</span> H.responseClose</code></pre></div>
+<p><code>brRead</code> evaluates a chunk of the unevaluated <code>Response</code> value and then passes it along. And now I can write a function that makes requests for me and automatically cleans up and closes connections when finished:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">makeRequest
+<span class="ot">    ::</span> <span class="dt">Request</span>
+    <span class="ot">-&gt;</span> (<span class="dt">ResponseStream</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a)
+    <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a
+makeRequest r k <span class="fu">=</span> <span class="kw">do</span>
+    response <span class="ot">&lt;-</span> responseOpen r
+    result <span class="ot">&lt;-</span> k response
+    responseClose response
+    return result</code></pre></div>
+<p>The Twitter API response to <code>GET</code> and <code>POST</code> HTTP requests for different end points. I wrote two functions for generating <code>Request</code> values for each type, complete with the correct authorization headers. Here is the <code>GET</code> one:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">getRequest
+<span class="ot">    ::</span> <span class="dt">String</span> <span class="co">-- ^ URL</span>
+    <span class="ot">-&gt;</span> [<span class="dt">Param</span>] <span class="co">-- ^ Request parameters</span>
+    <span class="ot">-&gt;</span> <span class="dt">Twitter</span> <span class="dt">Request</span>
+getRequest url params <span class="fu">=</span> <span class="kw">do</span>
+    <span class="co">-- convert the parameters into a query string</span>
+    <span class="kw">let</span> queryString <span class="fu">=</span> <span class="st">&quot;?&quot;</span><span class="fu">++</span>(unpack <span class="fu">$</span> param_string params)
+    initialRequest <span class="ot">&lt;-</span> liftIO <span class="fu">$</span> parseRequest <span class="fu">$</span> <span class="st">&quot;GET &quot;</span><span class="fu">++</span> url <span class="fu">++</span> queryString
+    ah <span class="ot">&lt;-</span> auth_header <span class="st">&quot;GET&quot;</span> (pack url) params
+    return <span class="fu">$</span> initialRequest {
+            requestHeaders <span class="fu">=</span>
+                    [(<span class="st">&quot;Authorization&quot;</span>, ah)
+                    ,(<span class="st">&quot;Content-type&quot;</span>, <span class="st">&quot;multipart/form-data&quot;</span>)
+                    ,(<span class="st">&quot;Accept&quot;</span>, <span class="st">&quot;*/*&quot;</span>)
+                    ,(<span class="st">&quot;User-Agent&quot;</span>,<span class="st">&quot;undershare&quot;</span>)]
+            }</code></pre></div>
+<p>Again, because all of this is happening inside a big happy <code>Twitter</code> monad, merely by calling <code>auth_header</code> the credentials are passed along as a side effect and I don’t need to explicitly thread them through the whole program.</p>
+<h1 id="lets-twitterpate"><span class="header-section-number">5</span> Let’s twitterpate</h1>
+<p>With these in hand, finally, we can create some commands. First let’s get the user’s home timeline, which is a collection of the most recent tweets they’re following:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">getHomeTimeline&#39;
+<span class="ot">    ::</span> [<span class="dt">Param</span>]
+    <span class="ot">-&gt;</span> (<span class="dt">Status</span> <span class="ot">-&gt;</span> <span class="dt">Source</span> <span class="dt">Twitter</span> <span class="dt">ByteString</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a)
+    <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a
+getHomeTimeline&#39; params k <span class="fu">=</span> <span class="kw">do</span>
+    request <span class="ot">&lt;-</span> getRequest (urlRESTBase <span class="fu">++</span> <span class="st">&quot;statuses/home_timeline.json&quot;</span>) params
+    makeRequest request <span class="fu">$</span> \r <span class="ot">-&gt;</span> k (responseStatus r) (responseBody r)
+
+getHomeTimeline
+<span class="ot">    ::</span> (<span class="dt">Status</span> <span class="ot">-&gt;</span> <span class="dt">Source</span> <span class="dt">Twitter</span> <span class="dt">ByteString</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a)
+    <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a
+getHomeTimeline k <span class="fu">=</span> getHomeTimeline&#39; [] k</code></pre></div>
+<p>The first version allows you to specify any optional parameters you want; the second just goes with the defaults. You can use this like so:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">homeTimelineExample <span class="fu">=</span> runTweet creds <span class="fu">$</span> <span class="kw">do</span>
+    getHomeTimeline <span class="fu">$</span> \_ tweets <span class="ot">-&gt;</span>
+        runTube <span class="fu">$</span> sample tweets
+               <span class="fu">&gt;&lt;</span> map unpack <span class="co">-- provided by the bytestring package</span>
+               <span class="fu">&gt;&lt;</span> pour (someFileSink <span class="st">&quot;out.txt&quot;</span>)</code></pre></div>
+<p>Provided that you had a <code>someFileSink :: FilePath -&gt; Sink Twitter String</code> you could log everything into a file for later processing, and very efficiently.</p>
+<p>For tweeting we can write something similar:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">tweet&#39;
+<span class="ot">    ::</span> <span class="dt">String</span> <span class="co">-- ^ tweet text</span>
+    <span class="ot">-&gt;</span> [<span class="dt">Param</span>]
+    <span class="ot">-&gt;</span> <span class="dt">Twitter</span> <span class="dt">Status</span>
+tweet&#39; txt params <span class="fu">=</span> <span class="kw">do</span>
+    <span class="kw">let</span> url <span class="fu">=</span> urlRESTBase <span class="fu">++</span> <span class="st">&quot;statuses/update.json&quot;</span>
+    <span class="kw">let</span> params&#39; <span class="fu">=</span> (<span class="dt">Param</span> <span class="st">&quot;status&quot;</span> (pack txt) <span class="fu">:</span> params)
+    request <span class="ot">&lt;-</span> postRequest url params&#39;
+    makeRequest request <span class="fu">$</span> return <span class="fu">.</span> responseStatus
+
+<span class="ot">tweet ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> <span class="dt">Status</span>
+tweet txt <span class="fu">=</span> tweet&#39; txt []</code></pre></div>
+<p>The cool thing about my approach, though, is that Twitter’s streaming endpoints also work well. Consider the user stream, which gives you <em>real time</em> updates for a particular user’s Twitter stream. Voici:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">userStream&#39;
+<span class="ot">    ::</span> [<span class="dt">Param</span>]
+    <span class="ot">-&gt;</span> (<span class="dt">Status</span> <span class="ot">-&gt;</span> <span class="dt">Source</span> <span class="dt">Twitter</span> <span class="dt">ByteString</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a)
+    <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a
+userStream&#39; params k <span class="fu">=</span> <span class="kw">do</span>
+    request <span class="ot">&lt;-</span> getRequest <span class="st">&quot;https://userstream.twitter.com/1.1/user.json&quot;</span> params
+    makeRequest request <span class="fu">$</span> \r <span class="ot">-&gt;</span> k (responseStatus r) (responseBody r)
+
+<span class="ot">userStream ::</span> (<span class="dt">Status</span> <span class="ot">-&gt;</span> <span class="dt">Source</span> <span class="dt">Twitter</span> <span class="dt">ByteString</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a) <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a
+userStream k <span class="fu">=</span> userStream&#39; [] k</code></pre></div>
+<p>That’s … almost identical to the other non-streaming endpoint. Unless a completely empty string is sent (no newlines, no nothing) the <code>Source</code> created by <code>from</code> will continue supplying output until the connection is explicitly closed. So really no extra effort is necessary to support RESTful or streaming endpoints. Neat!</p>
+<p>I haven’t yet finished implementing commands for every single REST endpoint and I have ideas for how to make it really easy to specify search parameters and stream preferences, but it’s a good start.</p>
+<p>Oh and I really should provide a <code>Channel</code> for automatically decoding JSON values. Shit this is getting long.</p>
+<h1 id="closing-thoughtsandprayers"><span class="header-section-number">6</span> Closing #thoughtsandprayers</h1>
+<p>What is the meaning of all this, then? The monad pattern allows you to easily thread global values through a program without having to explicitly carry them around.</p>
+<p>GHC provides mechanisms for automatically deriving combinations of known monads into new ones, and by hiding this derivation behind a module if I need, for example, to add logging with the <code>WriterT w m</code> monad or have a mutable value with <code>StateT s m</code>, well, I can and nothing will change.</p>
+<p>That’s one hell of a run-on sentence.</p>
+<p>And the monad pattern itself can be used to define a command language with side effects that abstracts away tedium. Users of my library get to write</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shitpost ::</span> <span class="dt">Twitter</span> ()
+shitpost <span class="fu">=</span> runTwitter my_access_keys <span class="fu">$</span> <span class="kw">do</span>
+    status <span class="ot">&lt;-</span> tweet <span class="st">&quot;#RipHarambe&quot;</span>
+    liftIO <span class="fu">.</span> putStrLn <span class="fu">$</span> <span class="kw">case</span> statusCode status <span class="kw">of</span>
+        <span class="dv">200</span> <span class="ot">-&gt;</span> <span class="st">&quot;Shit: posted&quot;</span>
+        _   <span class="ot">-&gt;</span> <span class="st">&quot;Another time, sweet prince&quot;</span></code></pre></div>
+<p>And that’s it.</p>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>For those of you who may not be acquainted with the term, API stands for “Application Programming Interface” or “a way for a computer to use a program.” It’s a generic term, but most of the time I come across the term it means the more specific “series of HTTP endpoints a computer can make requests to.”<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>So what’s with the <code>Applicative</code> and <code>Functor</code> bullshit, huh? Haskell should probably work on its PR but those are typeclasses which are pre-requisites for being a <code>Monad</code>. Should they be automatically derived? Probably. Oh well it doesn’t cost me much to remember to include them.<a href="#fnref2">↩</a></p></li>
+</ol>
+</section>
+        </div>
+</div><!-- row -->
+<hr>
+
+
+      <div class="footer">
+        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
+
