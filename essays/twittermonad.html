@@ -154,7 +154,7 @@ someReaderComputation n <span class="fu">=</span> <span class="kw">do</span>
         <span class="kw">else</span> return <span class="st">&quot;This was a stupid example Gatlin and you know it&quot;</span></code></pre></div>
 <p>Monads can also be stacked on top of each other to combine their abilities. In addition to <code>Reader r</code> there is <code>ReaderT r m</code>, which has a hidden value of type <code>r</code> and sits on top of another monad <code>m</code>. By convention monads which <em>transform</em> others have a <code>T</code> suffix.</p>
 <p>A lot of clever bullshit has gone into the various implementations of monad transformers but the good news is with a language extension enabled you can automatically derive everything you need, as shown above. <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
-<p>Now we need a way of taking evaluating <code>Twitter</code> commands with user-supplied <code>Credentials</code> that automatically sets up and tears down a connection <code>Manager</code>:</p>
+<p>Now we need a way of evaluating <code>Twitter</code> commands with user-supplied <code>Credentials</code> that automatically sets up and tears down a connection <code>Manager</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">runTwitter ::</span> <span class="dt">Credentials</span> <span class="ot">-&gt;</span> <span class="dt">Twitter</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
 runTwitter creds (<span class="dt">Twitter</span> c) <span class="fu">=</span> <span class="kw">do</span>
     manager <span class="ot">&lt;-</span> newManager tlsManagerSettings
@@ -168,7 +168,7 @@ getCredentials <span class="fu">=</span> ask <span class="fu">&gt;&gt;=</span> r
 getManager <span class="fu">=</span> ask <span class="fu">&gt;&gt;=</span> return <span class="fu">.</span> manager</code></pre></div>
 <p>Oh. And then by exporting <code>Twitter</code>, <code>runTwitter</code>, <code>getCredentials</code>, and <code>getManager</code>, users of the library don’t have to know how the proverbial sausage is made. They can just use these functions.</p>
 <h1 id="oauth-where-are-thou"><span class="header-section-number">3</span> OAuth, where are thou?</h1>
-<p>The OAuth implementation is actually enough to be an article all on its own. For good reason Twitter has high and particular standards. After hours of battling real literal actual dragons I produced a function <code>auth_header</code> which produces the correct OAuth signatures and such required to authenticate with Twitter.</p>
+<p>The OAuth implementation is actually enough to be an article all on its own. For good reason Twitter has high and particular standards. After hours of battling real literal actual dragons I ginned up a function <code>auth_header</code> which produces the correct OAuth signatures and such required to authenticate with Twitter.</p>
 <p>Because I opted to use a custom monad which threads the credentials through it, though, I got to write this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">auth_header
 <span class="ot">    ::</span> <span class="dt">ByteString</span> <span class="co">-- ^ method</span>
@@ -192,11 +192,13 @@ auth_header method url extras  <span class="fu">=</span> <span class="kw">do</sp
     <span class="kw">let</span> signature <span class="fu">=</span> sign sk base_string
     <span class="kw">let</span> with_signature <span class="fu">=</span> (<span class="dt">Param</span> <span class="st">&quot;oauth_signature&quot;</span> signature) <span class="fu">:</span> params
     return <span class="fu">$</span> create_header_string with_signature</code></pre></div>
+<p>It needs some explaining but I’d be willing to bet the average programmer from any background could more or less follow what I’m doing there, modulo some specifics.</p>
 <p>Notice how cool and fly I am as I use <code>getCredentials</code>. Because of the requirement to generate random values and get a timestamp <code>auth_header</code> had to somehow be part of the <code>IO</code> monad anyway so this was a natural fit.</p>
 <h1 id="i-got-served"><span class="header-section-number">4</span> I got SERVED</h1>
-<p>A design goal of <code>Twitter</code> is to automatically close open connections and do as much repetitive work as possible.</p>
-<p><code>http-client</code> provides a type <code>Response a</code> which allows you to get back response data in any number of forms. (We’ll get to <code>Request</code>s in a moment.)</p>
-<p>One such value is a <code>BodyReader</code>, which is an alias for <code>IO ByteString</code> because the former gives you an indication of what it’s used for. Because <code>IO</code> expressions evaluate on an as-needed basis this is actually a clever way to prevent more data from being loaded until necessary.</p>
+<p>A design goal of <code>Twitter</code> is to automatically close open connections and do as much repetitive work as possible. I’m going to take you step-by-step through the different pieces and show how I built up my little command language and it’s going to be really impressive because in fact I actually developed this almost completely in reverse and spent a lot of time crying.</p>
+<p><code>http-client</code> provides a type <code>Response a</code> which allows you to get back response data in any number of forms. (We’ll get to <code>Request</code>s in a moment.) Regardless of the type of the actual response payload, <code>Response</code> encapsulates other things like the response headers, status code, etc.</p>
+<p>One such value is a <code>BodyReader</code>, which is an alias for <code>IO ByteString</code> because the former gives you an indication of what it’s used for and the latter sounds like a Marvel villain.</p>
+<p>Because <code>IO</code> expressions evaluate on an as-needed basis this is actually a clever way to prevent more data from being loaded until necessary.</p>
 <p>I want to be able to stream incoming results using my <code>tubes</code> library, though. Specifically I’d like to have a <code>Response (Source Twitter ByteString)</code>. Since that’s quite a handful I’ll alias it:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">ResponseStream</span> <span class="fu">=</span> <span class="dt">Response</span> (<span class="dt">Source</span> <span class="dt">Twitter</span> <span class="dt">ByteString</span>)</code></pre></div>
 <p>The first step, then, is converting <code>BodyReader</code> to <code>Source Twitter ByteString</code>:</p>
@@ -300,7 +302,7 @@ userStream k <span class="fu">=</span> userStream&#39; [] k</code></pre></div>
 <p>Oh and I really should provide a <code>Channel</code> for automatically decoding JSON values. Shit this is getting long.</p>
 <h1 id="closing-thoughtsandprayers"><span class="header-section-number">6</span> Closing #thoughtsandprayers</h1>
 <p>What is the meaning of all this, then? The monad pattern allows you to easily thread global values through a program without having to explicitly carry them around.</p>
-<p>GHC provides mechanisms for automatically deriving combinations of known monads into new ones, and by hiding this derivation behind a module if I need, for example, to add logging with the <code>WriterT w m</code> monad or have a mutable value with <code>StateT s m</code>, well, I can and nothing will change.</p>
+<p>GHC provides mechanisms for automatically deriving combinations of known monads into new ones, and by hiding this derivation behind a module if I need, for example, to add logging with the <code>WriterT w m</code> monad or have a mutable value with <code>StateT s m</code>, well, I can and nothing will break for the end user.</p>
 <p>That’s one hell of a run-on sentence.</p>
 <p>And the monad pattern itself can be used to define a command language with side effects that abstracts away tedium. Users of my library get to write</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shitpost ::</span> <span class="dt">Twitter</span> ()

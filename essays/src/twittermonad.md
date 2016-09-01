@@ -147,7 +147,7 @@ A lot of clever bullshit has gone into the various implementations of monad
 transformers but the good news is with a language extension enabled you can
 automatically derive everything you need, as shown above. [^2]
 
-Now we need a way of taking evaluating `Twitter` commands with user-supplied
+Now we need a way of  evaluating `Twitter` commands with user-supplied
 `Credentials` that automatically sets up and tears down a connection `Manager`:
 
 ```haskell
@@ -180,7 +180,7 @@ OAuth, where are thou?
 
 The OAuth implementation is actually enough to be an article all on its
 own. For good reason Twitter has high and particular standards. After hours of
-battling real literal actual dragons I produced a function `auth_header` which
+battling real literal actual dragons I ginned up a function `auth_header` which
 produces the correct OAuth signatures and such required to authenticate with
 Twitter.
 
@@ -212,6 +212,10 @@ auth_header method url extras  = do
     return $ create_header_string with_signature
 ```
 
+It needs some explaining but I'd be willing to bet the average programmer from
+any background could more or less follow what I'm doing there, modulo some
+specifics.
+
 Notice how cool and fly I am as I use `getCredentials`. Because of the
 requirement to generate random values and get a timestamp `auth_header` had to
 somehow be part of the `IO` monad anyway so this was a natural fit.
@@ -220,15 +224,22 @@ I got SERVED
 ===
 
 A design goal of `Twitter` is to automatically close open connections and do as
-much repetitive work as possible.
+much repetitive work as possible. I'm going to take you step-by-step through the
+different pieces and show how I built up my little command language and it's
+going to be really impressive because in fact I actually developed this almost
+completely in reverse and spent a lot of time crying.
 
 `http-client` provides a type `Response a` which allows you to get back response
-data in any number of forms. (We'll get to `Request`s in a moment.)
+data in any number of forms. (We'll get to `Request`s in a moment.) Regardless
+of the type of the actual response payload, `Response` encapsulates other things
+like the response headers, status code, etc.
 
 One such value is a `BodyReader`, which is an alias for `IO ByteString` because
-the former gives you an indication of what it's used for. Because `IO`
-expressions evaluate on an as-needed basis this is actually a clever way to
-prevent more data from being loaded until necessary.
+the former gives you an indication of what it's used for and the latter sounds
+like a Marvel villain.
+
+Because `IO` expressions evaluate on an as-needed basis this is actually a
+clever way to prevent more data from being loaded until necessary.
 
 I want to be able to stream incoming results using my `tubes` library,
 though. Specifically I'd like to have a `Response (Source Twitter
@@ -409,7 +420,7 @@ around.
 GHC provides mechanisms for automatically deriving combinations of known monads
 into new ones, and by hiding this derivation behind a module if I need, for
 example, to add logging with the `WriterT w m` monad or have a mutable value
-with `StateT s m`, well, I can and nothing will change.
+with `StateT s m`, well, I can and nothing will break for the end user.
 
 That's one hell of a run-on sentence.
 
