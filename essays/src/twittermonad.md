@@ -300,7 +300,7 @@ makeRequest r k = do
     return result
 ```
 
-The Twitter API response to `GET` and `POST` HTTP requests for different end
+The Twitter API responds to `GET` and `POST` HTTP requests for different end
 points. I wrote two functions for generating `Request` values for each type,
 complete with the correct authorization headers. Here is the `GET` one:
 

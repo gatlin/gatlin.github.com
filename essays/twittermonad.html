@@ -234,7 +234,7 @@ makeRequest r k <span class="fu">=</span> <span class="kw">do</span>
     result <span class="ot">&lt;-</span> k response
     responseClose response
     return result</code></pre></div>
-<p>The Twitter API response to <code>GET</code> and <code>POST</code> HTTP requests for different end points. I wrote two functions for generating <code>Request</code> values for each type, complete with the correct authorization headers. Here is the <code>GET</code> one:</p>
+<p>The Twitter API responds to <code>GET</code> and <code>POST</code> HTTP requests for different end points. I wrote two functions for generating <code>Request</code> values for each type, complete with the correct authorization headers. Here is the <code>GET</code> one:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">getRequest
 <span class="ot">    ::</span> <span class="dt">String</span> <span class="co">-- ^ URL</span>
     <span class="ot">-&gt;</span> [<span class="dt">Param</span>] <span class="co">-- ^ Request parameters</span>
