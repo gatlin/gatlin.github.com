@@ -157,7 +157,7 @@ pre {
     background-color: #f7f7f7;
     padding: 10.5px;
     width: inherit;
-    overflow: scroll;
+    overflow: auto;
 }
 
 div.row {
