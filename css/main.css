@@ -158,6 +158,10 @@ pre {
     padding: 10.5px;
 }
 
+div.row {
+    padding: 0 15px;
+}
+
 span.header-section-number {
     font-size: 24pt;
 }
