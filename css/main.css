@@ -137,13 +137,15 @@ p, ul#contact-info li, #toc-wrapper ul li  {
 
 /* MISC RESPONSIVE DESIGN SHIT */
 @media only screen and (max-width: 780px) {
-    #main {
-        width: inherit;
+    #main-grid {
         padding: 0 15px;
     }
 
-    #big-boy {
+    #main {
         width: inherit;
+    }
+
+    #big-boy {
         border-top: 1px solid #b9b9b9;
         border-bottom: 1px solid #b9b9b9;
     }
