@@ -11,157 +11,95 @@
     <!-- Merriweather font -->
     <link rel="stylesheet"
           type="text/css"
-          href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+          href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400"
+    />
 
-    <!-- Bootstrap core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Raleway:400,700">
 
-    <!-- Custom styles for this template -->
-    <link href="css/jumbotron-narrow.css" rel="stylesheet">
-
-    <!-- glyphicons -->
-    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
-
-    <style type="text/css">
-        .jumbotron {
-            border: 1px solid #E5E5E5;
-        }
-
-        .jumbotron h1 {
-            font-size: 64pt;
-        }
-
-        .jumbotron p.lead {
-            font-size: 30pt;
-        }
-    </style>
+    <link href="css/bootstrap-glyphicons.css" media="all">
+    <link href="css/main.css" rel="stylesheet" media="all">
   </head>
 
   <body>
 
-    <div class="container">
-      <div class="header">
-        <ul class="nav nav-pills pull-right clearfix hidden-xs">
-          <li>
-          <a href="mailto:gatlin@niltag.net">
-              <span class="glyphicon glyphicon-envelope"></span>
-              Send me an email!</a></li>
-          <li>
-            <a href="gatlin.gpg">PGP</a>
-          </li>
-        </ul>
-        <h3 class="text-muted">
-            <em>Veni veni veni</em>
-        </h3>
-      </div>
-      <div class="jumbotron">
-        <h1>Gatlin Johnson</h1>
-        <p><img src="img/gatlin.jpg" class="img-thumbnail"></p>
-        <p class="lead">
-            Software developer, pug fanatic.
-        </p>
-        </p>
-        <ul class="list-group visible-xs">
-          <li class="list-group-item">
-          <a href="mailto:gatlin@niltag.net?subject=Hey there handsome">Send me an email!</a>
-          </li>
-          <li class="list-group-item">
-          <a href="gatlin.gpg">
-              PGP
-          </a>
-          </li>
-      </ul>
-      </div>
+      <div id="main">
+          <ul id="contact-info">
+              <li>
+                  <a href="mailto:gatlin@niltag.net">
+                      <span class="glyphicon glyphicon-envelope"></span>
+                      Send me an email!</a></li>
+              <li>
+                  <a href="gatlin.gpg">PGP</a>
+              </li>
+          </ul>
 
-      <div class="row marketing">
-        <div class="col-lg-6">
-          <h4>Stalk me on GitHub!</h4>
-          <p>
-          Take a gander at <a href="https://github.com/gatlin">my open source
-              projects</a> on GitHub. I also frequently write interesting
-          little one-off pieces <a href="https://gist.github.com/gatlin">as
-              gists, which you may find illuminating</a>.
-          </p>
+          <div id="big-boy">
+              <h1>Gatlin Johnson</h1>
+              <p class="lead">
+                  Software developer, pug fanatic.
+              </p>
+              <p><img src="img/gatlin.jpg" class="img-thumbnail"></p>
+              <p class="muted">
+                  Veni, veni, veni
+              </p>
+          </div>
 
-          <h4>Essays</h4>
-          <p>
-          I occasionally <a href="/essays/">
-              talk to myself in writing.</a> Currently working on
-              posting more of it here. Mostly going to be computer science
-              essays.</p>
-          <!--
-          <h4>Pursue me on tumblr!</h4>
-          <p>
-            <a href="http://gatlin.tumblr.com">I really hope you like pugs.</a>
-          </p>
-          -->
-          <h4>Send me a boring old email.</h4>
-          <p>
-            Drop me a line at
-            <a href="mailto:gatlin@niltag.net">
-                gatlin@niltag.net</a>
-          </p>
-          <h4>Ogle me on Twitter!</h4>
-          <blockquote>
-              <p>For the most part people are not curious except about
-              themselves.</p>
-            <cite>John Steinbeck</cite>
-          </blockquote>
+          <div id="main-grid" class="section group">
+              <div class="col span_1_of_2">
+                  <h4>Check out my <strike>SoundCloud</strike> GitHub!</h4>
+                  <p>
+                      Behold the
+                      <a href="https://github.com/gatlin">various projects I've worked
+                          on</a> to fill the endless void.</p>
+                  <p>
+                      Also, a lot of my amphetamine energy turns into
+                      <a href="https://gist.github.com/gatlin">
+                          shorter gists
+                      </a>!</p>
 
-          <p>But enough with the foreplay:
-            <a href="https://twitter.com/gatlin">@gatlin</a>
-          </p>
+                  <h4>Essays</h4>
+                  <p>I occasionally
+                      <a href="/essays">talk to myself in writing</a> about
+                  programming and computer science topics. Please, please, one
+                      at a time.</p>
 
-          <h4>Tail me on Instagram!</h4>
-          <p>
-            I'm a bit upset I couldn't swing my name
-            <a href="https://instagram.com/gatlincj">but @gatlincj will do.</a>
-          </p>
-        </div>
-        <div class="col-lg-6">
-            <h4>Hire me!</h4>
-            <p>
-            I like to touch computers and make them do things! Do you want to
-            trade capital for computer-touching labor?
-            Then check out this <a href="resume.pdf">totally boss resume of
-                mine</a> and get back to me! More exclamation points!
-            </p>
-            <h4>tubes</h4>
-            <p>
-            I've been working on a stream-processing library for Haskell,
-            called <a
-                              href="http://hackage.haskell.org/package/tubes">tubes</a>.
-            Using two new commands, <em>yield</em> and
-            <em>await</em>, you
-            can write reusable processing units called "tubes" and then connect
-            them into arbitrary <a
-                              href="https://en.wikipedia.org/wiki/Series_of_tubes">series</a> 
-            </p><p>
-            This style of programming is quite useful in a variety of domains,
-            and part of some long term efforts of mine.
+                  <h4>I also accept your charity in Dogecoin</h4>
+                  <p><a href="/doge.html">Please and thank you.</a></p>
 
-            The <a
-                              href="http://hackage.haskell.org/package/tubes">documentation</a>
-            has examples and more information.
-            </p>
+              </div>
+              <div class="col span_1_of_2">
+                  <h4>Selected boasting</h4>
+                  <p>Lately I've worked on
+                      <a href="//niltag.net/Alm">Alm</a>, a simple reactive
+                      framework for making " website applications ".
+                  </p>
+                  <p>I made a stream processing library in Haskell called
+                      <a href="http://hackage.haskell.org/package/tubes">
+                          tubes
+                      </a> that is actually kind of interesting. Find out more
+                      in the documentation!
+                  </p>
 
-            <h4>Tip me in Dogecoin!</h4>
-            <p>
-                <a href="doge.html">Or don't, it's your call.</a>
-                </p>
+                  <h4>Twitter! Gotta have a Twitter!</h4>
+                  <p><a href="//twitter.com/gatlin">It's just mandatory.</a></p>
+                  <h4>I also use Instagram!</h4>
+                  <p>
+                      Find me
+                      <a href="https://www.instagram.com/askeletism/">
+                          @askeletism
+                      </a>. On that note, I've created a site to answer the
+              burning question: 
+                      <a href="//areskeletonsreal.com">Are Skeletons Real?</a>
+                  </p>
+              </div>
+          </div>
 
-            <h4>Owe me money? Pay up!</h4>
-            <p>
-                <a href="/billing">My billing system is fully operational.</a>
-                </p>
-        </div>
-      </div>
-
-      <div class="footer">
-        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
-      </div>
-
-    </div> <!-- /container -->
+          <div id="footer">
+              <p>&copy; 2013-2016 Gatlin Johnson.</p>
+          </div>
+      </div> <!-- /container -->
 
   </body>
 </html>

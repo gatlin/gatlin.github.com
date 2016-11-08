@@ -15,16 +15,11 @@ Excelsior!
           type="text/css"
           href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
 
-    <!-- Bootstrap core CSS -->
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Raleway:400,700">
 
-    <!-- Custom styles for this template -->
-    <link href="css/jumbotron-narrow.css" rel="stylesheet">
-
-    <!-- glyphicons -->
-    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
-
-    <link href="style.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
   <style type="text/css">
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -46,39 +41,29 @@ code > span.er { font-weight: bold; }
   </head>
 
   <body>
+      <div id="main">
+          <ul id="contact-info">
+              <li>
+                  <a href="mailto:gatlin@niltag.net">
+                      <span class="glyphicon glyphicon-envelope"></span>
+                      Send me an email!</a></li>
+              <li>
+                  <a href="gatlin.gpg">PGP</a>
+              </li>
+              <li>
+                  <a href="/">Home</a> /
+                  <a href="/essays">Essays</a>
+              </li>
+          </ul>
 
-    <div class="container">
-      <div class="header">
-        <ul class="nav nav-pills pull-right clearfix hidden-xs">
-          <li>
-          <a href="mailto:gatlin@niltag.net">
-              <span class="glyphicon glyphicon-envelope"></span>
-              Send me an email!</a></li>
-          <li>
-            <a href="gatlin.gpg">PGP</a>
-          </li>
-          <li>
-              <a href="/">Home</a>
-          </li>
-        </ul>
-        <h3 class="text-muted">
-            <em>Veni veni veni</em>
-        </h3>
-      </div>
-      <hr>
-      <ol class="breadcrumb">
-          <li><a href="/">Home</a></li>
-          <li><a href="/essays/">Essays</a></li>
-      </ol>
-      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
-        <h1>
+          <h1 class="essay-h1">
 Excelsior!
-        </h1>
-        <p class="lead">
+          </h1>
+          <p class="lead">
 Or, I may have finally gone insane
-        </p>
-<div id="toc-wrapper">
-<h2>Contents</h2>
+          </p>
+          <div id="toc-wrapper">
+              <h2>Contents</h2>
 <ul>
 <li><a href="#imports-and-blah-blah"><span class="toc-section-number">1</span> Imports and blah blah</a></li>
 <li><a href="#double-löb-el"><span class="toc-section-number">2</span> Double Löb-el</a></li>
@@ -91,10 +76,11 @@ Or, I may have finally gone insane
 <li><a href="#excursor-sions"><span class="toc-section-number">9</span> Excursor-sions</a></li>
 <li><a href="#appendix-applicative-what-now"><span class="toc-section-number">10</span> Appendix: Applicative what-now?</a></li>
 </ul>
-</div><!-- toc wrapper -->
-        </div>
-      <div class="row">
-        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+          </div>
+
+
+          <div class="row">
+              <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
 <p>I've written <a href="http://niltag.net/essays/loeb.html">previously</a> about Löb's theorem and the curious manner in which we can evaluate a list of functions which depend on each other's outputs <em>simultaneously</em> without much fuss, like a shitty one-row spreadsheet.</p>
 <p>Today I am going to get inter-dimensional.</p>
 <p>Well, two-dimensional. But I am going to ... <em>Excel</em> at it.</p>
@@ -307,17 +293,17 @@ ghci<span class="fu">&gt;</span> forM_ rows (putStrLn <span class="fu">.</span> 
 <li id="fn1"><p>This is a bit over-simplified. A third function, <code>extend</code>, may be defined in place of <code>duplicate</code>. Each has a default implementation defined in terms of each other, so you only have to specify one.<a href="#fnref1">↩</a></p></li>
 </ol>
 </section>
-        </div>
-</div><!-- row -->
-<hr>
+              </div>
+          </div><!-- row -->
+          <hr>
 
 
-      <div class="footer">
-        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+
+      <div id="footer">
+          <p>&copy; 2013-2016 Gatlin Johnson</p>
       </div>
 
     </div> <!-- /container -->
 
   </body>
 </html>
-

@@ -1,0 +1,173 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    color: #333333;
+}
+
+#main {
+    width: 970px;
+    margin: 0 auto;
+}
+
+/* TOP */
+
+#contact-info {
+    margin: 3px auto;
+    text-align: center;
+}
+
+#contact-info li {
+    display: inline;
+    list-style-type: none;
+    padding-right: 20px;
+}
+
+/* BIG BOY */
+
+#big-boy {
+    background-color: #f7f7f7;
+
+}
+
+#big-boy h1, #big-boy p, #big-boy img {
+    text-align: center;
+}
+
+#big-boy img {
+    border-radius: 6px;
+}
+
+/* TYPOGRAPHY */
+
+a, a:visited {
+    text-decoration: none;
+    /*    color: #45a2ec;*/
+    color: #134fb8;
+
+}
+
+a:hover {
+    background-image: linear-gradient(to top,
+        rgba(0,0,0,0) 11%,
+        rgba(0,0,0,.4) 11%,
+        rgba(0,0,0,.4) 16%,
+        rgba(0,0,0,0) 16%
+    );
+}
+
+h1, h2, h3, h4 {
+    font-family: "Raleway","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: bold;
+    line-height: 1.1;
+}
+
+h1 {
+    font-size: 41px;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+h4 {
+    font-size: 20px;
+}
+
+p, ul#contact-info li, #toc-wrapper ul li  {
+    font-family: 'Merriweather', serif;
+}
+
+/* THE GRID */
+
+
+.section {
+    clear: both;
+    padding: 0px;
+    margin: 0px;
+}
+
+/*  COLUMN SETUP  */
+.col {
+    display: block;
+    float:left;
+    margin: 1% 0 1% 1.6%;
+}
+.col:first-child { margin-left: 0; }
+
+/*  GROUPING  */
+.group:before,
+.group:after { content:""; display:table; }
+.group:after { clear:both;}
+.group { zoom:1; /* For IE 6/7 */ }
+
+/*  GRID OF TWO  */
+.span_2_of_2 {
+    width: 100%;
+}
+.span_1_of_2 {
+    width: 49.2%;
+}
+
+#main-grid {
+    padding: 0 45px;
+}
+
+@media only screen and (max-width: 480px) {
+    .span_2_of_2, .span_1_of_2 { width: 100%; }
+}
+
+/* FOOTER */
+#footer {
+    padding: 0 15px;
+}
+
+#footer p {
+    font-size: 14px;
+    text-align: center;
+}
+
+@media only screen and (min-width: 780px) {
+    #big-boy {
+        border: 1px solid #b9b9b9;
+        border-radius: 6px;
+        margin-top: 15px;
+    }
+}
+
+/* MISC RESPONSIVE DESIGN SHIT */
+@media only screen and (max-width: 780px) {
+    #main {
+        width: inherit;
+        padding: 0 15px;
+    }
+
+    #big-boy {
+        width: inherit;
+        border-top: 1px solid #b9b9b9;
+        border-bottom: 1px solid #b9b9b9;
+    }
+}
+
+/* ESSAYS */
+pre {
+    margin: 0 auto;
+    background-color: #f7f7f7;
+    padding: 10.5px;
+}
+
+span.header-section-number {
+    font-size: 24pt;
+}
+
+#toc-wrapper {
+    border-bottom: 1px solid #b9b9b9;
+}
+
+h1.essay-h1 {
+    text-align: center;
+}
+
+p.lead {
+    text-align: center;
+}

@@ -15,16 +15,11 @@ PID controller in Haskell
           type="text/css"
           href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
 
-    <!-- Bootstrap core CSS -->
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Raleway:400,700">
 
-    <!-- Custom styles for this template -->
-    <link href="css/jumbotron-narrow.css" rel="stylesheet">
-
-    <!-- glyphicons -->
-    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
-
-    <link href="style.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
   <style type="text/css">
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -46,49 +41,40 @@ code > span.er { font-weight: bold; }
   </head>
 
   <body>
+      <div id="main">
+          <ul id="contact-info">
+              <li>
+                  <a href="mailto:gatlin@niltag.net">
+                      <span class="glyphicon glyphicon-envelope"></span>
+                      Send me an email!</a></li>
+              <li>
+                  <a href="gatlin.gpg">PGP</a>
+              </li>
+              <li>
+                  <a href="/">Home</a> /
+                  <a href="/essays">Essays</a>
+              </li>
+          </ul>
 
-    <div class="container">
-      <div class="header">
-        <ul class="nav nav-pills pull-right clearfix hidden-xs">
-          <li>
-          <a href="mailto:gatlin@niltag.net">
-              <span class="glyphicon glyphicon-envelope"></span>
-              Send me an email!</a></li>
-          <li>
-            <a href="gatlin.gpg">PGP</a>
-          </li>
-          <li>
-              <a href="/">Home</a>
-          </li>
-        </ul>
-        <h3 class="text-muted">
-            <em>Veni veni veni</em>
-        </h3>
-      </div>
-      <hr>
-      <ol class="breadcrumb">
-          <li><a href="/">Home</a></li>
-          <li><a href="/essays/">Essays</a></li>
-      </ol>
-      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
-        <h1>
+          <h1 class="essay-h1">
 PID controller in Haskell
-        </h1>
-        <p class="lead">
+          </h1>
+          <p class="lead">
 Or, when will the screaming stop? When?
-        </p>
-<div id="toc-wrapper">
-<h2>Contents</h2>
+          </p>
+          <div id="toc-wrapper">
+              <h2>Contents</h2>
 <ul>
 <li><a href="#pid-controller-theory"><span class="toc-section-number">1</span> PID controller theory</a></li>
 <li><a href="#setup-and-a-little-background"><span class="toc-section-number">2</span> Setup and a little background</a></li>
 <li><a href="#lets-write-some-actual-fucking-code"><span class="toc-section-number">3</span> Let's write some actual fucking code</a></li>
 <li><a href="#and-now-the-point-of-our-arrow"><span class="toc-section-number">4</span> And now the point of our arrow</a></li>
 </ul>
-</div><!-- toc wrapper -->
-        </div>
-      <div class="row">
-        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+          </div>
+
+
+          <div class="row">
+              <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
 <p>A major project I want to embark on at some point in the future is making a quadrotor. I've made one before but I was at the mercy of a lot of off-the-shelf software that I'm not altogether sure was entirely correct, either. So I want to ultimately program my own flight control software.</p>
 <p>A baby step on this journey, for me, is to understand how <a href="http://en.wikipedia.org/PID_controller">PID controllers</a> work. To that end I'm going to try and write my very own PID controller, which I'm sure my parents will want to post on the refrigerator and show their friends.</p>
 <p>This post is actually written in literate Haskell, so you can download the source <a href="http://niltag.net/essays/src/pid.lhs">here</a> and compile it as-is. You'll need to ensure you have installed the latest <code>tubes</code> package (<code>cabal install tubes</code> should suffice).</p>
@@ -194,17 +180,17 @@ main <span class="fu">=</span> <span class="kw">do</span>
 <li id="fn1"><p>The functions <code>tune</code> and <code>pour</code> correspond to the types <code>Channel</code> and <code>Sink</code>, respectively. Both are wrappers around a more fundamental <code>Tube</code> type, and after they have been constructed safely they can be unwrapped using those functions. <code>display</code> is a <code>Sink</code> that comes with the <code>tubes</code> package.<a href="#fnref1">↩</a></p></li>
 </ol>
 </section>
-        </div>
-</div><!-- row -->
-<hr>
+              </div>
+          </div><!-- row -->
+          <hr>
 
 
-      <div class="footer">
-        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+
+      <div id="footer">
+          <p>&copy; 2013-2016 Gatlin Johnson</p>
       </div>
 
     </div> <!-- /container -->
 
   </body>
 </html>
-

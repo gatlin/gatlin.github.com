@@ -15,16 +15,11 @@ Writing a billing system in Haskell, using Stripe and Heroku
           type="text/css"
           href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
 
-    <!-- Bootstrap core CSS -->
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Raleway:400,700">
 
-    <!-- Custom styles for this template -->
-    <link href="css/jumbotron-narrow.css" rel="stylesheet">
-
-    <!-- glyphicons -->
-    <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
-
-    <link href="style.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
   <style type="text/css">
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -46,39 +41,29 @@ code > span.er { font-weight: bold; }
   </head>
 
   <body>
+      <div id="main">
+          <ul id="contact-info">
+              <li>
+                  <a href="mailto:gatlin@niltag.net">
+                      <span class="glyphicon glyphicon-envelope"></span>
+                      Send me an email!</a></li>
+              <li>
+                  <a href="gatlin.gpg">PGP</a>
+              </li>
+              <li>
+                  <a href="/">Home</a> /
+                  <a href="/essays">Essays</a>
+              </li>
+          </ul>
 
-    <div class="container">
-      <div class="header">
-        <ul class="nav nav-pills pull-right clearfix hidden-xs">
-          <li>
-          <a href="mailto:gatlin@niltag.net">
-              <span class="glyphicon glyphicon-envelope"></span>
-              Send me an email!</a></li>
-          <li>
-            <a href="gatlin.gpg">PGP</a>
-          </li>
-          <li>
-              <a href="/">Home</a>
-          </li>
-        </ul>
-        <h3 class="text-muted">
-            <em>Veni veni veni</em>
-        </h3>
-      </div>
-      <hr>
-      <ol class="breadcrumb">
-          <li><a href="/">Home</a></li>
-          <li><a href="/essays/">Essays</a></li>
-      </ol>
-      <div class="page-header col-md-12 col-lg-10 col-lg-offset-1">
-        <h1>
+          <h1 class="essay-h1">
 Writing a billing system in Haskell, using Stripe and Heroku
-        </h1>
-        <p class="lead">
+          </h1>
+          <p class="lead">
 Proof that necessity is not the mother of invention.
-        </p>
-<div id="toc-wrapper">
-<h2>Contents</h2>
+          </p>
+          <div id="toc-wrapper">
+              <h2>Contents</h2>
 <ul>
 <li><a href="#the-code"><span class="toc-section-number">0.1</span> The code</a></li>
 <li><a href="#top-level-application-setup"><span class="toc-section-number">0.2</span> Top level application setup</a></li>
@@ -87,10 +72,11 @@ Proof that necessity is not the mother of invention.
 <li><a href="#lets-get-the-hell-out-of-here"><span class="toc-section-number">0.5</span> Let's get the hell out of here</a></li>
 <li><a href="#the-end-is-nigh"><span class="toc-section-number">0.6</span> The end is nigh</a></li>
 </ul>
-</div><!-- toc wrapper -->
-        </div>
-      <div class="row">
-        <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
+          </div>
+
+
+          <div class="row">
+              <div id="content" class="col-md-12 col-lg-10 col-lg-offset-1">
 <p>*This post is written in literate Haskell, meaning the source can be turned into a blogpost or a working program. You can view the <a href="https://gist.github.com/gatlin/7754289">source</a>.</p>
 <p>Normally clients pay me with checks, but recently one informed me that they really really really like <em>really really</em> super prefer some kind of online payment form.</p>
 <p>Fair enough. I want to accommodate them. So, this weekend I did the only logical thing: I wrote my own payment system. What, did you think I was going to use PayPal?</p>
@@ -241,18 +227,23 @@ middleware <span class="fu">=</span> logStdout</code></pre></div>
 <p>So, that's more or less the first version of my little payment gateway. I successfully charged myself a dollar, which after Stripe's 2.9% + $0.30 commission, will leave me with $0.67 in about 7 days.</p>
 <p>The reason the port number is read from the system environment is so that I can interface with Heroku. They decide dynamically what port to assign your application and it's easier for everyone if you just read it from the environment. Don't ask questions.</p>
 <p>I'm pretty happy with this. I learned quite a bit about the fundamentals of Haskell web applications, monad transformers, and the nightmare that was <code>ByteString</code> (which I didn't have the energy to write about, frankly).</p>
-<p>If you have any comments or questions, please email me at <a href="mailto:gatlin@niltag.net">gatlin@niltag.net</a>.</p>
-        </div>
-</div><!-- row -->
-<hr>
+<p>If you have any comments or questions, please email me at <script type="text/javascript">
+<!--
+h='&#110;&#x69;&#108;&#116;&#x61;&#x67;&#46;&#110;&#x65;&#116;';a='&#64;';n='&#x67;&#x61;&#116;&#108;&#x69;&#110;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#x67;&#x61;&#116;&#108;&#x69;&#110;&#32;&#x61;&#116;&#32;&#110;&#x69;&#108;&#116;&#x61;&#x67;&#32;&#100;&#x6f;&#116;&#32;&#110;&#x65;&#116;</noscript>.</p>
+              </div>
+          </div><!-- row -->
+          <hr>
 
 
-      <div class="footer">
-        <p>&copy; 2013-2016. Theme lovingly stolen from other people.</p>
+
+      <div id="footer">
+          <p>&copy; 2013-2016 Gatlin Johnson</p>
       </div>
 
     </div> <!-- /container -->
 
   </body>
 </html>
-
