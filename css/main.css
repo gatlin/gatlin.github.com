@@ -140,22 +140,6 @@ ul#contact-info li,
     }
 }
 
-/* MISC RESPONSIVE DESIGN SHIT */
-@media only screen and (max-width: 780px) {
-    #main-grid {
-        padding: 0 15px;
-    }
-
-    #main {
-        width: inherit;
-    }
-
-    #big-boy {
-        border-top: 1px solid #b9b9b9;
-        border-bottom: 1px solid #b9b9b9;
-    }
-}
-
 /* ESSAYS */
 pre {
     margin: 0 auto;
@@ -187,4 +171,20 @@ p.lead {
 
 #toc-wrapper h2 {
     padding: 0 7px;
+}
+
+/* MISC RESPONSIVE DESIGN SHIT */
+@media only screen and (max-width: 780px) {
+    #main-grid {
+        padding: 0 15px;
+    }
+
+    #main {
+        width: inherit;
+    }
+
+    #big-boy {
+        border-top: 1px solid #b9b9b9;
+        border-bottom: 1px solid #b9b9b9;
+    }
 }
