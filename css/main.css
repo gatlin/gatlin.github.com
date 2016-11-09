@@ -179,3 +179,7 @@ h1.essay-h1 {
 p.lead {
     text-align: center;
 }
+
+#toc-wrapper h2 {
+    padding: 0 7px;
+}
