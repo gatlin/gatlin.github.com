@@ -74,7 +74,7 @@ h4 {
     font-size: 20px;
 }
 
-p, ul#contact-info li, #toc-wrapper ul li  {
+p, ul#contact-info li, #toc-wrapper ul li, #content ul li  {
     font-family: 'Merriweather', serif;
 }
 
