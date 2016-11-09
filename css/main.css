@@ -15,7 +15,8 @@ body {
 /* TOP */
 
 #contact-info {
-    margin: 3px auto;
+    margin: 3px auto 0 auto;
+    padding: 5px 0 0 0;
     text-align: center;
 }
 
@@ -81,6 +82,10 @@ ul#contact-info li,
 #content ul li,
 #content ol li{
     font-family: 'Merriweather', serif;
+}
+
+p.muted {
+    font-style: italic;
 }
 
 /* THE GRID */
