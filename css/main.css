@@ -137,14 +137,6 @@ p.muted {
     text-align: center;
 }
 
-@media only screen and (min-width: 780px) {
-    #big-boy {
-        border: 1px solid #b9b9b9;
-        border-radius: 6px;
-        margin-top: 15px;
-    }
-}
-
 /* ESSAYS */
 pre {
     margin: 0 auto;
@@ -191,5 +183,17 @@ p.lead {
     #big-boy {
         border-top: 1px solid #b9b9b9;
         border-bottom: 1px solid #b9b9b9;
+    }
+
+    #doge-qr-code {
+        width: 480px;
+    }
+}
+
+@media only screen and (min-width: 780px) {
+    #big-boy {
+        border: 1px solid #b9b9b9;
+        border-radius: 6px;
+        margin-top: 15px;
     }
 }
