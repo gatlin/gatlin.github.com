@@ -15,7 +15,8 @@ body {
 /* TOP */
 
 #contact-info {
-    margin: 3px auto;
+    margin: 3px auto 0 auto;
+    padding: 5px 0 0 0;
     text-align: center;
 }
 
@@ -74,8 +75,17 @@ h4 {
     font-size: 20px;
 }
 
-p, ul#contact-info li, #toc-wrapper ul li  {
+p,
+ul#contact-info li,
+#toc-wrapper ul li,
+#toc-wrapper ol li,
+#content ul li,
+#content ol li{
     font-family: 'Merriweather', serif;
+}
+
+p.muted {
+    font-style: italic;
 }
 
 /* THE GRID */
@@ -127,30 +137,6 @@ p, ul#contact-info li, #toc-wrapper ul li  {
     text-align: center;
 }
 
-@media only screen and (min-width: 780px) {
-    #big-boy {
-        border: 1px solid #b9b9b9;
-        border-radius: 6px;
-        margin-top: 15px;
-    }
-}
-
-/* MISC RESPONSIVE DESIGN SHIT */
-@media only screen and (max-width: 780px) {
-    #main-grid {
-        padding: 0 15px;
-    }
-
-    #main {
-        width: inherit;
-    }
-
-    #big-boy {
-        border-top: 1px solid #b9b9b9;
-        border-bottom: 1px solid #b9b9b9;
-    }
-}
-
 /* ESSAYS */
 pre {
     margin: 0 auto;
@@ -178,4 +164,36 @@ h1.essay-h1 {
 
 p.lead {
     text-align: center;
+}
+
+#toc-wrapper h2 {
+    padding: 0 7px;
+}
+
+/* MISC RESPONSIVE DESIGN SHIT */
+@media only screen and (max-width: 780px) {
+    #main-grid {
+        padding: 0 15px;
+    }
+
+    #main {
+        width: inherit;
+    }
+
+    #big-boy {
+        border-top: 1px solid #b9b9b9;
+        border-bottom: 1px solid #b9b9b9;
+    }
+
+    #doge-qr-code {
+        width: 480px;
+    }
+}
+
+@media only screen and (min-width: 780px) {
+    #big-boy {
+        border: 1px solid #b9b9b9;
+        border-radius: 6px;
+        margin-top: 15px;
+    }
 }
