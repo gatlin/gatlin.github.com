@@ -170,6 +170,12 @@ p.lead {
     padding: 0 7px;
 }
 
+/* DOGE */
+#doge-qr-code {
+    margin: 0 auto;
+    text-align: center;
+}
+
 /* MISC RESPONSIVE DESIGN SHIT */
 @media only screen and (max-width: 780px) {
     #main-grid {
@@ -184,11 +190,12 @@ p.lead {
         border-top: 1px solid #b9b9b9;
         border-bottom: 1px solid #b9b9b9;
     }
-
-    #doge-qr-code {
-        width: 480px;
-    }
 }
+
+@media only screen and (max-width: 480px) {
+    #doge-qr-code {
+        width: 240px;
+    }
 
 @media only screen and (min-width: 780px) {
     #big-boy {
