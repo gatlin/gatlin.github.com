@@ -30,7 +30,7 @@ body {
 
 #big-boy {
     background-color: #f7f7f7;
-
+    padding: 5px;
 }
 
 #big-boy h1, #big-boy p, #big-boy img {
